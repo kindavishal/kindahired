@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import http from "node:http";
 import { pathToFileURL } from "node:url";
-import { findByEmail, findByWorkerToken, loadPeople, type Person } from "./registry.ts";
+import { loadPeople, pick, type Person } from "./people.ts";
 
 const JWKS_TTL_MS = 60 * 60 * 1000;
 const JWKS_MIN_REFETCH_MS = 60 * 1000;
@@ -120,7 +120,7 @@ export function createGateway(opts: GatewayOptions): http.Server {
 
       if (url.pathname === "/worker" || url.pathname.startsWith("/worker/")) {
         const m = /^Bearer (.+)$/.exec(String(req.headers.authorization ?? ""));
-        const person = m ? findByWorkerToken(people(), m[1]) : undefined;
+        const person = m ? pick.workerToken(people(), m[1]) : undefined;
         if (!person) return text(res, 401, "Unauthorized");
         return proxy(req, res, { host: "127.0.0.1", port: person.port });
       }
@@ -135,7 +135,7 @@ export function createGateway(opts: GatewayOptions): http.Server {
         console.error("gateway: key fetch failed:", e);
         return text(res, 503, "Sign-in check is unavailable. Try again shortly.");
       }
-      const person = findByEmail(people(), email);
+      const person = pick.email(people(), email);
       if (!person) return forbiddenPage(res, email);
       proxy(req, res, { host: "127.0.0.1", port: person.port });
     } catch (e) {

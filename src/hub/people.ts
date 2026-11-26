@@ -1,5 +1,5 @@
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
-import { timingSafeEqual } from "node:crypto";
+import { randomBytes, timingSafeEqual } from "node:crypto";
 import path from "node:path";
 
 /**
@@ -55,3 +55,20 @@ export const findByRelaySecret = (secret: string, dir = hubDir()) => loadPeople(
 export const findByWorkerToken = (token: string, dir = hubDir()) => loadPeople(dir).find((p) => sameSecret(p.workerToken, token));
 export const findByChatId = (chatId: number | string, dir = hubDir()) =>
   loadPeople(dir).find((p) => p.chatId !== null && String(p.chatId) === String(chatId));
+
+/** The same lookups over a list already loaded, for callers that read the registry once per request. */
+export const pick = {
+  id: (people: Person[], id: string) => people.find((p) => p.id === id),
+  email: (people: Person[], email: string) => people.find((p) => p.email.toLowerCase() === email.trim().toLowerCase()),
+  workerToken: (people: Person[], token: string) => people.find((p) => sameSecret(p.workerToken, token)),
+  relaySecret: (people: Person[], secret: string) => people.find((p) => sameSecret(p.relaySecret, secret)),
+};
+
+export const FIRST_PORT = 4401;
+export const nextPort = (people: Person[]): number => {
+  const used = new Set(people.map((p) => p.port));
+  let port = FIRST_PORT;
+  while (used.has(port)) port++;
+  return port;
+};
+export const newSecret = (): string => randomBytes(32).toString("hex");

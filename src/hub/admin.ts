@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { findByEmail, findById, hubDir, loadPeople, newSecret, nextPort, savePeople, type Person } from "./registry.ts";
+import { hubDir, loadPeople, newSecret, nextPort, pick, savePeople, type Person } from "./people.ts";
 
 export const peopleDir = () => process.env.JH_PEOPLE_DIR || "/srv/jobhunt/people";
 
@@ -16,8 +16,8 @@ export function addPerson(id: string, email: string): string[] {
   if (!/^[^@\s]+@[^@\s]+$/.test(email)) throw new Error("that does not look like an email");
   const dir = hubDir();
   const people = loadPeople(dir);
-  if (findById(people, id)) throw new Error(`${id} already exists`);
-  if (findByEmail(people, email)) throw new Error(`${email} already exists`);
+  if (pick.id(people, id)) throw new Error(`${id} already exists`);
+  if (pick.email(people, email)) throw new Error(`${email} already exists`);
   const person: Person = { id, email, port: nextPort(people), relaySecret: newSecret(), workerToken: newSecret(), chatId: null };
   const dataDir = path.join(peopleDir(), id);
   fs.mkdirSync(dataDir, { recursive: true, mode: 0o700 });

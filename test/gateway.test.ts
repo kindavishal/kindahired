@@ -4,7 +4,7 @@ import http from "node:http";
 import type { AddressInfo } from "node:net";
 import { after, before, test } from "node:test";
 import { createGateway } from "../src/hub/gateway.ts";
-import type { Person } from "../src/hub/registry.ts";
+import type { Person } from "../src/hub/people.ts";
 
 const TEAM = "team.cloudflareaccess.com";
 const AUD = "test-aud";
