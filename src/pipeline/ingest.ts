@@ -7,7 +7,7 @@ import {
   findOpportunity, getOpportunity, opportunitiesAtCompany, rejectedAt, sameCompany, sameRole, STATUS_RANK, updateOpportunity, upsertOpportunity, type Opportunity,
 } from "../db/opportunities.ts";
 import { reconcileActions } from "../loops/engine.ts";
-import { llm, willRunLocally } from "../llm/client.ts";
+import { llm } from "../llm/client.ts";
 import { PlanUnavailableError } from "../llm/providers.ts";
 import { backfillQuery, getMessages, listMessageIds, RECENT_QUERY, type MailMessage } from "../sources/gmail.ts";
 import { readLinkedInJob, syncLinkedInJobs, type SavedJob } from "../sources/linkedin.ts";
@@ -27,7 +27,7 @@ export const screenerSystem = () => {
   ].join("\n\n");
 };
 
-// Spelled out in the prompt, not only in the answer format: smaller local models don't read
+// Spelled out in the prompt, not only in the answer format: smaller models don't always read
 // field descriptions in the schema.
 const SCREENING_RULES = `How to sort each message:
 - kind "conversation": a real person writing to me personally, or me writing to them. Replies ("Re:"), intros, a recruiter or founder reaching out to me by name. Even if it mentions a role, it is a conversation, not an alert.
@@ -69,22 +69,10 @@ const Classified = z.object({
 });
 export type ClassifiedItem = z.infer<typeof Classified>["results"][number];
 
-const ClassifiedOne = Classified.shape.results.element.omit({ message_id: true });
 const asText = (m: MailMessage) =>
   `<message id="${m.id}" from_me="${m.fromMe}">\nFrom: ${m.from}\nTo: ${m.to}\nDate: ${m.date}\nSubject: ${m.subject}\n\n${m.body.slice(0, 4000)}\n</message>`;
 
 export async function classifyMail(batch: MailMessage[]): Promise<ClassifiedItem[]> {
-  // The local model does better, and faster, on one short message at a time.
-  if (await willRunLocally("gmail.classify")) {
-    const out: ClassifiedItem[] = [];
-    for (const m of batch) {
-      const one = await llm.structured("gmail.classify", ClassifiedOne, {
-        effort: "low", numCtx: 8192, system: screenerSystem(), prompt: asText(m),
-      });
-      out.push({ ...one, message_id: m.id });
-    }
-    return out;
-  }
   const { results } = await llm.structured("gmail.classify", Classified, {
     effort: "low",
     maxTokens: 16000,

@@ -46,23 +46,17 @@ cp context/playbook.example.md context/playbook.md
 
 The AI work is split by what each step needs:
 
-- **Quick steps run on Gemini Flash-Lite** when `GEMINI_API_KEY` is set: email screening (10 emails per request) and pulling the details out of a posting's page. Each takes a second or two. The fit read stays on Claude Code, because it's the decision you act on. Gemini's free tier doesn't include Google Search, so when a role has no readable link, the web search runs through Claude Code. Get a free key at [aistudio.google.com/apikey](https://aistudio.google.com/apikey). The free tier allows about 15 requests a minute and a few hundred a day; past that, these steps fall back to the local model or Claude Code. On the free tier Google may use what you send to improve its products.
+- **Quick steps run on Gemini Flash-Lite** when `GEMINI_API_KEY` is set: email screening (10 emails per request) and pulling the details out of a posting's page. Each takes a second or two. The fit read stays on Claude Code, because it's the decision you act on. Gemini's free tier doesn't include Google Search, so when a role has no readable link, the web search runs through Claude Code. Get a free key at [aistudio.google.com/apikey](https://aistudio.google.com/apikey). The free tier allows about 15 requests a minute and a few hundred a day; past that, these steps fall back to Claude Code. On the free tier Google may use what you send to improve its products.
 
-- **Without a Gemini key, screening runs on a local open-source model** (`qwen3:14b`, through Ollama), about 6–11 seconds per email. Your inbox never leaves the Mac.
+- **Without a Gemini key, quick steps run through Claude Code** too. It works, but it's slower and counts toward your plan.
 - **Fit reads, resumes, cover notes, people research and DMs run through Claude Code**, logged in to your Claude plan. It's the same quality as your Project chats, with no API credit.
 
 To set it up:
 
-1. Install the Ollama app from [ollama.com/download](https://ollama.com/download) and open it once.
-2. Download the model, about 9 GB:
+1. Make sure Claude Code is logged in to your Claude account. Run `claude` once and check that it starts.
+2. Optional but recommended: put a free Gemini key in `.env` as `GEMINI_API_KEY`.
 
-```bash
-ollama pull qwen3:14b
-```
-
-3. Make sure Claude Code is logged in to your Claude account. Run `claude` once and check that it starts.
-
-Until Ollama is set up, recent email is screened through Claude Code, and the 90-day backfill waits so it doesn't use up your plan. Each pack takes several Claude Code steps and counts toward your plan's usage limits. If you hit a limit, packs wait and the bot tells you.
+Until a Gemini key is set, recent email is screened through Claude Code, and the 90-day backfill waits so it doesn't use up your plan. Each pack takes several Claude Code steps and counts toward your plan's usage limits. If you hit a limit, packs wait and the bot tells you.
 
 ### 2. Google: Gmail and Calendar (read-only) and your tracker sheet
 
@@ -207,7 +201,7 @@ npm run jh -- watch "https://jobsinthewild.tal.club/?sort=new" "Jobs in the wild
 npm run jh -- sources
 ```
 
-How it works: each scan opens the page in a background browser and scrolls a few times, so feeds that load more as you scroll show their newer posts. If no new links have appeared since the last scan, nothing more happens. Otherwise only the new part of the page is screened, on the same quick model as email (Gemini or the local model). One scan adds at most 10 new matches, and any extra wait for the next scan. If a page fails 3 times in a row, the bot tells you once and checks it less often until it works again.
+How it works: each scan opens the page in a background browser and scrolls a few times, so feeds that load more as you scroll show their newer posts. If no new links have appeared since the last scan, nothing more happens. Otherwise only the new part of the page is screened, on the same quick model as email (Gemini, or Claude Code without a key). One scan adds at most 10 new matches, and any extra wait for the next scan. If a page fails 3 times in a row, the bot tells you once and checks it less often until it works again.
 
 Tips: if a board has filters or a "newest" sort, set them first and watch that link. LinkedIn and X pages need a login, so they can't be watched this way. X has its own section below.
 
@@ -222,7 +216,7 @@ It looks in four places, every 4 hours:
 - **Accounts you watch.** Founders, hiring managers and team leads whose posts you want checked for roles, whether or not they say "hiring". Add them with `/xfollow @handle` in Telegram.
 - **Searches.** Hiring posts that mention your target roles, built from `targets` (or `keywords`) in your profile. Roles in places the playbook rules out are dropped at screening.
 
-Whoever posted a role is saved as a contact. Posts are screened on the quick model (Gemini or the local model), and a post is never screened or paid for twice.
+Whoever posted a role is saved as a contact. Posts are screened on the quick model (Gemini, or Claude Code without a key), and a post is never screened or paid for twice.
 
 **Cost.** X charges per post read: about $0.005 per post, and $0.001 for your own bookmarks. `X_MONTHLY_BUDGET_USD` (default $15) is a hard cap, spread across the month so a busy week can't use it all. When the month's cap is reached, X pauses until the 1st and the bot tells you once. `/x` in Telegram shows what's been spent, plus the accounts and threads being watched.
 

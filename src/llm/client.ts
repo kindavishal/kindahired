@@ -5,7 +5,6 @@ import { MODEL } from "../config.ts";
 import { logEvent } from "../db/index.ts";
 import {
   claudeResearch, claudeStructured, geminiAvailable, geminiResearch, geminiSearchAvailable, geminiStructured, GeminiUnavailableError,
-  localAvailable, localStructured,
   type Effort, type ResearchOpts, type StructuredOpts,
 } from "./providers.ts";
 
@@ -98,18 +97,16 @@ async function apiResearch(
 /**
  * Where each step runs. JH_AI picks the mode:
  *   hybrid (default): quick steps (email screening, reading postings, extraction) on Gemini
- *                     when GEMINI_API_KEY is set, else the local model; the fit read and writing
+ *                     when GEMINI_API_KEY is set, else Claude Code; the fit read and writing
  *                     (resume, cover note, outreach) through Claude Code on my Claude plan.
  *   claude:           everything through Claude Code.
- *   local:            quick steps on the local model only.
  *   api:              the Anthropic API with an API key (needs credit).
  * When a provider is missing or out of quota, the step falls through to the next one.
  */
-const MODE = (process.env.JH_AI ?? "hybrid") as "hybrid" | "claude" | "local" | "api";
+const MODE = (process.env.JH_AI ?? "hybrid") as "hybrid" | "claude" | "api";
 // The fit read stays on Claude: it's the decision I act on, and smaller models misapply the playbook.
 const QUICK_STEPS = new Set(["company.screen", "gmail.classify", "status.review", "x.screen", "identify.parse", "posting.parse", "profile.parse", "source.extract"]);
 const QUICK_RESEARCH = new Set(["posting", "identify", "people", "profile"]);
-const LOCAL_OK = new Set(["company.screen", "gmail.classify", "status.review", "x.screen", "identify.parse", "posting.parse", "profile.parse", "source.extract"]);
 
 async function routedStructured<S extends z.ZodType>(label: string, schema: S, opts: StructuredOpts): Promise<z.infer<S>> {
   if (MODE === "api") return apiStructured(label, schema, opts);
@@ -121,8 +118,6 @@ async function routedStructured<S extends z.ZodType>(label: string, schema: S, o
       if (!(err instanceof GeminiUnavailableError)) throw err;
     }
   }
-  const wantLocal = MODE === "local" || (MODE === "hybrid" && LOCAL_OK.has(step));
-  if (wantLocal && (await localAvailable())) return localStructured(label, schema, opts);
   return claudeStructured(label, schema, opts);
 }
 
@@ -139,19 +134,6 @@ async function routedResearch(label: string, opts: ResearchOpts): Promise<string
 }
 
 export const AI_MODE = MODE;
-
-/** Which provider a quick step will use right now: "gemini", "local" or "claude". */
-export async function quickProvider(label: string): Promise<"gemini" | "local" | "claude"> {
-  const step = label.split(":")[0];
-  if (MODE === "hybrid" && QUICK_STEPS.has(step) && geminiAvailable()) return "gemini";
-  if ((MODE === "local" || MODE === "hybrid") && LOCAL_OK.has(step) && (await localAvailable())) return "local";
-  return "claude";
-}
-
-/** True when this step will run on the local model right now. */
-export async function willRunLocally(label: string): Promise<boolean> {
-  return (await quickProvider(label)) === "local";
-}
 
 /** The AI calls the pipeline uses. Tests swap these for stand-ins. */
 export const llm = { structured: routedStructured, research: routedResearch };

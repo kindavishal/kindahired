@@ -137,7 +137,7 @@ export async function scanSource(id: number, opts: { force?: boolean } = {}): Pr
       let listing = false;
       for (const [i, part] of parts.entries()) {
         const out = await llm.structured(`source.extract:${source.id}`, Extracted, {
-          effort: "low", numCtx: 16384, maxTokens: 16000,
+          effort: "low", maxTokens: 16000,
           system: `${screenerSystem()}\n\n${EXTRACT_RULES}`,
           prompt: `Page: ${source.label} (${page.url}), part ${i + 1} of ${parts.length}\n\n${part}`,
         });

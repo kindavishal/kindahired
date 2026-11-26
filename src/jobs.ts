@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { existsSync } from "node:fs";
 import { AI_MODE } from "./llm/client.ts";
-import { geminiAvailable, localAvailable, PlanUnavailableError } from "./llm/providers.ts";
+import { geminiAvailable, PlanUnavailableError } from "./llm/providers.ts";
 import { loadProfile, localClock, PATHS } from "./config.ts";
 import { all, get, kvGet, kvSet, logEvent, run } from "./db/index.ts";
 import { getOpportunity, PAST_DECISION, updateOpportunity } from "./db/opportunities.ts";
@@ -198,9 +198,9 @@ export async function runPackQueue(limit = 5): Promise<number> {
 
 export async function gmailTick() {
   if (!googleConnected()) return null;
-  // The 90-day backfill screens hundreds of emails. Without the local model that would all run
-  // on my Claude plan, so until Ollama is set up only recent mail is screened.
-  const backfill = !kvGet("gmail.backfilled") && (AI_MODE !== "hybrid" || geminiAvailable() || (await localAvailable()));
+  // The 90-day backfill screens hundreds of emails. Without Gemini that would all run on my
+  // Claude plan, so until a Gemini key is set only recent mail is screened.
+  const backfill = !kvGet("gmail.backfilled") && (AI_MODE !== "hybrid" || geminiAvailable());
   try {
     return await syncGmail({ backfill });
   } catch (err) {

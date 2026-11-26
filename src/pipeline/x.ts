@@ -101,7 +101,7 @@ export async function processPosts(posts: Post[], origin: XOrigin, stats = empty
   for (let i = 0; i < fresh.length; i += 15) {
     const batch = fresh.slice(i, i + 15);
     const { results } = await llm.structured("x.screen", Screened, {
-      effort: "low", maxTokens: 12000, numCtx: 16384,
+      effort: "low", maxTokens: 12000,
       system: `${screenerSystem()}\n\n${screenRules()}`,
       prompt: batch.map(asText).join("\n\n"),
     });

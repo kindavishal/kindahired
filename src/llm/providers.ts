@@ -6,7 +6,7 @@ import { DATA_DIR } from "../config.ts";
 import { logEvent } from "../db/index.ts";
 
 export type Effort = "low" | "medium" | "high" | "xhigh";
-export interface StructuredOpts { system: string; prompt: string; effort?: Effort; maxTokens?: number; /** Local model only: context size. Smaller is faster. */ numCtx?: number }
+export interface StructuredOpts { system: string; prompt: string; effort?: Effort; maxTokens?: number }
 export interface ResearchOpts { system: string; prompt: string; effort?: Effort; maxSearches?: number; allowedDomains?: string[] }
 
 /** My Claude plan has hit its usage limit, or Claude Code isn't logged in. Work waits; nothing is lost. */
@@ -104,53 +104,6 @@ export async function claudeResearch(label: string, opts: ResearchOpts): Promise
 function safeJson(text?: string): unknown {
   if (!text) return undefined;
   try { return JSON.parse(text); } catch { return undefined; }
-}
-
-// ---------- Local open-source model, through Ollama ----------
-
-const OLLAMA = process.env.OLLAMA_HOST ?? "http://127.0.0.1:11434";
-export const LOCAL_MODEL = process.env.JH_LOCAL_MODEL ?? "qwen3:14b";
-
-export async function localAvailable(): Promise<boolean> {
-  try {
-    const res = await fetch(`${OLLAMA}/api/tags`, { signal: AbortSignal.timeout(10_000) });
-    if (!res.ok) return false;
-    const { models } = (await res.json()) as { models: { name: string }[] };
-    return models.some((m) => m.name === LOCAL_MODEL || m.name === `${LOCAL_MODEL}:latest`);
-  } catch {
-    return false;
-  }
-}
-
-export async function localStructured<S extends z.ZodType>(label: string, schema: S, opts: StructuredOpts): Promise<z.infer<S>> {
-  let lastError = "";
-  for (let attempt = 0; attempt < 2; attempt++) {
-    const res = await fetch(`${OLLAMA}/api/chat`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        model: LOCAL_MODEL,
-        stream: false,
-        think: false,
-        format: jsonSchemaOf(schema),
-        options: { temperature: 0, num_ctx: opts.numCtx ?? 16384 },
-        messages: [
-          { role: "system", content: opts.system },
-          { role: "user", content: attempt ? `${opts.prompt}\n\nYour last answer was invalid: ${lastError}. Answer again in the exact format.` : opts.prompt },
-        ],
-      }),
-      signal: AbortSignal.timeout(10 * 60_000),
-    });
-    if (!res.ok) throw new Error(`Local model: HTTP ${res.status} ${await res.text()}`);
-    const { message } = (await res.json()) as { message: { content: string } };
-    const parsed = schema.safeParse(safeJson(message.content));
-    if (parsed.success) {
-      logEvent("llm.call", label, { via: "local", model: LOCAL_MODEL });
-      return parsed.data;
-    }
-    lastError = parsed.error.message.slice(0, 300);
-  }
-  throw new Error(`${label}: local model gave an invalid answer twice: ${lastError}`);
 }
 
 // ---------- Gemini (Google AI Studio key), for the fast steps ----------

@@ -53,7 +53,7 @@ Placeholders in `[brackets]` need a real value before anything goes out. Nothing
 
 - [ ] Above the fold: headline, one-sentence subhead, the "prepares, you act" promise, and one CTA. No feature grid before the reader knows what it does.
 - [ ] Demo GIF directly under the hero (15 to 20s): a link shared to Telegram, the summary card, Build pack, the three pack messages. Under 5 MB, with a still poster frame.
-- [ ] Setup time stated plainly with prerequisites: macOS, Node 24+, a Google Cloud OAuth client, a Telegram bot token, Claude Code logged in. Say which steps are optional (Gemini, Ollama, X, Firecrawl).
+- [ ] Setup time stated plainly with prerequisites: macOS, Node 24+, a Google Cloud OAuth client, a Telegram bot token, Claude Code logged in. Say which steps are optional (Gemini, X, Firecrawl).
 - [ ] "What leaves your machine" section near the top, not buried (see section 7 for the content).
 - [ ] One screenshot per core surface: Today list, a Role pack, Telegram pack messages.
 - [ ] Costs table: what is free, what is paid per use (X API), what counts against an AI plan's limits.
@@ -146,7 +146,7 @@ Check the sub's current rules on self-promotion and flair first; post on a weekd
   >
   > It's a Node/TypeScript daemon with SQLite, a local dashboard on 127.0.0.1 and a Telegram bot. It reads job-alert email (Gmail, read-only scope), LinkedIn saved jobs through a browser profile you log in to yourself, optional X bookmarks via the official API, and any job board you ask it to watch. For each role it builds a pack (fit read, resume PDF, cover note, form answers, contacts with drafts) and tracks every loose end as a due action.
   >
-  > What stays local: the database, your tracker, the dashboard (no web fonts, CDNs or analytics), and email screening if you use the Ollama path (qwen3:14b).
+  > What stays local: the database, your tracker, and the dashboard (no web fonts, CDNs or analytics).
   > What doesn't: fit reads and drafts go through Claude Code on your own plan; Gemini free tier is optional for quick steps; X API and Firecrawl are optional. Details in the README.
   >
   > Limits: macOS only for now (launchd service), needs Node 24, setup is about [20] minutes of OAuth and tokens. No Docker image yet [or: Docker image at ...].
@@ -175,7 +175,7 @@ Many career subs ban tool promotion outright. Read the rules and the pinned thre
   >
   > Design choices: plain code for bookkeeping (dedupe, timers, status), AI only for judgement. Resume lines must trace to an evidence bank, checked in tests. Gmail scope is read-only and nothing is ever sent.
   >
-  > Outside services: Claude Code for fit reads and drafts, optionally Gemini free tier or local Ollama for screening, optionally the X API and Firecrawl. I'd like feedback on the no-invention check and the loop rules.
+  > Outside services: Claude Code for fit reads and drafts, optionally Gemini free tier for screening, optionally the X API and Firecrawl. I'd like feedback on the no-invention check and the loop rules.
 
 ### Communities to share in
 
@@ -245,14 +245,14 @@ Notes: keep each caption on screen for at least 2 s; transitions are simple cuts
 
 **Setup**
 
-- [ ] A setup script (`npm run setup` or `scripts/setup.sh`) that checks Node 24+, copies `.env.example`, checks Claude Code login, optionally checks Ollama, and prints the next step for each missing piece.
+- [ ] A setup script (`npm run setup` or `scripts/setup.sh`) that checks Node 24+, copies `.env.example`, checks Claude Code login, optionally checks the Gemini key, and prints the next step for each missing piece.
 - [ ] Time a clean setup on a fresh macOS user account and put the real number in the README.
 - [ ] State platform support honestly (macOS launchd today) and what would be needed for Linux.
 - [ ] Google OAuth: document that users create their own Cloud project and test-user consent screen; no shared client ID is shipped.
 
 **Privacy note: what leaves the machine** (put this in the README)
 
-- [ ] **Stays local:** the SQLite database, dashboard (127.0.0.1 only, no fonts, CDNs or analytics), resume PDFs, browser profile and sessions, and email screening when using Ollama.
+- [ ] **Stays local:** the SQLite database, dashboard (127.0.0.1 only, no fonts, CDNs or analytics), resume PDFs, and browser profile and sessions.
 - [ ] **Gemini free tier (optional):** batches of email text and posting pages for screening and extraction. Say clearly that on the free tier Google may use this data to improve its products.
 - [ ] **Claude Code (your own plan):** posting details, your evidence bank and playbook for fit reads, resumes, cover notes, people research and drafts. Usage counts toward your plan's limits.
 - [ ] **X API (optional, paid per read):** read-only requests for bookmarks, threads, watched accounts and searches; capped by `X_MONTHLY_BUDGET_USD`.

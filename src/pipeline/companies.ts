@@ -425,7 +425,7 @@ export async function screenPostings(company: string, postings: Posting[]): Prom
   for (let i = 0; i < postings.length; i += 120) {
     const batch = postings.slice(i, i + 120);
     const { results } = await llm.structured(`company.screen:${company}`, Screened, {
-      effort: "low", numCtx: 16384, maxTokens: 8000,
+      effort: "low", maxTokens: 8000,
       system: `${screenerSystem()}\n\n${SCREEN_RULES}`,
       prompt: `Company: ${company}\n\n${batch.map((p) => `${p.id} | ${p.title} | ${p.location ?? "location not given"}${p.remote ? " | remote" : ""}${p.department ? ` | ${p.department}` : ""}`).join("\n")}`,
     });

@@ -157,6 +157,5 @@ structured action with a due date.
 - Notifications go to a Telegram bot. Each pack arrives as a message with the apply link, the resume
   PDF, the cover note and per-person drafts with buttons. Messages are silent from 11 PM to 7:30 AM.
 - Everything runs locally on the Mac (see Architecture).
-- No API credit. Email screening runs on a local open-source model (qwen3:14b through Ollama), so
-  the inbox stays on the Mac. Fit reads, resumes, outreach and web research run through Claude Code
+- No API credit. Email screening runs on Gemini's free tier (or Claude Code without a key). Fit reads, resumes, outreach and web research run through Claude Code
   on my Claude plan. The Anthropic API path is still there (`JH_AI=api`) if I add credit later.
