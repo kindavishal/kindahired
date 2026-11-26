@@ -1,0 +1,13 @@
+node_modules/
+data/
+.env
+# Your own profile and playbook (copy the .example files to start)
+context/profile.json
+context/playbook.md
+# Local tool and editor state
+.claude/
+.impeccable/
+.DS_Store
+*.plist
+# Design screenshots taken from real data
+docs/screenshots/

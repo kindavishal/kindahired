@@ -1,0 +1,18 @@
+{
+  "name": "Sam Rivera",
+  "headline": "Product Marketing Manager",
+  "location": "Lisbon, Portugal",
+  "email": "sam@example.com",
+  "phone": "+351 900 000 000",
+  "portfolio": "https://sam-rivera.example",
+  "links": [
+    { "label": "LinkedIn", "url": "https://www.linkedin.com/in/sam-rivera-example" },
+    { "label": "GitHub", "url": "https://github.com/sam-rivera-example" }
+  ],
+  "targets": [
+    "Product marketing / go-to-market",
+    "Growth marketing",
+    "Developer marketing"
+  ],
+  "keywords": []
+}
