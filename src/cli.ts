@@ -4,7 +4,7 @@ import path from "node:path";
 import { env, PATHS, ROOT } from "./config.ts";
 import { all, get, kvGet } from "./db/index.ts";
 import { findDuplicates, mergeOpportunities } from "./db/merge.ts";
-import { AI_MODE } from "./llm/client.ts";
+import { AI_MODE, quickProvider } from "./llm/client.ts";
 import { GEMINI_MODEL, geminiAvailable } from "./llm/providers.ts";
 import { addCompanies, addLink, calendarTick, companiesAutoTick, companiesTick, researchNow, scanCompanyNow, gmailTick, linkedinMessagesTick, linkedinTick, postingsTick, runPackQueue, runSummaries, scanNow, watchPage } from "./jobs.ts";
 import { addSource, describeResult, listSources, removeSource } from "./pipeline/sources.ts";
@@ -35,7 +35,8 @@ const commands: Record<string, [string, () => Promise<unknown>]> = {
   status: ["Show what's connected and what's waiting", async () => {
     const ok = (b: boolean) => (b ? "yes" : "no ");
     console.log(`AI mode           ${AI_MODE}`);
-    console.log(`Gemini            ${ok(geminiAvailable())}  (${GEMINI_MODEL}; screening falls back to Claude Code without it)`);
+    console.log(`Quick steps       ${quickProvider()}`);
+    console.log(`Gemini          ${ok(geminiAvailable())}  (${GEMINI_MODEL}; screening falls back to Claude Code without it)`);
     console.log(`Google (Gmail)    ${ok(googleConnected())}  last sync: ${kvGet("gmail.lastSync") ?? "never"}`);
     console.log(`Google Calendar   ${ok(calendarReady())}  ${calendarReady() ? "" : "(run auth:google to allow it)"}`);
     console.log(`LinkedIn messages ${ok(existsSync(PATHS.browserProfile))}  last read: ${kvGet("linkedin.inbox.lastSync") ?? "never"}`);
