@@ -1,0 +1,24 @@
+# One engine per person: systemctl enable --now jobhunt-engine@<id>
+#
+# All engines run as the single `jobhunt` user. Each person's data folder is mode 700, which keeps
+# people apart only from other Linux users, not from each other's engines.
+# Follow-up: a pre-created user per person (jh-<id>) with User=jh-%i, or DynamicUser plus
+# per-instance ReadWritePaths, so one engine cannot read another person's folder.
+[Unit]
+Description=Job hunt engine for %i
+After=network.target
+
+[Service]
+User=jobhunt
+WorkingDirectory=/srv/jobhunt/app
+Environment=JH_DATA_DIR=/srv/jobhunt/people/%i
+EnvironmentFile=/srv/jobhunt/people/%i/.env
+ExecStart=/usr/bin/npx tsx src/daemon.ts
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+ProtectSystem=full
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

@@ -11,6 +11,7 @@
     "daemon": "tsx src/daemon.ts",
     "router": "tsx src/hub/router.ts",
     "hub": "tsx src/hub/cli.ts",
+    "gateway": "tsx src/hub/gateway.ts",
     "typecheck": "tsc --noEmit",
     "test": "JH_DATA_DIR=data/test JH_PROFILE=context/profile.example.json JH_PLAYBOOK=context/playbook.example.md JH_TIMEZONE=Asia/Kolkata MY_EMAILS=sam@example.com JH_NO_TELEGRAM=1 FIRECRAWL_API_KEY= X_BEARER_TOKEN= X_API_KEY= X_API_SECRET= X_CLIENT_ID= tsx --test test/*.test.ts"
   },

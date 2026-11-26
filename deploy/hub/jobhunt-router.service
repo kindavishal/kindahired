@@ -1,0 +1,17 @@
+[Unit]
+Description=Job hunt hub Telegram router
+After=network.target
+
+[Service]
+User=jobhunt
+WorkingDirectory=/srv/jobhunt/app
+EnvironmentFile=/srv/jobhunt/hub/router.env
+ExecStart=/usr/bin/npx tsx src/hub/router.ts
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+ProtectSystem=full
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

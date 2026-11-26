@@ -1,0 +1,19 @@
+# /etc/cloudflared/config.yml
+tunnel: <tunnel id>
+credentials-file: /etc/cloudflared/<tunnel id>.json
+
+ingress:
+  - hostname: hub.example.com
+    service: http://127.0.0.1:8080   # the gateway. Everything goes here.
+  - service: http_status:404
+
+# In the Cloudflare Zero Trust dashboard, one Access application covers hub.example.com.
+# Its Allow policy lists the people's emails. Two paths need Bypass policies, because the callers
+# are not browsers and cannot sign in:
+#
+#   hub.example.com/telegram/webhook   Telegram's servers post updates here. The router checks
+#                                      the X-Telegram-Bot-Api-Secret-Token header instead.
+#   hub.example.com/worker/*           The desktop worker polls here. The gateway checks the
+#                                      per-person bearer token instead.
+#
+# Everything else needs a valid Access login, and the gateway checks the Access JWT again.
