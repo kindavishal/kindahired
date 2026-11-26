@@ -1,7 +1,6 @@
 import { spawn } from "node:child_process";
 import { mkdirSync } from "node:fs";
 import path from "node:path";
-import { DATA_DIR } from "../config.ts";
 import { PlanUnavailableError } from "./errors.ts";
 
 /** What `claude -p --output-format json` prints as its last line. */
@@ -14,6 +13,17 @@ export interface ClaudeResult {
 }
 
 /**
+ * The empty folder Claude Code runs in: <JH_DATA_DIR>/agent, else data/agent in the repo.
+ *
+ * Read at call time and kept free of config.ts, so the desktop app can bundle this file without
+ * loading the repo .env or creating repo data folders. It sets JH_DATA_DIR to its own folder.
+ */
+export function agentDir(): string {
+  const dataDir = process.env.JH_DATA_DIR ?? path.resolve(import.meta.dirname, "..", "..", "data");
+  return path.join(dataDir, "agent");
+}
+
+/**
  * Runs Claude Code once with these arguments and the prompt on stdin. Used on this computer
  * directly, and by the desktop worker for jobs it takes from the hub.
  *
@@ -21,7 +31,7 @@ export interface ClaudeResult {
  * prompt and the tools named in the arguments are in play.
  */
 export function spawnClaude(args: string[], prompt: string, timeoutMs: number): Promise<ClaudeResult> {
-  const cwd = path.join(DATA_DIR, "agent");
+  const cwd = agentDir();
   mkdirSync(cwd, { recursive: true });
   return new Promise((resolve, reject) => {
     // An API key in the environment would make Claude Code bill the API instead of my plan.

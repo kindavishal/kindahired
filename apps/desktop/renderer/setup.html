@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Settings</title>
+  <link rel="stylesheet" href="setup.css">
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Connect this computer</h1>
+      <p class="lede">This app runs Claude steps for your job search here, on your own Claude plan. It needs two things from your hub dashboard: <b>the address</b> you open it at, and <b>your worker token</b>.</p>
+    </header>
+
+    <form id="hub-form" autocomplete="off">
+      <div class="field">
+        <label for="hub">Hub address</label>
+        <input id="hub" name="hub" type="url" inputmode="url" placeholder="https://jobs.example.com" spellcheck="false" required>
+      </div>
+      <div class="field">
+        <label for="token">Worker token</label>
+        <input id="token" name="token" type="password" spellcheck="false" placeholder="Paste the token from your dashboard">
+        <p class="hint" id="token-hint">Kept in this computer's keychain, never in a plain file.</p>
+      </div>
+      <label class="check">
+        <input id="login" type="checkbox" checked>
+        <span>Open when I log in, so Claude steps don't wait for me</span>
+      </label>
+
+      <ul class="results" id="hub-results" aria-live="polite"></ul>
+
+      <div class="actions">
+        <button type="button" id="check" class="secondary">Check</button>
+        <button type="submit" id="save" class="primary">Save</button>
+      </div>
+    </form>
+
+    <section class="claude" aria-labelledby="claude-title">
+      <h2 id="claude-title">Claude Code</h2>
+      <p id="claude-status" class="status" aria-live="polite">Checking…</p>
+      <p id="claude-detail" class="hint"></p>
+      <div class="actions">
+        <button type="button" id="install" class="secondary" hidden>Get Claude Code</button>
+        <button type="button" id="claude-again" class="secondary">Check again</button>
+      </div>
+    </section>
+
+    <footer>
+      <button type="button" id="dashboard" class="link" hidden>Open dashboard</button>
+      <span id="version"></span>
+    </footer>
+  </main>
+  <script src="setup.js"></script>
+</body>
+</html>
