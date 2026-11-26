@@ -1,0 +1,17 @@
+[Unit]
+Description=Job hunt hub gateway
+After=network.target
+
+[Service]
+User=jobhunt
+WorkingDirectory=/srv/jobhunt/app
+EnvironmentFile=/srv/jobhunt/hub/gateway.env
+ExecStart=/usr/bin/npm run gateway
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+ProtectSystem=full
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
