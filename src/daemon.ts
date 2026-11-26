@@ -84,5 +84,15 @@ every("x", 4 * 60 * MIN, xTick, { jitter: 20 * MIN, startAfter: 3 * MIN });
 // LinkedIn messages more often than jobs: a reply to a DM shouldn't wait six hours.
 every("linkedin-messages", 90 * MIN, linkedinMessagesTick, { jitter: 20 * MIN, startAfter: 6 * MIN });
 every("linkedin", 6 * 60 * MIN, linkedinTick, { jitter: 45 * MIN, startAfter: 2 * MIN });
-if (telegramReady()) void telegramLoop();
-else log("Telegram not linked yet; skipping bot. Run: npm run jh -- telegram:link");
+// The bot starts as soon as a chat is linked (from the CLI or the dashboard's Connect Telegram).
+let botStarted = false;
+const startBot = () => {
+  if (botStarted || !telegramReady()) return botStarted;
+  botStarted = true;
+  void telegramLoop();
+  return true;
+};
+if (!startBot()) {
+  log("Telegram not linked yet; the bot starts once it is. Run: npm run jh -- telegram:link");
+  const check = setInterval(() => { if (startBot()) { clearInterval(check); log("Telegram linked; bot started"); } }, MIN);
+}
