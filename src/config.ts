@@ -7,6 +7,8 @@ if (existsSync(path.join(ROOT, ".env"))) process.loadEnvFile(path.join(ROOT, ".e
 export const DATA_DIR = process.env.JH_DATA_DIR ?? path.join(ROOT, "data");
 // The person's own settings (on the hub, one folder per person). Variables already set win.
 if (existsSync(path.join(DATA_DIR, ".env"))) process.loadEnvFile(path.join(DATA_DIR, ".env"));
+// On the hub each person's profile and playbook live in their own folder, never the shared repo's.
+const CONTEXT_DIR = process.env.JH_HUB === "1" ? path.join(DATA_DIR, "context") : path.join(ROOT, "context");
 export const PATHS = {
   db: path.join(DATA_DIR, "jobhunt.db"),
   resumes: path.join(DATA_DIR, "resumes"),
@@ -14,8 +16,8 @@ export const PATHS = {
   googleToken: path.join(DATA_DIR, "google-token.json"),
   xToken: path.join(DATA_DIR, "x-token.json"),
   logs: path.join(DATA_DIR, "logs"),
-  playbook: process.env.JH_PLAYBOOK ?? path.join(ROOT, "context", "playbook.md"),
-  profile: process.env.JH_PROFILE ?? path.join(ROOT, "context", "profile.json"),
+  playbook: process.env.JH_PLAYBOOK ?? path.join(CONTEXT_DIR, "playbook.md"),
+  profile: process.env.JH_PROFILE ?? path.join(CONTEXT_DIR, "profile.json"),
 };
 for (const dir of [DATA_DIR, PATHS.resumes, PATHS.logs]) mkdirSync(dir, { recursive: true });
 

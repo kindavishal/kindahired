@@ -5,7 +5,8 @@ import { hubDir, loadPeople, newSecret, nextPort, pick, savePeople, type Person 
 
 export const peopleDir = () => process.env.JH_PEOPLE_DIR || "/srv/jobhunt/people";
 
-const templatePath = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "..", "deploy", "hub", "person.env.template");
+const repoRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
+const templatePath = path.join(repoRoot, "deploy", "hub", "person.env.template");
 
 export function renderEnv(vars: Record<string, string>): string {
   return fs.readFileSync(templatePath, "utf8").replace(/\{\{(\w+)\}\}/g, (_, k: string) => vars[k] ?? "");
@@ -29,11 +30,18 @@ export function addPerson(id: string, email: string): string[] {
       publicUrl: process.env.JH_PUBLIC_URL || "https://hub.example.com/",
     }), { mode: 0o600 });
   }
+  // Their own profile and playbook, started from the examples (the engine reads these in hub mode).
+  const contextDir = path.join(dataDir, "context");
+  fs.mkdirSync(contextDir, { recursive: true, mode: 0o700 });
+  for (const [from, to] of [["profile.example.json", "profile.json"], ["playbook.example.md", "playbook.md"]]) {
+    const target = path.join(contextDir, to);
+    if (!fs.existsSync(target)) fs.copyFileSync(path.join(repoRoot, "context", from), target);
+  }
   savePeople([...people, person], dir);
   return [
     `Added ${id} (${email}) on port ${person.port}.`,
     `Data folder: ${dataDir}`,
-    `Add their keys to ${envFile}, then start the engine:`,
+    `Add their keys to ${envFile}, and their details to ${contextDir}/profile.json and playbook.md, then start the engine:`,
     `  sudo systemctl enable --now jobhunt-engine@${id}`,
   ];
 }
