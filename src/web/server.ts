@@ -21,6 +21,7 @@ import {
   postButton, setNavCounts, setShellPort, sourceLabel, statusBadge,
 } from "./ui.ts";
 import { isLink, searchAll, searchPageBody } from "./search.ts";
+import { handleWorker } from "../worker/routes.ts";
 import { interviewCard, interviewPage, interviewsPage, upcomingCount, upcomingInterviews } from "./interviews.ts";
 import { clearOpened, directActions, markOpened, openedTasks, type Direct } from "./actions.ts";
 import {
@@ -1004,6 +1005,7 @@ export function startServer(port = env.port, hooks?: Hooks) {
       res.end(s ?? message("Not found", "Page not found", `<p class="muted">That role or page doesn't exist any more. It may have been merged with a duplicate.</p><p>${linkButton("/", "Back to Home", "primary")}</p>`));
     };
     try {
+      if (url.pathname.startsWith("/worker/")) return await handleWorker(req, res, url);
       const m = url.pathname.match(/^\/(a|o|r)\/(\d+)\/(\w+)$/);
       if (req.method === "POST" && m) {
         const [, scope, idText, verb] = m;

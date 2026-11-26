@@ -1,16 +1,13 @@
-import { spawn } from "node:child_process";
-import { mkdirSync } from "node:fs";
-import path from "node:path";
 import { z } from "zod";
-import { DATA_DIR } from "../config.ts";
 import { logEvent } from "../db/index.ts";
+import { enqueueClaude } from "../worker/queue.ts";
+import { spawnClaude, type ClaudeResult } from "./claude-code.ts";
 
 export type Effort = "low" | "medium" | "high" | "xhigh";
 export interface StructuredOpts { system: string; prompt: string; effort?: Effort; maxTokens?: number }
 export interface ResearchOpts { system: string; prompt: string; effort?: Effort; maxSearches?: number; allowedDomains?: string[] }
 
-/** My Claude plan has hit its usage limit, or Claude Code isn't logged in. Work waits; nothing is lost. */
-export class PlanUnavailableError extends Error {}
+export { PlanUnavailableError } from "./errors.ts";
 
 function jsonSchemaOf(schema: z.ZodType) {
   const s = z.toJSONSchema(schema, { target: "draft-7" }) as Record<string, unknown>;
@@ -20,57 +17,15 @@ function jsonSchemaOf(schema: z.ZodType) {
 
 // ---------- Claude Code, on my Claude plan ----------
 
-// Runs in an empty folder with no project settings, hooks, plugins or MCP servers, so only the
-// prompt and the tools named here are in play.
-const AGENT_DIR = path.join(DATA_DIR, "agent");
-mkdirSync(AGENT_DIR, { recursive: true });
-
-interface ClaudeResult {
-  is_error: boolean;
-  subtype?: string;
-  result?: string;
-  structured_output?: unknown;
-  api_error_status?: number | null;
-}
-
+// With JH_CLAUDE_VIA=worker (on the hub) the call goes to the person's desktop worker, which runs
+// the same arguments there.
 function runClaudeCode(args: string[], prompt: string, timeoutMs: number): Promise<ClaudeResult> {
-  return new Promise((resolve, reject) => {
-    // An API key in the environment would make Claude Code bill the API instead of my plan.
-    const env = { ...process.env };
-    delete env.ANTHROPIC_API_KEY;
-    delete env.ANTHROPIC_AUTH_TOKEN;
-    const child = spawn(process.env.JH_CLAUDE_BIN ?? "claude", [
-      "-p", "--output-format", "json", "--no-session-persistence", "--strict-mcp-config", "--setting-sources", "",
-      ...(process.env.JH_CLAUDE_MODEL ? ["--model", process.env.JH_CLAUDE_MODEL] : []),
-      ...args,
-    ], { cwd: AGENT_DIR, env, stdio: ["pipe", "pipe", "pipe"] });
-    let out = "", err = "";
-    const timer = setTimeout(() => { child.kill("SIGTERM"); reject(new Error(`Claude Code timed out after ${timeoutMs / 60000} min`)); }, timeoutMs);
-    child.stdout.on("data", (d) => (out += d));
-    child.stderr.on("data", (d) => (err += d));
-    child.on("error", (e) => { clearTimeout(timer); reject(new PlanUnavailableError(`Couldn't start Claude Code: ${e.message}`)); });
-    child.on("close", (code) => {
-      clearTimeout(timer);
-      const text = out.trim().split("\n").pop() ?? "";
-      let parsed: ClaudeResult;
-      try {
-        parsed = JSON.parse(text);
-      } catch {
-        const msg = (err || out).slice(0, 500);
-        if (/log ?in|auth|usage limit|rate limit/i.test(msg)) return reject(new PlanUnavailableError(msg));
-        return reject(new Error(`Claude Code exited ${code}: ${msg}`));
-      }
-      if (parsed.is_error) {
-        const msg = String(parsed.result ?? parsed.subtype ?? "error");
-        if (/usage limit|limit reached|rate limit|log ?in|authenticat|credit/i.test(msg) || parsed.api_error_status === 429) {
-          return reject(new PlanUnavailableError(msg));
-        }
-        return reject(new Error(`Claude Code: ${msg.slice(0, 500)}`));
-      }
-      resolve(parsed);
-    });
-    child.stdin.end(prompt);
-  });
+  const full = [
+    "-p", "--output-format", "json", "--no-session-persistence", "--strict-mcp-config", "--setting-sources", "",
+    ...(process.env.JH_CLAUDE_MODEL ? ["--model", process.env.JH_CLAUDE_MODEL] : []),
+    ...args,
+  ];
+  return process.env.JH_CLAUDE_VIA === "worker" ? enqueueClaude(full, prompt, timeoutMs) : spawnClaude(full, prompt, timeoutMs);
 }
 
 export async function claudeStructured<S extends z.ZodType>(label: string, schema: S, opts: StructuredOpts): Promise<z.infer<S>> {
