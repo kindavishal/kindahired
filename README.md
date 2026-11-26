@@ -49,6 +49,7 @@ The AI work is split by what each step needs:
 - **Quick steps run on Gemini Flash-Lite** when `GEMINI_API_KEY` is set: email screening (10 emails per request) and pulling the details out of a posting's page. Each takes a second or two. The fit read stays on Claude Code, because it's the decision you act on. Gemini's free tier doesn't include Google Search, so when a role has no readable link, the web search runs through Claude Code. Get a free key at [aistudio.google.com/apikey](https://aistudio.google.com/apikey). The free tier allows about 15 requests a minute and a few hundred a day; past that, these steps fall back to Claude Code. On the free tier Google may use what you send to improve its products.
 
 - **Without a Gemini key, quick steps run through Claude Code** too. It works, but it's slower and counts toward your plan.
+- **Optional: `JH_QUICK=haiku`** runs the quick steps on Claude Haiku through the Anthropic API (needs `ANTHROPIC_API_KEY` with credit), ahead of Gemini. If the key or credit fails, it's off for 3 hours. Quick steps through Claude Code use Haiku too (`JH_CLAUDE_QUICK_MODEL` to change it).
 - **Fit reads, resumes, cover notes, people research and DMs run through Claude Code**, logged in to your Claude plan. It's the same quality as your Project chats, with no API credit.
 
 To set it up:

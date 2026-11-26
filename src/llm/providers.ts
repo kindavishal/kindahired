@@ -33,7 +33,7 @@ interface ClaudeResult {
   api_error_status?: number | null;
 }
 
-function runClaudeCode(args: string[], prompt: string, timeoutMs: number): Promise<ClaudeResult> {
+function runClaudeCode(args: string[], prompt: string, timeoutMs: number, model = process.env.JH_CLAUDE_MODEL):Promise<ClaudeResult> {
   return new Promise((resolve, reject) => {
     // An API key in the environment would make Claude Code bill the API instead of my plan.
     const env = { ...process.env };
@@ -41,7 +41,7 @@ function runClaudeCode(args: string[], prompt: string, timeoutMs: number): Promi
     delete env.ANTHROPIC_AUTH_TOKEN;
     const child = spawn(process.env.JH_CLAUDE_BIN ?? "claude", [
       "-p", "--output-format", "json", "--no-session-persistence", "--strict-mcp-config", "--setting-sources", "",
-      ...(process.env.JH_CLAUDE_MODEL ? ["--model", process.env.JH_CLAUDE_MODEL] : []),
+      ...(model ? ["--model", model] : []),
       ...args,
     ], { cwd: AGENT_DIR, env, stdio: ["pipe", "pipe", "pipe"] });
     let out = "", err = "";
@@ -73,20 +73,23 @@ function runClaudeCode(args: string[], prompt: string, timeoutMs: number): Promi
   });
 }
 
-export async function claudeStructured<S extends z.ZodType>(label: string, schema: S, opts: StructuredOpts): Promise<z.infer<S>> {
+/** The model for quick steps through Claude Code: Haiku unless JH_CLAUDE_QUICK_MODEL says otherwise. */
+export const claudeQuickModel = () => process.env.JH_CLAUDE_QUICK_MODEL || "haiku";
+
+export async function claudeStructured<S extends z.ZodType>(label: string, schema: S, opts: StructuredOpts, quick = false): Promise<z.infer<S>> {
   const res = await runClaudeCode([
     "--system-prompt", opts.system,
     "--tools", "",
     "--effort", opts.effort ?? "medium",
     "--json-schema", JSON.stringify(jsonSchemaOf(schema)),
-  ], opts.prompt, 20 * 60_000);
+  ], opts.prompt, 20 * 60_000, quick ? claudeQuickModel() : undefined);
   const parsed = schema.safeParse(res.structured_output ?? safeJson(res.result));
   if (!parsed.success) throw new Error(`${label}: answer didn't match the expected shape: ${parsed.error.message.slice(0, 300)}`);
   logEvent("llm.call", label, { via: "claude-code" });
   return parsed.data;
 }
 
-export async function claudeResearch(label: string, opts: ResearchOpts): Promise<string> {
+export async function claudeResearch(label: string, opts: ResearchOpts, quick = false):Promise<string> {
   const limits = [
     opts.maxSearches ? `Use at most ${opts.maxSearches} web searches.` : "",
     opts.allowedDomains ? `Only read pages on: ${opts.allowedDomains.join(", ")}.` : "",
@@ -96,7 +99,7 @@ export async function claudeResearch(label: string, opts: ResearchOpts): Promise
     "--tools", "WebSearch,WebFetch",
     "--allowedTools", "WebSearch", "WebFetch",
     "--effort", opts.effort ?? "medium",
-  ], opts.prompt, 20 * 60_000);
+  ], opts.prompt, 20 * 60_000, quick ? claudeQuickModel() : undefined);
   logEvent("llm.research", label, { via: "claude-code" });
   return (res.result ?? "").trim();
 }
