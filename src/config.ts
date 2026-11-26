@@ -5,6 +5,8 @@ export const ROOT = path.resolve(import.meta.dirname, "..");
 if (existsSync(path.join(ROOT, ".env"))) process.loadEnvFile(path.join(ROOT, ".env"));
 
 export const DATA_DIR = process.env.JH_DATA_DIR ?? path.join(ROOT, "data");
+// The person's own settings (on the hub, one folder per person). Variables already set win.
+if (existsSync(path.join(DATA_DIR, ".env"))) process.loadEnvFile(path.join(DATA_DIR, ".env"));
 export const PATHS = {
   db: path.join(DATA_DIR, "jobhunt.db"),
   resumes: path.join(DATA_DIR, "resumes"),

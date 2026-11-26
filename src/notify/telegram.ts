@@ -7,7 +7,9 @@ import { kvGet, kvSet, logEvent } from "../db/index.ts";
 
 export type Button = { text: string; data: string } | { text: string; url: string };
 
-const api = (method: string) => `https://api.telegram.org/bot${env.telegramToken}/${method}`;
+/** TELEGRAM_API_BASE points at the hub's router instead of Telegram itself. */
+export const api = (method: string) =>
+  `${(process.env.TELEGRAM_API_BASE || "https://api.telegram.org").replace(/\/+$/, "")}/bot${env.telegramToken}/${method}`;
 
 export function telegramReady(): boolean {
   if (process.env.JH_NO_TELEGRAM) return false; // tests and dry runs never message my phone
