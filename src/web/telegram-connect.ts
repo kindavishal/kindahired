@@ -12,16 +12,12 @@ import { esc, linkButton, page, postButton } from "./ui.ts";
 
 const hubMode = () => process.env.JH_HUB === "1";
 const linked = () => Boolean(env.telegramChatId || kvGet("telegram.chatId"));
+/** Whether this person's Telegram chat is linked (the setup checklist). */
+export const telegramLinked = linked;
 
 let pending: { url: string } | null = null;
 let linking: Promise<unknown> | null = null;
 let lastError: string | null = null;
-
-/** The Home callout, shown only in hub mode until Telegram is linked. */
-export function telegramConnectCallout(): string {
-  if (!hubMode() || linked()) return "";
-  return `<div class="callout accent"><p><strong>Get alerts on your phone.</strong> Connect Telegram to receive new roles, packs and reminders, and to act on them from there.</p>${postButton("/telegram/connect", "Connect Telegram", { variant: "primary" })}</div>`;
-}
 
 async function requestLink(): Promise<string> {
   const res = await fetch(api("jhLinkCode"), { method: "POST", headers: { "content-type": "application/json" }, body: "{}" });

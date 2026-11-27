@@ -68,6 +68,24 @@ state, exchanges the code with the same redirect URI and writes `google-token.js
 data folder, the file the CLI flow writes. The gateway passes the callback through on the Access
 cookie like any other page. The CLI loopback flow is unchanged for local mode.
 
+## Setup pages on the hub
+
+Hub mode only, one module each under `src/web/`. Every POST needs an `Origin` (or, without one, a
+`Referer`) whose host matches `Host`; anything else gets 403 (`src/web/forms.ts`).
+
+- `/setup` (`setup.ts`): the checklist (Profile, Playbook, AI keys, Google, Telegram, Desktop app).
+  Home shows one "Finish setup (n of 6)" callout until all six are done.
+- `/setup/profile` (`setup-profile.ts`): every Profile field, saved to `PATHS.profile` as pretty
+  JSON. "Fill from my resume text" runs the `profile.parse` quick step and only fills the form.
+- `/setup/playbook` (`setup-playbook.ts`): the playbook text, saved as typed.
+- `/setup/keys` (`setup-keys.ts`): `MY_EMAILS`, `JH_TIMEZONE`, `GEMINI_API_KEY`,
+  `ANTHROPIC_API_KEY`, `JH_QUICK`, `FIRECRAWL_API_KEY`, `X_BEARER_TOKEN`, `X_MONTHLY_BUDGET_USD`.
+  Changes only those lines in `<DATA_DIR>/.env` (mode 600), never shows a saved secret, then exits
+  the process so systemd restarts it with the new values. The page polls `/setup/keys/ping` until a
+  new process answers.
+- `/setup/export` (`setup-export.ts`): the data folder as a .tar.gz from the system `tar`, without
+  the browser profile or `*.tmp` files. Deleting data is done by the hub owner on request.
+
 ## Telegram: the router is a Bot API stand-in
 
 `telegram.ts` builds URLs as `${TELEGRAM_API_BASE ?? "https://api.telegram.org"}/bot${token}/${method}`.

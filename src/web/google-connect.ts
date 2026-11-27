@@ -61,12 +61,6 @@ function takeState(state: string | null): boolean {
   return ok;
 }
 
-/** The Home callout, shown only in hub mode until Google is connected. */
-export function googleConnectCallout(): string {
-  if (!hubMode() || googleConnected()) return "";
-  return `<div class="callout accent"><p><strong>Connect Google.</strong> Job alerts and replies come from your Gmail, interview times from your Calendar, and the tracker lives in Sheets.</p>${linkButton("/google", "Connect Google", "primary")}</div>`;
-}
-
 const SCOPE_LABEL: Record<string, string> = {
   "https://www.googleapis.com/auth/gmail.readonly": "Gmail, read-only",
   [CALENDAR_SCOPE]: "Calendar, read-only",

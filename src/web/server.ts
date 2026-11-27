@@ -25,9 +25,14 @@ import { isLink, searchAll, searchPageBody } from "./search.ts";
 import { handleWorker } from "../worker/routes.ts";
 import { interviewCard, interviewPage, interviewsPage, upcomingCount, upcomingInterviews } from "./interviews.ts";
 import { clearOpened, directActions, markOpened, openedTasks, type Direct } from "./actions.ts";
-import { telegramConnectCallout, telegramConnectRoute } from "./telegram-connect.ts";
-import { desktopConnectCallout, desktopConnectRoute } from "./desktop-connect.ts";
-import { googleConnectCallout, googleConnectRoute } from "./google-connect.ts";
+import { telegramConnectRoute } from "./telegram-connect.ts";
+import { desktopConnectRoute } from "./desktop-connect.ts";
+import { googleConnectRoute } from "./google-connect.ts";
+import { setupCallout, setupRoute } from "./setup.ts";
+import { setupProfileRoute } from "./setup-profile.ts";
+import { setupPlaybookRoute } from "./setup-playbook.ts";
+import { setupKeysRoute } from "./setup-keys.ts";
+import { setupExportRoute } from "./setup-export.ts";
 import {
   alertFunnel, clearStaleDrafts, interviewStats, isLead, outreachStats, pct, readyIcRoles, replyWindow, splitStories,
   stageCounts, waitingForReply, weeklyPace, type Split,
@@ -292,7 +297,7 @@ function home(q: URLSearchParams) {
   return page("Home · Job hunt", `
 <div class="focus">
 <div><h1>${hello}${name ? `, ${esc(name)}` : ""}.</h1><p class="lede">${esc(nextInterview ? `Your interview comes first. ${lede}` : lede)}</p></div>
-${googleConnectCallout()}${telegramConnectCallout()}${desktopConnectCallout()}
+${setupCallout()}
 ${nextInterview ? interviewCard(nextInterview) : ""}
 ${queue.length ? `<section aria-labelledby="h-now"><h2 id="h-now" class="sr">Do these in order</h2>
 <ol class="focus-list" data-due="${due.length - waiting.length}">${queue.map((r) => focusItem(r, ctx)).join("")}</ol>
@@ -1014,6 +1019,11 @@ export function startServer(port = env.port, hooks?: Hooks) {
       if (await telegramConnectRoute(req, res, url)) return;
       if (desktopConnectRoute(req, res, url)) return;
       if (await googleConnectRoute(req, res, url)) return;
+      if (setupRoute(req, res, url)) return;
+      if (await setupProfileRoute(req, res, url)) return;
+      if (await setupPlaybookRoute(req, res, url)) return;
+      if (await setupKeysRoute(req, res, url)) return;
+      if (setupExportRoute(req, res, url)) return;
       const m = url.pathname.match(/^\/(a|o|r)\/(\d+)\/(\w+)$/);
       if (req.method === "POST" && m) {
         const [, scope, idText, verb] = m;

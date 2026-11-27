@@ -11,12 +11,6 @@ import { esc, linkButton, page } from "./ui.ts";
 const hubMode = () => process.env.JH_HUB === "1";
 const RELEASES = "https://github.com/kindavishal/kindahired/releases/latest";
 
-/** Home callout until the desktop app has connected at least once. */
-export function desktopConnectCallout(): string {
-  if (!hubMode() || workerStatus().lastSeen) return "";
-  return `<div class="callout accent"><p><strong>Install the desktop app.</strong> Packs, fit reads and research run on your own computer with your Claude plan. Until the app connects, they wait here.</p>${linkButton("/desktop", "Set up the desktop app", "primary")}</div>`;
-}
-
 function desktopPage(): string {
   const hub = process.env.JH_PUBLIC_URL ?? "";
   const token = process.env.JH_WORKER_TOKEN ?? "";
