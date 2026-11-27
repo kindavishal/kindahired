@@ -1,4 +1,5 @@
 import { createHash, createHmac, randomBytes, randomInt, timingSafeEqual } from "node:crypto";
+import { chmodSync } from "node:fs";
 import { DatabaseSync } from "node:sqlite";
 
 /**
@@ -37,6 +38,8 @@ const same = (a: string, b: string) => a.length === b.length && timingSafeEqual(
 export function openSigninStore(file: string, secret: string, now: () => number = Date.now): SigninStore {
   if (!secret) throw new Error("The sign-in store needs the gateway secret.");
   const db = new DatabaseSync(file);
+  // Only the hub's own user reads it (and its WAL files, which SQLite creates with the same mode).
+  try { chmodSync(file, 0o600); } catch { /* an in-memory or test path */ }
   db.exec(`
 PRAGMA journal_mode = WAL;
 CREATE TABLE IF NOT EXISTS signin_codes (email TEXT PRIMARY KEY, hash TEXT NOT NULL, expires_at INTEGER NOT NULL, attempts INTEGER NOT NULL DEFAULT 0);
