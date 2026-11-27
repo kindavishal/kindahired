@@ -9,7 +9,7 @@ import { esc, linkButton, page } from "./ui.ts";
  */
 
 const hubMode = () => process.env.JH_HUB === "1";
-const RELEASES = "https://github.com/kindavishal/kindahired/releases/latest";
+const RELEASES = "https://github.com/kindavishal/kindahired-releases/releases/latest";
 
 function desktopPage(): string {
   const hub = process.env.JH_PUBLIC_URL ?? "";
