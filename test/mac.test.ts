@@ -38,9 +38,9 @@ test("engine runs in hub mode with its own data folder", () => {
 
 test("staying awake is its own service, and the plists are valid", () => {
   const l = setup();
-  assert.match(plistFor(l, "awake").xml, /\/usr\/bin\/caffeinate<\/string>\s*<string>-s/);
+  assert.match(plistFor(l, "awake").xml, /\/usr\/bin\/caffeinate<\/string>\s*<string>-ims/);
   const out = macInstall([], l).join("\n");
-  for (const n of ["awake", "gateway", "router", "engine.sam"]) {
+  for (const n of ["awake", "gateway", "router", "engine.sam", "watchdog"]) {
     const file = path.join(l.agents, `dev.kindahired.${n}.plist`);
     assert.ok(existsSync(file));
     assert.match(out, new RegExp(`launchctl bootstrap gui/\\$\\(id -u\\) .*dev\\.kindahired\\.${n}\\.plist`));
@@ -49,4 +49,19 @@ test("staying awake is its own service, and the plists are valid", () => {
   assert.match(readFileSync(path.join(l.agents, "dev.kindahired.router.plist"), "utf8"), /router\.env/);
   assert.match(out, /Full Disk Access/);
   assert.match(macUninstall(["--person", "sam"], l).join("\n"), /bootout gui\/\$\(id -u\)\/dev\.kindahired\.engine\.sam/);
+});
+
+// A drive that drops and remounts leaves services spinning with their port open, which KeepAlive can't see.
+test("the watchdog runs every minute and restarts only a service that times out", () => {
+  const l = setup();
+  const x = plistFor(l, "watchdog").xml;
+  assert.match(x, /<key>StartInterval<\/key><integer>60<\/integer>/);
+  assert.doesNotMatch(x, /KeepAlive/);
+  assert.match(x, /<string>\/bin\/sh<\/string>\s*<string>-c<\/string>/);
+  for (const [label, url] of [["gateway", ":8080/healthz"], ["router", ":8090/healthz"], ["engine.sam", ":4401/"]])
+    assert.match(x, new RegExp(`check dev\\.kindahired\\.${label.replace(".", "\\.")} http://127\\.0\\.0\\.1${url}`));
+  assert.match(x, /\$\? -eq 28/);
+  assert.match(x, /launchctl kickstart -k/);
+  assert.match(x, /pkill -P 1 -f/);
+  assert.doesNotMatch(x, /\[ -d /, "never touches the drive");
 });
