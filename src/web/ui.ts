@@ -178,15 +178,15 @@ ${link("sources", "/sources", "eye", "Watched pages")}
 ${link("timers", "/timers", "timer", "Reminder timings")}
 ${process.env.JH_HUB === "1" ? link("setup", "/setup", "check", "Setup") : ""}
 </nav>`;
-  const heading = o.tab ? TAB_TITLE[o.tab] : title.replace(/ · Job hunt$/, "");
+  const heading = o.tab ? TAB_TITLE[o.tab] : title.replace(/ · kindahired$/, "");
   return `<!doctype html><html lang="en" class="no-js"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light dark"><title>${esc(title)}</title>
 <link rel="icon" href="data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="#171717"/><path d="M9 17l4.5 4.5L23 11" stroke="#fafafa" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>')}">
 <style>${CSS}</style></head><body>
 <a class="skip" href="#main">Skip to content</a>
 <div class="app">
-<aside class="sidebar" aria-label="Job hunt">
-<a class="brand" href="/">${icon("briefcase")}Job hunt</a>
+<aside class="sidebar" aria-label="kindahired">
+<a class="brand" href="/">${icon("briefcase")}kindahired</a>
 <a class="btn primary block" href="/search" data-cmd>${icon("plus-circle")}<span class="nav-text">Add a job link</span><kbd class="kbd on-dark">⌘K</kbd></a>
 ${nav}
 <p class="sidebar-foot">Drag <a class="bookmarklet" href="javascript:void(window.open('http://127.0.0.1:${o.port ?? shellPort}/add?url='+encodeURIComponent(location.href)))">${icon("bookmark")}Save job</a> to your bookmarks bar to save roles from any page.</p>

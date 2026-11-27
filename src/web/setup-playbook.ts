@@ -19,7 +19,7 @@ export function playbookDone(): boolean {
 }
 
 function playbookPage(text: string, o: { errors?: string[]; flash?: string | null } = {}): string {
-  return page("Playbook · Job hunt", `<div class="stack setup">${backToSetup}
+  return page("Playbook · kindahired", `<div class="stack setup">${backToSetup}
 <div><h1>Your playbook</h1><p class="lede">The playbook tells the tool how you judge a role and how you write: what you want, what you won't take, your strongest stories, and the tone of your notes. Every fit read, resume and note follows it.</p>
 <p class="hint">Plain text or Markdown. Write it the way you would brief a friend helping with your search.</p></div>
 ${errorBox(o.errors ?? [])}

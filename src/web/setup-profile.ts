@@ -103,7 +103,7 @@ const area = (id: keyof Draft, label: string, d: Draft, hint: string) =>
   `<div class="form-row"><label for="p-${id}">${label}</label><p class="hint">${hint}</p><textarea class="field" id="p-${id}" name="${id}"${id === "targets" ? " required" : ""}>${esc(d[id])}</textarea></div>`;
 
 function profilePage(d: Draft, o: { errors?: string[]; flash?: string | null; filled?: boolean } = {}): string {
-  return page("Profile · Job hunt", `<div class="stack setup">${backToSetup}
+  return page("Profile · kindahired", `<div class="stack setup">${backToSetup}
 <div><h1>Your profile</h1><p class="lede">Your name and links go on every resume and note. Your target roles decide which job alerts are worth a closer look.</p></div>
 ${errorBox(o.errors ?? [])}${o.filled ? `<div class="callout accent"><p>Filled from your resume. Check each field, then save.</p></div>` : ""}
 <form method="post" action="/setup/profile" class="stack"><input type="hidden" name="intent" value="save">

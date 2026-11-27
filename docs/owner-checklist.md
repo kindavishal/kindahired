@@ -125,11 +125,11 @@ git log --all -p | grep -iE "api[_-]?key|secret|token|password" | grep -v "proce
 3. If you don't have an SSH key yet, make one on your Mac:
 
 ```bash
-ssh-keygen -t ed25519 -C "jobhunt-hub"
+ssh-keygen -t ed25519 -C "kindahired-hub"
 ```
 
 4. **Compute → Instances → Create instance:**
-   - Name: `jobhunt-hub`.
+   - Name: `kindahired-hub`.
    - Image: **Canonical Ubuntu 24.04**, the aarch64 build.
    - Shape: **Ampere → VM.Standard.A1.Flex**, with **4 OCPUs and 24 GB** memory.
    - Networking: the default new VCN, and **Assign a public IPv4 address** (only for SSH; the hub's
@@ -167,7 +167,7 @@ ssh ubuntu@<public ip>
 2. **Add a site** with a domain you own, on the Free plan, and switch the domain's nameservers at
    your registrar to the two Cloudflare gives you. Or buy a domain in **Domain Registration**,
    which costs about $10–15 a year.
-3. Choose the hub's hostname, for example `hub.yourdomain.com`, and **send it to me**.
+3. Choose the hub's hostname, for example `kindahired.kindavishal.dev`, and **send it to me**.
 
 ### 5b. Zero Trust team
 
@@ -180,7 +180,7 @@ ssh ubuntu@<public ip>
 
 ### 5c. Tunnel (after the VM exists)
 
-1. **Networks → Tunnels → Create a tunnel → Cloudflared**, named `jobhunt-hub`.
+1. **Networks → Tunnels → Create a tunnel → Cloudflared**, named `kindahired-hub`.
 2. For the environment, choose **Debian, arm64 (64-bit)**, then copy the install command it shows
    and run it on the VM over SSH. The tunnel turns **Healthy**.
 3. **Public hostname:**
@@ -195,9 +195,9 @@ Self-hosted**:
 
 | Application name | Domain and path | Policy |
 |---|---|---|
-| `jobhunt dashboards` | `hub.yourdomain.com` (no path) | Action **Allow**; Include **Emails**: you and each tester |
-| `jobhunt telegram webhook` | `hub.yourdomain.com` with path `telegram/webhook` | Action **Bypass**; Include **Everyone** |
-| `jobhunt worker` | `hub.yourdomain.com` with path `worker/` | Action **Bypass**; Include **Everyone** |
+| `kindahired dashboards` | `kindahired.kindavishal.dev` (no path) | Action **Allow**; Include **Emails**: you and each tester |
+| `kindahired telegram webhook` | `kindahired.kindavishal.dev` with path `telegram/webhook` | Action **Bypass**; Include **Everyone** |
+| `kindahired worker` | `kindahired.kindavishal.dev` with path `worker/` | Action **Bypass**; Include **Everyone** |
 
 The bypass paths are safe:
 - Telegram calls carry a secret header the router checks.
@@ -215,11 +215,13 @@ set to your team domain (step 8 of `deploy/hub/README.md`).
    - Stop your local copy before the hub takes it over:
 
 ```bash
+launchctl unload ~/Library/LaunchAgents/local.kindahired.daemon.plist
+# If you installed it before the rename to kindahired, the old name is:
 launchctl unload ~/Library/LaunchAgents/local.jobhunt.daemon.plist
 ```
 
    - Your data moves to the hub as the first person (I'll do this with you). Copying `data/` into
-     `/srv/jobhunt/people/<you>/`, and `context/profile.json` and `playbook.md` into its `context/`
+     `/srv/kindahired/people/<you>/`, and `context/profile.json` and `playbook.md` into its `context/`
      folder, is enough. Then your chat id goes into `people.json`, so the router knows your chat.
 2. **Make it presentable:** in Telegram, open **@BotFather** and send:
    - `/setname` for the name testers see;
@@ -227,7 +229,7 @@ launchctl unload ~/Library/LaunchAgents/local.jobhunt.daemon.plist
    - `/setuserpic` (optional).
 3. **Get the token:** @BotFather → `/mybots` → your bot → **API Token**. If it was ever shared
    anywhere, use **Revoke current token** first.
-4. **On the VM**, put the token in `/srv/jobhunt/hub/router.env` as `TELEGRAM_BOT_TOKEN`, along with
+4. **On the VM**, put the token in `/srv/kindahired/hub/router.env` as `TELEGRAM_BOT_TOKEN`, along with
    a webhook secret made with:
 
 ```bash
@@ -260,10 +262,10 @@ openssl rand -hex 32
 5. **Data access:** add the four scopes from step 2.
 6. **Clients → Create client:**
    - Type **Web application**, named `kindahired hub`.
-   - Authorized redirect URI: `https://hub.yourdomain.com/oauth/google/callback`. It must match
+   - Authorized redirect URI: `https://kindahired.kindavishal.dev/oauth/google/callback`. It must match
      `JH_PUBLIC_URL` in `hub.env` plus `oauth/google/callback`, exactly.
-   - Copy the **client ID and client secret** straight into `/srv/jobhunt/hub/hub.env` on the VM
-     (start from `deploy/hub/hub.env.template`; mode 600, owned by `jobhunt`), as
+   - Copy the **client ID and client secret** straight into `/srv/kindahired/hub/hub.env` on the VM
+     (start from `deploy/hub/hub.env.template`; mode 600, owned by `kindahired`), as
      `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`, next to `JH_PUBLIC_URL`. Not into chat. Then
      restart the engines. Each person connects from **Connect Google** on their Home page (`/google`).
 7. **Check the current rules** in Google's help page "Unverified apps", for apps requesting
@@ -293,11 +295,11 @@ subscription at all.
 For each person:
 
 1. Get their email: the address they'll sign in to Cloudflare with, and ideally their Gmail.
-2. Add it to the **`jobhunt dashboards`** Access policy (step 5d).
+2. Add it to the **`kindahired dashboards`** Access policy (step 5d).
 3. On the VM:
 
 ```bash
-sudo -u jobhunt npm run hub -- add-person <id> <email>
+sudo -u kindahired npm run hub -- add-person <id> <email>
 ```
 
 4. Have them send you their **Gemini key**, or their **Anthropic API key** for Haiku, so you can add
@@ -305,7 +307,7 @@ sudo -u jobhunt npm run hub -- add-person <id> <email>
 5. Start their engine:
 
 ```bash
-sudo systemctl enable --now jobhunt-engine@<id>
+sudo systemctl enable --now kindahired-engine@<id>
 ```
 
 6. Send them the note below.

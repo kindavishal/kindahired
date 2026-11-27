@@ -9,11 +9,11 @@ The contracts the hub pieces are built against. The plan and costs are in
 |---|---|---|
 | `gateway` (`src/hub/gateway.ts`) | `127.0.0.1:8080`, exposed only through Cloudflare Tunnel | Sends each request to the right person's engine, and `/telegram/*` to the router |
 | `router` (`src/hub/router.ts`) | `127.0.0.1:8090` | Owns the shared bot token. Offers a Bot API stand-in to each engine. |
-| `engine@<person>` (today's `src/daemon.ts`) | `127.0.0.1:<port from people.json>` | One per person. `JH_DATA_DIR=/srv/jobhunt/people/<person>` |
+| `engine@<person>` (today's `src/daemon.ts`) | `127.0.0.1:<port from people.json>` | One per person. `JH_DATA_DIR=/srv/kindahired/people/<person>` |
 
 All three come from this repo and run under systemd (templates in `deploy/hub/`).
 
-## The people registry: `/srv/jobhunt/hub/people.json`
+## The people registry: `/srv/kindahired/hub/people.json`
 
 ```json
 { "people": [ {
@@ -26,7 +26,7 @@ All three come from this repo and run under systemd (templates in `deploy/hub/`)
 } ] }
 ```
 
-`JH_HUB_DIR` overrides `/srv/jobhunt/hub`. `src/hub/people.ts` owns reading and writing it: atomic
+`JH_HUB_DIR` overrides `/srv/kindahired/hub`. `src/hub/people.ts` owns reading and writing it: atomic
 writes (write a temp file, then rename), with a CLI to add people (see Gateway below).
 
 ## Per-person engine settings
@@ -45,7 +45,7 @@ JH_WORKER_TOKEN=<workerToken>
 PORT=<port>
 ```
 
-Settings shared by every engine live in `/srv/jobhunt/hub/hub.env` (template:
+Settings shared by every engine live in `/srv/kindahired/hub/hub.env` (template:
 `deploy/hub/hub.env.template`), which the engine unit loads before the person's file:
 
 ```

@@ -3,7 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { hubDir, loadPeople, newSecret, nextPort, pick, savePeople, type Person } from "./people.ts";
 
-export const peopleDir = () => process.env.JH_PEOPLE_DIR || "/srv/jobhunt/people";
+export const peopleDir = () => process.env.JH_PEOPLE_DIR || "/srv/kindahired/people";
 
 const repoRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const templatePath = path.join(repoRoot, "deploy", "hub", "person.env.template");
@@ -41,7 +41,7 @@ export function addPerson(id: string, email: string): string[] {
     `Added ${id} (${email}) on port ${person.port}.`,
     `Data folder: ${dataDir}`,
     `Add their keys to ${envFile}, and their details to ${contextDir}/profile.json and playbook.md, then start the engine:`,
-    `  sudo systemctl enable --now jobhunt-engine@${id}`,
+    `  sudo systemctl enable --now kindahired-engine@${id}`,
   ];
 }
 

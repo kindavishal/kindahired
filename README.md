@@ -1,4 +1,4 @@
-# Job Hunting Tool
+# kindahired
 
 A personal job-search assistant that runs on your Mac.
 
@@ -296,7 +296,7 @@ The tool keeps your Google Sheet up to date, every 10 minutes and right after ea
 - New roles and contacts are added as new rows at the bottom. Rows are never deleted or reordered.
 - On rows you wrote, it only moves the tracking columns forward (status, dates, sent, reply) and fills empty cells. Your wording is kept, even when it means the same thing as the tool's ("Check if still open").
 - If you edit any cell, that cell is yours from then on, and the tool won't change it again.
-- Resume links point to the PDF on your Google Drive. The tool uploads into its own "Job Hunting Tool — resumes" folder and can only see files it created. This needs the Drive permission: run `npm run jh -- auth:google` once more to grant it.
+- Resume links point to the PDF on your Google Drive. The tool uploads into its own "kindahired — resumes" folder and can only see files it created. This needs the Drive permission: run `npm run jh -- auth:google` once more to grant it.
 
 Preview what the next sync would change:
 

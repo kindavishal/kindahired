@@ -18,7 +18,7 @@ function desktopPage(): string {
   const state = lastSeen
     ? `<p class="lede">Connected. Last seen ${esc(new Date(lastSeen).toLocaleString())}. ${queued} Claude step${queued === 1 ? "" : "s"} waiting.</p>`
     : `<p class="lede">Not connected yet. ${queued} Claude step${queued === 1 ? "" : "s"} waiting for it.</p>`;
-  return page("Desktop app · Job hunt", `<div class="stack"><h1>Desktop app</h1>${state}
+  return page("Desktop app · kindahired", `<div class="stack"><h1>Desktop app</h1>${state}
 <ol>
 <li>Install Claude Code and sign in to your Claude account. Run <code>claude</code> once to check.</li>
 <li>${linkButton(RELEASES, "Download the app", "primary", true)} for macOS (.dmg) or Linux (.AppImage or .deb).</li>

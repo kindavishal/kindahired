@@ -75,13 +75,13 @@ function statusPage(): string {
     const scopes = grantedScopes();
     const email = kvGet(EMAIL_KEY);
     const missing = GOOGLE_SCOPES.filter((s) => !scopes.includes(s));
-    return page("Google · Job hunt", `<div class="stack"><h1>Google is connected</h1>
+    return page("Google · kindahired", `<div class="stack"><h1>Google is connected</h1>
 <p class="lede">${email ? `Signed in as <strong>${esc(email)}</strong>.` : "Your Google account is connected."} ${scopes.includes(CALENDAR_SCOPE) ? "Calendar is allowed, so interview times come in on their own." : "Calendar isn't allowed yet, so interview times won't come in."}</p>
 <ul>${GOOGLE_SCOPES.map((s) => `<li>${esc(SCOPE_LABEL[s] ?? s)}: ${scopes.includes(s) ? "allowed" : "not allowed"}</li>`).join("")}</ul>
 ${missing.length ? `<p>Connect again and tick every box to allow the rest.</p>${UNVERIFIED}` : ""}
 <div class="btn-row">${postButton("/oauth/google/start", missing.length ? "Connect again" : "Reconnect Google", { variant: missing.length ? "primary" : "default" })}${linkButton("/", "Back to Home", missing.length ? "default" : "primary")}</div></div>`);
   }
-  return page("Google · Job hunt", `<div class="stack"><h1>Connect Google</h1>
+  return page("Google · kindahired", `<div class="stack"><h1>Connect Google</h1>
 <p class="lede">The dashboard reads job alerts and replies from your Gmail (read-only, it never sends email), interview times from your Calendar (read-only), and keeps your tracker in Sheets. In Drive it can only see the files it creates.</p>
 ${UNVERIFIED}
 <p>${postButton("/oauth/google/start", "Connect Google", { variant: "primary" })}</p></div>`);
@@ -89,7 +89,7 @@ ${UNVERIFIED}
 
 function problem(res: http.ServerResponse, status: number, title: string, body: string): void {
   res.writeHead(status, { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" });
-  res.end(page("Google · Job hunt", `<div class="stack"><h1>${esc(title)}</h1>${body}
+  res.end(page("Google · kindahired", `<div class="stack"><h1>${esc(title)}</h1>${body}
 <div class="btn-row">${postButton("/oauth/google/start", "Try again", { variant: "primary" })}${linkButton("/google", "Back")}</div></div>`));
 }
 

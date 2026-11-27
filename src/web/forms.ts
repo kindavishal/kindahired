@@ -39,7 +39,7 @@ export function sendHtml(res: http.ServerResponse, status: number, html: string)
 
 /** The answer to a POST that didn't come from this dashboard. */
 export function refuseCrossOrigin(res: http.ServerResponse): void {
-  sendHtml(res, 403, page("Not allowed · Job hunt", `<div class="stack setup"><h1>That form came from another site</h1>
+  sendHtml(res, 403, page("Not allowed · kindahired", `<div class="stack setup"><h1>That form came from another site</h1>
 <p class="lede">Settings can only be changed from this dashboard. Nothing was saved.</p>
 <p>${linkButton("/setup", "Back to setup", "primary")}</p></div>`));
 }

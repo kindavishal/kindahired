@@ -132,7 +132,7 @@ ${o.company_brief ? `<details class="fold"><summary>About ${esc(clean(o.company)
 ${o.jd_text ? `<details class="fold"><summary>Job description</summary><p class="prose">${esc(o.jd_text)}</p></details>` : ""}
 <div class="btn-row"><a class="btn" href="/o/${o.id}">Open the role</a>${o.resume_path ? `<a class="btn" href="/resume/${o.id}" target="_blank" rel="noopener">Your resume (PDF)${icon("external")}</a>` : ""}${o.apply_url ? `<a class="btn quiet" href="${esc(o.apply_url)}" target="_blank" rel="noopener">The posting${icon("external")}</a>` : ""}</div></section>` : "";
 
-  return page(`Interview · ${o ? clean(o.company) : m.title} · Job hunt`, `
+  return page(`Interview · ${o ? clean(o.company) : m.title} · kindahired`, `
 <div class="vstack page-stack-sm interview-page">
 <a class="back" href="/interviews">${icon("back")}Interviews</a>
 <div class="interview-head">
@@ -162,7 +162,7 @@ export function interviewsPage(now = new Date()) {
     const o = m.opportunity_id ? getOpportunity(m.opportunity_id) : undefined;
     return `<li class="mini-row interview-row"><span><a class="mini-title" href="/interviews/${m.id}">${esc(o ? `${o.role} at ${clean(o.company)}` : m.title)}</a><span class="mini-sub">${esc(m.title)} · ${esc(localTime(m.start_at))} IST</span></span><span class="chip${countdown(m, now).startsWith("in") && new Date(m.start_at).getTime() - now.getTime() < 2 * 86_400_000 ? " warn" : ""}">${esc(countdown(m, now))}</span></li>`;
   };
-  return page("Interviews · Job hunt", `
+  return page("Interviews · kindahired", `
 <div class="vstack page-stack-sm interview-page">
 <div><h1>Interviews</h1><p class="lede">Every interview on your calendar, with a prep page for each: who you are meeting, your conversation so far, the role and your notes.</p></div>
 <section class="card"><h2 class="card-title">Coming up</h2>${up.length ? `<ul class="mini-list">${up.map(row).join("")}</ul>` : `<p class="card-sub">Nothing booked. Interviews appear here as soon as they are on your Google Calendar.</p>`}</section>

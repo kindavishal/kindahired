@@ -1,11 +1,11 @@
 [Unit]
-Description=Job hunt hub gateway
+Description=kindahired hub gateway
 After=network.target
 
 [Service]
-User=jobhunt
-WorkingDirectory=/srv/jobhunt/app
-EnvironmentFile=/srv/jobhunt/hub/gateway.env
+User=kindahired
+WorkingDirectory=/srv/kindahired/app
+EnvironmentFile=/srv/kindahired/hub/gateway.env
 ExecStart=/usr/bin/npm run gateway
 Restart=always
 RestartSec=3

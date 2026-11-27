@@ -219,7 +219,7 @@ test("export: a tar.gz of the data folder without the browser profile or temp fi
   const res = await post("/setup/export", {});
   assert.equal(res.status, 200);
   assert.equal(res.headers.get("content-type"), "application/gzip");
-  assert.match(res.headers.get("content-disposition")!, /attachment; filename="jobhunt-data-\d{4}-\d{2}-\d{2}\.tar\.gz"/);
+  assert.match(res.headers.get("content-disposition")!, /attachment; filename="kindahired-data-\d{4}-\d{2}-\d{2}\.tar\.gz"/);
   const buf = Buffer.from(await res.arrayBuffer());
   assert.equal(buf[0], 0x1f);
   assert.equal(buf[1], 0x8b);

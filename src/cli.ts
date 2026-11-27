@@ -191,12 +191,16 @@ const commands: Record<string, [string, () => Promise<unknown>]> = {
     await new Promise(() => {});
   }],
   "service:install": ["Write a login item that keeps the daemon running and the Mac awake on power", async () => {
-    const plist = path.join(os.homedir(), "Library/LaunchAgents/local.jobhunt.daemon.plist");
+    const plist = path.join(os.homedir(), "Library/LaunchAgents/local.kindahired.daemon.plist");
     const npx = path.join(path.dirname(process.execPath), "npx");
+    const oldPlist = path.join(os.homedir(), "Library/LaunchAgents/local.jobhunt.daemon.plist");
+    if (existsSync(oldPlist)) {
+      console.log(`An older login item from before the rename is still installed. Remove it first:\n  launchctl unload "${oldPlist}"\n  rm "${oldPlist}"\n`);
+    }
     writeFileSync(plist, `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0"><dict>
-  <key>Label</key><string>local.jobhunt.daemon</string>
+  <key>Label</key><string>local.kindahired.daemon</string>
   <key>ProgramArguments</key><array>
     <string>/usr/bin/caffeinate</string><string>-s</string>
     <string>${npx}</string><string>tsx</string><string>src/daemon.ts</string>

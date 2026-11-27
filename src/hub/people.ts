@@ -24,7 +24,7 @@ export interface Person {
   chatId: number | null;
 }
 
-export const hubDir = () => process.env.JH_HUB_DIR || "/srv/jobhunt/hub";
+export const hubDir = () => process.env.JH_HUB_DIR || "/srv/kindahired/hub";
 export const peoplePath = (dir = hubDir()) => path.join(dir, "people.json");
 
 export function loadPeople(dir = hubDir()): Person[] {

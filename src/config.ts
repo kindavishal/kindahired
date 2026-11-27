@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import path from "node:path";
+import { migrateLegacyDb } from "./legacy-db.ts";
 
 export const ROOT = path.resolve(import.meta.dirname, "..");
 if (existsSync(path.join(ROOT, ".env"))) process.loadEnvFile(path.join(ROOT, ".env"));
@@ -7,10 +8,13 @@ if (existsSync(path.join(ROOT, ".env"))) process.loadEnvFile(path.join(ROOT, ".e
 export const DATA_DIR = process.env.JH_DATA_DIR ?? path.join(ROOT, "data");
 // The person's own settings (on the hub, one folder per person). Variables already set win.
 if (existsSync(path.join(DATA_DIR, ".env"))) process.loadEnvFile(path.join(DATA_DIR, ".env"));
+// Databases created before the rename are moved to the new file name before anything opens them.
+mkdirSync(DATA_DIR, { recursive: true });
+migrateLegacyDb(DATA_DIR);
 // On the hub each person's profile and playbook live in their own folder, never the shared repo's.
 const CONTEXT_DIR = process.env.JH_HUB === "1" ? path.join(DATA_DIR, "context") : path.join(ROOT, "context");
 export const PATHS = {
-  db: path.join(DATA_DIR, "jobhunt.db"),
+  db: path.join(DATA_DIR, "kindahired.db"),
   resumes: path.join(DATA_DIR, "resumes"),
   browserProfile: path.join(DATA_DIR, "browser-profile"),
   googleToken: path.join(DATA_DIR, "google-token.json"),

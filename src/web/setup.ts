@@ -48,7 +48,7 @@ function setupPage(): string {
   const rows = steps.map((s) => `<div class="setup-row"><div><p class="card-title">${esc(s.title)}</p><p class="card-sub">${esc(s.why)}</p></div>
 ${s.done ? badge("Done", "ok") : badge("Not done", "warn")}${linkButton(s.href, s.done ? "Change" : "Set up", s.done ? "default" : "primary")}</div>`).join("");
   const lede = done === steps.length ? "Everything is set up. Change any of it here." : `${done} of ${steps.length} done. Each step takes a minute or two.`;
-  return page("Setup · Job hunt", `<div class="stack setup">
+  return page("Setup · kindahired", `<div class="stack setup">
 <div><h1>Setup</h1><p class="lede">${lede}</p></div>
 <div class="panel">${rows}</div>
 <p><a href="/setup/export">${icon("download")} Download my data</a></p>

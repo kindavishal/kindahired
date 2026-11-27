@@ -20,7 +20,7 @@ export function tarArgs(dir = DATA_DIR): string[] {
 }
 
 function exportPage(): string {
-  return page("Your data · Job hunt", `<div class="stack setup">${backToSetup}
+  return page("Your data · kindahired", `<div class="stack setup">${backToSetup}
 <div><h1>Download my data</h1><p class="lede">One .tar.gz file with everything the tool keeps for you: roles, people, tasks, resumes and packs, your profile and playbook, and your settings file with your keys. Keep it somewhere private.</p>
 <p class="hint">Your LinkedIn browser session isn't included.</p></div>
 <p>${postButton("/setup/export", "Download my data", { variant: "primary" })}</p>
@@ -47,7 +47,7 @@ export function setupExportRoute(req: http.IncomingMessage, res: http.ServerResp
   const day = new Date().toISOString().slice(0, 10);
   res.writeHead(200, {
     "content-type": "application/gzip",
-    "content-disposition": `attachment; filename="jobhunt-data-${day}.tar.gz"`,
+    "content-disposition": `attachment; filename="kindahired-data-${day}.tar.gz"`,
     "cache-control": "no-store",
   });
   tar.stdout.pipe(res);

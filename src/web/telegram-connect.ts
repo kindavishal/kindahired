@@ -28,7 +28,7 @@ async function requestLink(): Promise<string> {
 
 function connectPage(): string {
   if (linked()) {
-    return page("Telegram · Job hunt", `<div class="stack"><h1>Telegram is connected</h1>
+    return page("Telegram · kindahired", `<div class="stack"><h1>Telegram is connected</h1>
 <p class="lede">Alerts and your daily digest arrive in Telegram. The bot starts answering within a minute.</p>
 <p>${linkButton("/", "Back to Home", "primary")}</p></div>`);
   }
@@ -40,10 +40,10 @@ function connectPage(): string {
 <p class="muted"><code>${esc(pending!.url)}</code></p>`
     : `<h1>Connect Telegram</h1>
 ${lastError ? `<div class="callout danger" role="alert"><p>${esc(lastError)}</p></div>` : ""}
-<p class="lede">You get a one-time link to the job hunt bot. Opening it links your Telegram chat to this dashboard.</p>
+<p class="lede">You get a one-time link to the kindahired bot. Opening it links your Telegram chat to this dashboard.</p>
 <p>${postButton("/telegram/connect", "Get a link", { variant: "primary" })}</p>`;
   const refresh = waiting ? `<meta http-equiv="refresh" content="5">` : "";
-  return page("Telegram · Job hunt", `${refresh}<div class="stack">${body}</div>`);
+  return page("Telegram · kindahired", `${refresh}<div class="stack">${body}</div>`);
 }
 
 /** Handles /telegram/connect. Returns false for any other path. */

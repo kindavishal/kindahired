@@ -294,7 +294,7 @@ function home(q: URLSearchParams) {
     week ? `<a class="later-item" href="/tasks#coming-up"><span class="later-num num">${week}</span><span>${week === 1 ? "task comes" : "tasks come"} up this week</span>${icon("chevron")}</a>` : "",
   ].filter(Boolean).join("");
 
-  return page("Home · Job hunt", `
+  return page("Home · kindahired", `
 <div class="focus">
 <div><h1>${hello}${name ? `, ${esc(name)}` : ""}.</h1><p class="lede">${esc(nextInterview ? `Your interview comes first. ${lede}` : lede)}</p></div>
 ${setupCallout()}
@@ -390,7 +390,7 @@ ${upcoming.length ? `<ol class="timeline">${upcoming.map((a, i) => { const at = 
 <button type="button" class="btn quiet" data-batch="snooze">Remind tomorrow<kbd class="kbd">H</kbd></button>
 <button type="button" class="btn danger" data-batch="drop">Remove</button></div>`;
 
-  return page("Tasks · Job hunt", `
+  return page("Tasks · kindahired", `
 <div class="vstack home-head"><div><h1>All tasks</h1><p class="lede">Everything that is due, by type of work. Home shows only the few that matter most.</p></div>${tiles}</div>
 <div class="home-grid">
 ${decks}${aside}
@@ -416,7 +416,7 @@ function insightsPage(q: URLSearchParams) {
   const totalOut = o.sent + o.drafted || 1;
   const funnel = [["Alerts received", g.total], ["Passed first check", g.passed], ["You applied", g.applied], ["Got an interview", g.interviews]] as const;
 
-  return page("What is working · Job hunt", `
+  return page("What is working · kindahired", `
 <div class="vstack page-stack">
 <div><h1>What your job search is telling you</h1><p class="lede">These come from your own data. The numbers are still small, so treat them as hints, not rules.</p></div>
 <section class="vstack section-stack" aria-labelledby="h-int">
@@ -453,7 +453,7 @@ function progressPage(q: URLSearchParams) {
   const waits = allWaits.slice(0, 5);
   const span = Math.max(30, ...waits.map((x) => x.days + 4));
   const lates = waits.filter((x) => x.late);
-  return page("Progress · Job hunt", `
+  return page("Progress · kindahired", `
 <div class="vstack page-stack-sm">
 <div><h1>Where your job search stands</h1><p class="lede">${plural(open, "role is", "roles are")} still open. You are in interviews for ${c.interviewing ?? 0} and have ${plural(c.offer ?? 0, "offer")}.${p.thisWeek > p.beforeSum && p.thisWeek ? " This week you applied to more roles than in the six weeks before it together." : ""}</p></div>
 <section class="card" aria-labelledby="h-st"><div class="card-head"><h2 id="h-st">Open roles at each stage</h2><p class="card-sub">Select a stage to see its roles.</p></div>
@@ -517,7 +517,7 @@ function list(q: URLSearchParams) {
 <td data-label="Updated" class="c-meta muted num">${day(o.updated_at)}</td></tr>`;
   }).join("");
 
-  return page(`${heading} · Job hunt`, `
+  return page(`${heading} · kindahired`, `
 <div class="page-head"><div><h1>${esc(heading)}</h1><p aria-live="polite"><span class="num" data-filter-count>${rows.length}</span> ${source ? "roles" : `${esc(filter.label.toLowerCase())} role${rows.length === 1 ? "" : "s"}`}</p></div></div>
 <div class="filters">${tabs}
 <div class="search">${icon("search")}<label class="sr" for="role-q">Search roles</label><input id="role-q" type="search" placeholder="Search role or company  /" data-filter="tbody tr[data-row]" autocomplete="off" value="${esc(q.get("q") ?? "")}"></div></div>
@@ -778,7 +778,7 @@ ${found.n ? `<a href="/list?source=${encodeURIComponent(`watch:${src.label}`)}">
 ${src.last_error ? `<p class="small tone-danger" style="margin-top:6px">${esc(src.last_error)}</p>` : ""}</div>
 <div class="item-actions">${postButton(`/s/${src.id}/scan`, "Scan now")}${src.status === "paused" ? postButton(`/s/${src.id}/resume`, "Resume", { variant: "quiet" }) : postButton(`/s/${src.id}/pause`, "Pause", { variant: "quiet" })}${postButton(`/s/${src.id}/remove`, "Remove", { variant: "danger", confirm: `Stop watching ${src.label}? Roles already found there stay.` })}</div></li>`;
   });
-  return page("Watched pages · Job hunt", `
+  return page("Watched pages · kindahired", `
 <div class="page-head"><div><h1>Watched pages</h1><p style="max-width:68ch">Job boards, careers pages and curated feeds, checked on a timer. New postings that fit your targets arrive in Telegram as one list; the rest are left out.</p></div></div>
 ${note ? `<div class="callout note" role="status">${esc(note)}</div>` : ""}
 <section class="stack" style="margin-bottom:32px"><div><div class="section-head"><h2>Watch a page</h2></div>
@@ -854,7 +854,7 @@ function peoplePage(q: URLSearchParams) {
 ${r.linkedin_url ? `<a class="btn quiet sm" href="${esc(r.linkedin_url)}" target="_blank" rel="noopener">LinkedIn${icon("external")}</a>` : ""}</div></li>`;
   }).join("");
 
-  return page("People · Job hunt", `
+  return page("People · kindahired", `
 <div class="vstack page-stack-sm">
 <div><h1>People</h1><p class="lede">Everyone you have talked to about work. Keep in touch with them, and tell them before you apply at their company.</p></div>
 <div class="tiles">
@@ -920,7 +920,7 @@ ${c.status === "paused" ? `<form method="post" action="/c/${c.id}/resume"><butto
 </div></details></div></li>`;
   });
 
-  return page("Companies · Job hunt", `
+  return page("Companies · kindahired", `
 <div class="vstack page-stack-sm">
 <div><h1>Target companies</h1><p class="lede">The companies you most want to work at, checked through their own job board. New roles that fit reach Telegram within a few hours.</p></div>
 ${note ? `<div class="callout note" role="status"><p class="prose">${esc(note)}</p></div>` : ""}
@@ -959,7 +959,7 @@ function timersPage(q: URLSearchParams) {
 <div class="timer-in"><input id="t-${k}" type="number" name="${k}" value="${t[k]}" min="${spec.min}" max="${spec.max}" step="1" inputmode="numeric" required${changed ? " data-changed" : ""}><span>${spec.unit}</span></div></div>`;
   };
   const d = (n: number) => `${n} day${n === 1 ? "" : "s"}`;
-  return page("Timers · Job hunt", `
+  return page("Timers · kindahired", `
 <div class="page-head"><div><h1>Timers</h1><p style="max-width:68ch">How long each step of an application can wait before the tool asks you to act. Every role in play always has one next step with a due date; these set the dates.</p></div></div>
 <div class="stack" style="max-width:820px">
 <section><div class="section-head"><h2>After you apply</h2></div><div class="panel"><ol class="ladder">
@@ -1202,7 +1202,7 @@ export function startServer(port = env.port, hooks?: Hooks) {
         const q = url.searchParams.get("q") ?? "";
         const hits = searchAll(q);
         if (url.searchParams.get("format") === "json") return json(200, { q, link: isLink(q), hits });
-        return htmlOut(page("Search · Job hunt", searchPageBody(q, hits, icon), { tab: "" }));
+        return htmlOut(page("Search · kindahired", searchPageBody(q, hits, icon), { tab: "" }));
       }
       if (url.pathname === "/interviews") return htmlOut(interviewsPage());
       const iv = url.pathname.match(/^\/interviews\/(\d+)$/);
