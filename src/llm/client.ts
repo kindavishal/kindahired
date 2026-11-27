@@ -4,7 +4,7 @@ import type { z } from "zod";
 import { MODEL } from "../config.ts";
 import { logEvent } from "../db/index.ts";
 import {
-  claudeResearch, claudeStructured, geminiAvailable, geminiResearch, geminiSearchAvailable, geminiStructured, GeminiUnavailableError,
+  claudeResearch, claudeStructured, geminiAvailable, geminiResearch, geminiSearchAvailable, geminiStructured, GeminiUnavailableError, researchSystem,
   type Effort, type ResearchOpts, type StructuredOpts,
 } from "./providers.ts";
 
@@ -67,12 +67,12 @@ async function apiStructured<S extends z.ZodType>(
  */
 async function apiResearch(
   label: string,
-  opts: { system: string; prompt: string; effort?: Effort; maxSearches?: number; allowedDomains?: string[] },
+  opts: ResearchOpts,
   model: string = MODEL,
 ): Promise<string> {
   const tools: Anthropic.Beta.BetaToolUnion[] = [
     { type: "web_search_20260209", name: "web_search", max_uses: opts.maxSearches ?? 8 },
-    { type: "web_fetch_20260209", name: "web_fetch", max_uses: 8, ...(opts.allowedDomains ? { allowed_domains: opts.allowedDomains } : {}) },
+    { type: "web_fetch_20260209", name: "web_fetch", max_uses: 8, ...(opts.allowedDomains?.length ? { allowed_domains: opts.allowedDomains } : {}) },
   ];
   const messages: Anthropic.Beta.BetaMessageParam[] = [{ role: "user", content: opts.prompt }];
   let text = "";
@@ -83,7 +83,7 @@ async function apiResearch(
         max_tokens: 32000,
         ...fallbackFor(model),
         cache_control: { type: "ephemeral" },
-        system: opts.system,
+        system: researchSystem(opts),
         tools,
         messages,
         output_config: { effort: opts.effort ?? "medium" },
