@@ -115,7 +115,9 @@ test("the status page explains the unverified-app screen and the Home callout sh
   const page = await (await get("/google")).text();
   assert.match(page, /Connect Google/);
   assert.match(page, /Go to kindahired/);
-  assert.match(await (await get("/")).text(), /href="\/google"/);
+  // Home folds Google into the one setup callout; the checklist links here.
+  assert.match(await (await get("/")).text(), /Finish setup \(\d of 6\)/);
+  assert.match(await (await get("/setup")).text(), /href="\/google"/);
 });
 
 test("the routes are absent outside hub mode", async () => {
