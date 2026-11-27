@@ -12,6 +12,9 @@ After=network.target
 User=jobhunt
 WorkingDirectory=/srv/jobhunt/app
 Environment=JH_DATA_DIR=/srv/jobhunt/people/%i
+# Shared hub settings first (Google OAuth client, public URL), then the person's own. systemd lets
+# the later file win, so a variable in the person's .env replaces the hub.env one (see hub.env.template).
+EnvironmentFile=-/srv/jobhunt/hub/hub.env
 EnvironmentFile=/srv/jobhunt/people/%i/.env
 ExecStart=/usr/bin/npx tsx src/daemon.ts
 Restart=always

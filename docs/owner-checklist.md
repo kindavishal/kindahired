@@ -249,10 +249,12 @@ openssl rand -hex 32
 5. **Data access:** add the four scopes from step 2.
 6. **Clients → Create client:**
    - Type **Web application**, named `kindahired hub`.
-   - Authorized redirect URI: `https://hub.yourdomain.com/oauth/google/callback`. That's the route
-     I'm building next.
-   - Copy the **client ID and client secret** straight into the hub's shared env file on the VM. I'll
-     add a shared `hub.env` for this. Not into chat.
+   - Authorized redirect URI: `https://hub.yourdomain.com/oauth/google/callback`. It must match
+     `JH_PUBLIC_URL` in `hub.env` plus `oauth/google/callback`, exactly.
+   - Copy the **client ID and client secret** straight into `/srv/jobhunt/hub/hub.env` on the VM
+     (start from `deploy/hub/hub.env.template`; mode 600, owned by `jobhunt`), as
+     `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`, next to `JH_PUBLIC_URL`. Not into chat. Then
+     restart the engines. Each person connects from **Connect Google** on their Home page (`/google`).
 7. **Check the current rules** in Google's help page "Unverified apps", for apps requesting
    restricted scopes in production. If Google now blocks unverified restricted-scope apps, tell me:
    the fallback is each person using their own client.

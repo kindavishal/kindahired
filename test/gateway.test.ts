@@ -82,6 +82,15 @@ test("request bodies are streamed through", async () => {
   assert.equal(seen.filter((s) => s.name === "sam").at(-1)!.body, "hello");
 });
 
+test("the Google OAuth callback rides the Access cookie to the right person's engine", async () => {
+  const cb = "/oauth/google/callback?state=s1&code=c1&scope=x";
+  const r = await call(cb, { "cf-access-jwt-assertion": good("ana@example.com") });
+  assert.equal(r.status, 200);
+  assert.equal(await r.text(), "from ana");
+  assert.equal(seen.filter((s) => s.name === "ana").at(-1)!.url, cb);
+  assert.equal((await call(cb)).status, 401);
+});
+
 test("no token gets 401", async () => {
   assert.equal((await call("/")).status, 401);
 });
