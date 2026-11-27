@@ -118,7 +118,7 @@ export const icon = (name: keyof typeof PATHS | string) =>
 
 // ---------- components ----------
 
-type BtnOpts = { variant?: "primary" | "default" | "quiet" | "danger"; inline?: boolean; confirm?: string; hidden?: Record<string, string>; title?: string };
+export type BtnOpts = { variant?: "primary" | "default" | "quiet" | "danger"; inline?: boolean; confirm?: string; hidden?: Record<string, string>; title?: string };
 /** A one-button POST form. `inline` lets the script submit it in place, without a reload. */
 export function postButton(action: string, label: string, o: BtnOpts = {}) {
   const hidden = Object.entries(o.hidden ?? {}).map(([k, v]) => `<input type="hidden" name="${esc(k)}" value="${esc(v)}">`).join("");

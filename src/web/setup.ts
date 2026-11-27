@@ -20,7 +20,7 @@ const STEPS: Step[] = [
   { key: "keys", title: "AI keys", why: "A Gemini or Anthropic key for the quick steps.", href: "/setup/keys", done: keysDone },
   { key: "google", title: "Google", why: "Job alerts and replies from Gmail, interviews from Calendar.", href: "/google", done: googleConnected },
   { key: "telegram", title: "Telegram", why: "New roles, packs and reminders on your phone.", href: "/telegram/connect", done: telegramLinked },
-  { key: "desktop", title: "Desktop app", why: "Packs and fit reads run on your computer with your Claude plan.", href: "/desktop", done: () => Boolean(workerStatus().lastSeen) },
+  { key: "desktop", title: "Install the app", why: "Packs and research are made by the app on your computer, with your own Claude plan.", href: "/app", done: () => Boolean(workerStatus().lastSeen) },
 ];
 
 /** Each step and whether it is done. */

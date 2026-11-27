@@ -22,7 +22,7 @@ let lastError: string | null = null;
 async function requestLink(): Promise<string> {
   const res = await fetch(api("jhLinkCode"), { method: "POST", headers: { "content-type": "application/json" }, body: "{}" });
   const json = (await res.json()) as { ok: boolean; result?: { code: string; url: string }; description?: string };
-  if (!json.ok || !json.result) throw new Error(json.description ?? "The hub didn't return a link.");
+  if (!json.ok || !json.result) throw new Error(json.description ?? "No link came back.");
   return json.result.url;
 }
 
@@ -57,7 +57,8 @@ export async function telegramConnectRoute(req: http.IncomingMessage, res: http.
         .catch((err) => { lastError = `The chat wasn't linked: ${err instanceof Error ? err.message : err}`; })
         .finally(() => { linking = null; pending = null; });
     } catch (err) {
-      lastError = `Couldn't get a link from the hub: ${err instanceof Error ? err.message : err}`;
+      console.error("Telegram connect:", err);
+      lastError = "Couldn't get a Telegram link. Try again in a minute.";
     }
     res.writeHead(303, { location: "/telegram/connect" });
     res.end();

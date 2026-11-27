@@ -107,7 +107,8 @@ export async function googleConnectRoute(req: http.IncomingMessage, res: http.Se
   if (path === "/oauth/google/start" && req.method === "POST") {
     const redirectUri = googleRedirectUri();
     if (!redirectUri) {
-      problem(res, 500, "Google isn't set up on this hub", `<p>JH_PUBLIC_URL isn't set. The hub owner adds it to hub.env.</p>`);
+      console.error("Google connect: JH_PUBLIC_URL isn't set in hub.env.");
+      problem(res, 500, "Google can't be connected right now", `<p>Try again later.</p>`);
       return true;
     }
     let authUrl: string;
@@ -117,7 +118,8 @@ export async function googleConnectRoute(req: http.IncomingMessage, res: http.Se
         access_type: "offline", prompt: "consent", include_granted_scopes: true, scope: GOOGLE_SCOPES, state,
       });
     } catch (err) {
-      problem(res, 500, "Google isn't set up on this hub", `<p>${esc(err instanceof Error ? err.message : err)}</p>`);
+      console.error("Google connect:", err);
+      problem(res, 500, "Google can't be connected right now", `<p>Try again later.</p>`);
       return true;
     }
     const states = loadStates();

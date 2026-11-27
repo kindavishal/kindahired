@@ -1,3 +1,4 @@
+import { waitingFor } from "../web/app-presence.ts";
 import { loadProfile, TIMEZONE } from "../config.ts";
 import { followAccount, stopThread, unfollowAccount, xStatus } from "../pipeline/x.ts";
 import { monthlyBudget, postIdFromUrl, spentThisMonth, xConfigured, xUserConnected } from "../sources/x.ts";
@@ -493,9 +494,14 @@ export async function handleIncoming(msg: Incoming, hooks: Hooks) {
           // (locking it here is what kept a later "applied" email from registering).
           updateOpportunity(id, { pack_status: "approved" });
           if (o.status === "skipped" || o.status === "dropped") updateOpportunity(id, { status: "found" }, { byUser: true });
-          if (msg.messageId) await editMessage(msg.messageId, `${cardText(getOpportunity(id)!)}\n\n<i>Building the pack: resume, application and people. Usually 2 to 4 minutes.</i>`);
+          const wait = waitingFor();
+          const note = wait === "install" ? "The pack is built by the kindahired app on your computer, with your own Claude plan. Install it and the pack starts on its own."
+            : wait === "open" ? "The pack starts when the kindahired app is open on your computer."
+            : "Building the pack: resume, application and people. Usually 2 to 4 minutes.";
+          const download = wait === "install" && process.env.JH_PUBLIC_URL ? [[{ text: "Download the app", url: new URL("app", process.env.JH_PUBLIC_URL).toString() } as Button]] : undefined;
+          if (msg.messageId) await editMessage(msg.messageId, `${cardText(getOpportunity(id)!)}\n\n<i>${note}</i>`, download);
           hooks.kick();
-          reply = "Building the pack";
+          reply = wait === "running" ? "Building the pack" : "Pack queued";
         }
       } else if (verb === "closenote") {
         const note = closingNote(o);

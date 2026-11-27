@@ -1,11 +1,12 @@
 import type http from "node:http";
 import { workerStatus } from "../worker/queue.ts";
+import { APP_PAGE, appOnline, hasApp, inApp, openInAppUrl } from "./app-presence.ts";
 import { esc, icon, linkButton, page } from "./ui.ts";
 
 /**
- * Desktop app setup, for hub mode (JH_HUB=1). Shows the two things the app asks for on first run:
- * this hub's address and this person's worker token. The page is behind Cloudflare Access like the
- * rest of the dashboard, so only the person signed in sees their token.
+ * The desktop app, for hub mode (JH_HUB=1): /app is where a person gets it, /desktop/pair hands the
+ * signed-in app its worker token, and /desktop is the operator's debug view (JH_OPERATOR=1; anyone
+ * else is sent to /app).
  */
 
 const hubMode = () => process.env.JH_HUB === "1";
@@ -38,35 +39,47 @@ async function latestDownloads(): Promise<Downloads | null> {
 
 function downloadButtons(d: Downloads | null): string {
   if (!d || !(d.mac || d.appImage || d.deb)) {
-    return `<div class="btn-row">${linkButton(RELEASES, "Download the app", "primary", true)}</div>
-<p class="muted">For macOS (.dmg) or Linux (.AppImage or .deb).</p>`;
+    return `<div class="btn-row">${linkButton(RELEASES, `${icon("download")}Download for macOS or Linux`, "primary", true)}</div>`;
   }
   const btns = [
     d.mac && linkButton(d.mac, `${icon("download")}macOS (.dmg)`, "primary"),
     d.appImage && linkButton(d.appImage, `${icon("download")}Linux (.AppImage)`),
     d.deb && linkButton(d.deb, `${icon("download")}Linux (.deb)`),
   ].filter(Boolean);
-  return `<div class="btn-row">${btns.join("")}</div>
-<p class="muted">Version ${esc(d.version)}. <a href="${esc(RELEASES)}" target="_blank" rel="noopener">All downloads</a></p>`;
+  return `<div class="btn-row">${btns.join("")}</div>`;
 }
 
-function desktopPage(downloads: Downloads | null): string {
+/** The person's own "Get the app" page: downloads, Claude Code, sign in. */
+function appPage(downloads: Downloads | null): string {
+  const connected = hasApp();
+  const status = connected
+    ? `<div class="callout accent" role="status"><p>Your app is connected.</p>${inApp() ? "" : linkButton(openInAppUrl("/"), `Open in the app${icon("external")}`)}</div>`
+    : "";
+  return page("Get the app · kindahired", `<div class="stack"><div><h1>Get the kindahired app</h1>
+<p class="lede">Packs and research are made by the app on your computer, with your own Claude plan.</p></div>${status}
+<ol class="steps">
+<li><p>Download the app and install it.</p>${downloadButtons(downloads)}</li>
+<li><p>Install <a href="https://claude.com/claude-code" target="_blank" rel="noopener">Claude Code</a> and sign in to your Claude account.</p></li>
+<li><p>Open the app and sign in with your email.</p></li>
+</ol></div>`, { tab: "setup" });
+}
+
+/** The operator's own view (JH_OPERATOR=1 in their .env): the hub address, the token and the worker's state. */
+function operatorPage(downloads: Downloads | null): string {
   const hub = process.env.JH_PUBLIC_URL ?? "";
   const token = process.env.JH_WORKER_TOKEN ?? "";
-  const { lastSeen, queued } = workerStatus();
-  const state = lastSeen
-    ? `<p class="lede">Connected. Last seen ${esc(new Date(lastSeen).toLocaleString())}. ${queued} Claude step${queued === 1 ? "" : "s"} waiting.</p>`
-    : `<p class="lede">Not connected yet. ${queued} Claude step${queued === 1 ? "" : "s"} waiting for it.</p>`;
-  return page("Desktop app · kindahired", `<div class="stack"><h1>Desktop app</h1>${state}
-<ol class="steps">
-<li>Install Claude Code and sign in to your Claude account. Run <code>claude</code> once to check.</li>
-<li><p>Download the app and install it.</p>${downloadButtons(downloads)}</li>
-<li>Open it and paste these two values:
-<p><strong>Hub address</strong><br><code>${esc(hub || "(JH_PUBLIC_URL isn't set on the hub)")}</code></p>
-<details><summary><strong>Worker token</strong> (keep it private)</summary><p><code>${esc(token || "(JH_WORKER_TOKEN isn't set on the hub)")}</code></p></details></li>
-</ol>
-<p class="muted">The app never asks for your Claude password. It runs the Claude Code you signed in to, on your computer.</p>
-<p>${linkButton("/", "Back to Home")}</p></div>`);
+  const { lastSeen, queued, claimed } = workerStatus();
+  const row = (k: string, v: string) => `<div><dt>${k}</dt><dd>${v}</dd></div>`;
+  return page("Desktop debug · kindahired", `<div class="stack"><h1>Desktop debug</h1>
+<div class="panel"><dl class="facts">
+${row("Hub address", `<code>${esc(hub || "(JH_PUBLIC_URL not set)")}</code>`)}
+${row("Worker token", `<details><summary>Show</summary><code>${esc(token || "(JH_WORKER_TOKEN not set)")}</code></details>`)}
+${row("Last seen", esc(lastSeen ? new Date(lastSeen).toLocaleString() : "never"))}
+${row("Online", appOnline() ? "yes" : "no")}
+${row("Queued / claimed", `${queued} / ${claimed}`)}
+${row("Latest release", esc(downloads?.version || "(GitHub not reachable)"))}
+</dl></div>
+<p>${linkButton(APP_PAGE, "Open the user page")}</p></div>`);
 }
 
 /**
@@ -92,10 +105,16 @@ export function desktopConnectRoute(req: http.IncomingMessage, res: http.ServerR
     pair(req, res);
     return true;
   }
-  if (url.pathname !== "/desktop" || req.method !== "GET") return false;
+  if (req.method !== "GET" || (url.pathname !== APP_PAGE && url.pathname !== "/desktop")) return false;
+  const operator = process.env.JH_OPERATOR === "1";
+  if (url.pathname === "/desktop" && !operator) {
+    res.writeHead(303, { location: APP_PAGE });
+    res.end();
+    return true;
+  }
   void latestDownloads().then((d) => {
     res.writeHead(200, { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" });
-    res.end(desktopPage(d));
+    res.end(url.pathname === "/desktop" ? operatorPage(d) : appPage(d));
   });
   return true;
 }
