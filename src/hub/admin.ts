@@ -27,7 +27,6 @@ export function addPerson(id: string, email: string): string[] {
   if (!fs.existsSync(envFile)) {
     fs.writeFileSync(envFile, renderEnv({
       email, relaySecret: person.relaySecret, workerToken: person.workerToken, port: String(person.port),
-      publicUrl: process.env.JH_PUBLIC_URL || "https://hub.example.com/",
     }), { mode: 0o600 });
   }
   // Their own profile and playbook, started from the examples (the engine reads these in hub mode).

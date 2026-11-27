@@ -38,13 +38,35 @@ plus:
 
 ```
 JH_HUB=1
-JH_PUBLIC_URL=https://<hub domain>/                  # links in the dashboard and bot point here
 TELEGRAM_API_BASE=http://127.0.0.1:8090/relay         # router stand-in for api.telegram.org
 TELEGRAM_BOT_TOKEN=<relaySecret>                      # identifies the person to the router
 JH_CLAUDE_VIA=worker                                  # Claude Code calls go to the desktop worker
 JH_WORKER_TOKEN=<workerToken>
 PORT=<port>
 ```
+
+Settings shared by every engine live in `/srv/jobhunt/hub/hub.env` (template:
+`deploy/hub/hub.env.template`), which the engine unit loads before the person's file:
+
+```
+GOOGLE_CLIENT_ID=...                                  # the hub's one Google OAuth client
+GOOGLE_CLIENT_SECRET=...
+JH_PUBLIC_URL=https://<hub domain>/                   # links, and <url>oauth/google/callback
+```
+
+systemd lets the later file win, so a person's `.env` can replace these (only for a person on
+their own Google client). config.ts never overrides a variable already set, so its own `.env`
+loads can't change them.
+
+## Google sign-in on the hub
+
+`src/web/google-connect.ts`, hub mode only. `GET /google` shows the connection (account, scopes,
+Calendar) or a Connect button. `POST /oauth/google/start` stores a one-time state in kv (10 minutes)
+and redirects to Google with the same scopes as `auth:google`, `access_type=offline`,
+`prompt=consent`, `include_granted_scopes=true`. `GET /oauth/google/callback` checks and spends the
+state, exchanges the code with the same redirect URI and writes `google-token.json` in the person's
+data folder, the file the CLI flow writes. The gateway passes the callback through on the Access
+cookie like any other page. The CLI loopback flow is unchanged for local mode.
 
 ## Telegram: the router is a Bot API stand-in
 

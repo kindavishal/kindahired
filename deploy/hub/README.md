@@ -42,6 +42,11 @@ The contracts are in [../../docs/hub-build.md](../../docs/hub-build.md).
      `CF_ACCESS_AUD=<aud tag>`, `JH_HUB_DIR=/srv/jobhunt/hub`
    - `/srv/jobhunt/hub/router.env`: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`,
      `JH_HUB_DIR=/srv/jobhunt/hub`
+   - `/srv/jobhunt/hub/hub.env`, copied from `hub.env.template`: `GOOGLE_CLIENT_ID` and
+     `GOOGLE_CLIENT_SECRET` (the hub's one Google OAuth client) and `JH_PUBLIC_URL` (the hub's
+     address, with a trailing slash). Every engine loads it before the person's own `.env`, so a
+     value in a person's file wins; keep these out of person files unless that person uses their
+     own Google client. Restart the engines after changing it.
 9. Install the units and start the gateway and router:
    ```
    sudo cp deploy/hub/*.service /etc/systemd/system/

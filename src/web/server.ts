@@ -26,6 +26,7 @@ import { interviewCard, interviewPage, interviewsPage, upcomingCount, upcomingIn
 import { clearOpened, directActions, markOpened, openedTasks, type Direct } from "./actions.ts";
 import { telegramConnectCallout, telegramConnectRoute } from "./telegram-connect.ts";
 import { desktopConnectCallout, desktopConnectRoute } from "./desktop-connect.ts";
+import { googleConnectCallout, googleConnectRoute } from "./google-connect.ts";
 import {
   alertFunnel, clearStaleDrafts, interviewStats, isLead, outreachStats, pct, readyIcRoles, replyWindow, splitStories,
   stageCounts, waitingForReply, weeklyPace, type Split,
@@ -290,7 +291,7 @@ function home(q: URLSearchParams) {
   return page("Home · Job hunt", `
 <div class="focus">
 <div><h1>${hello}${name ? `, ${esc(name)}` : ""}.</h1><p class="lede">${esc(nextInterview ? `Your interview comes first. ${lede}` : lede)}</p></div>
-${telegramConnectCallout()}${desktopConnectCallout()}
+${googleConnectCallout()}${telegramConnectCallout()}${desktopConnectCallout()}
 ${nextInterview ? interviewCard(nextInterview) : ""}
 ${queue.length ? `<section aria-labelledby="h-now"><h2 id="h-now" class="sr">Do these in order</h2>
 <ol class="focus-list" data-due="${due.length - waiting.length}">${queue.map((r) => focusItem(r, ctx)).join("")}</ol>
@@ -1011,6 +1012,7 @@ export function startServer(port = env.port, hooks?: Hooks) {
       if (url.pathname.startsWith("/worker/")) return await handleWorker(req, res, url);
       if (await telegramConnectRoute(req, res, url)) return;
       if (desktopConnectRoute(req, res, url)) return;
+      if (await googleConnectRoute(req, res, url)) return;
       const m = url.pathname.match(/^\/(a|o|r)\/(\d+)\/(\w+)$/);
       if (req.method === "POST" && m) {
         const [, scope, idText, verb] = m;

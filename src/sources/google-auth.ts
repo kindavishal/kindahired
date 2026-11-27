@@ -7,7 +7,7 @@ import { env, PATHS } from "../config.ts";
 // limited to files this tool creates (the resume PDFs), nothing else in your Drive. Calendar is
 // read-only, for interview times.
 export const CALENDAR_SCOPE = "https://www.googleapis.com/auth/calendar.readonly";
-const SCOPES = [
+export const GOOGLE_SCOPES = [
   "https://www.googleapis.com/auth/gmail.readonly",
   CALENDAR_SCOPE,
   "https://www.googleapis.com/auth/spreadsheets",
@@ -15,15 +15,25 @@ const SCOPES = [
 ];
 const REDIRECT_PORT = 53682;
 
-function client(): OAuth2Client {
+/** The app's OAuth client. The CLI uses the loopback callback; the hub passes its public one. */
+export function oauthClient(redirectUri = `http://127.0.0.1:${REDIRECT_PORT}/callback`): OAuth2Client {
   if (!env.googleClientId || !env.googleClientSecret) {
     throw new Error("GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are not set in .env. See README, step 2.");
   }
-  return new OAuth2Client({
-    clientId: env.googleClientId,
-    clientSecret: env.googleClientSecret,
-    redirectUri: `http://127.0.0.1:${REDIRECT_PORT}/callback`,
-  });
+  return new OAuth2Client({ clientId: env.googleClientId, clientSecret: env.googleClientSecret, redirectUri });
+}
+const client = () => oauthClient();
+
+/** Saves a fresh login where googleClient() and hasScope() read it. */
+export function saveGoogleToken(tokens: object): void {
+  writeFileSync(PATHS.googleToken, JSON.stringify(tokens, null, 2), { mode: 0o600 });
+}
+
+/** The scopes the saved login grants. */
+export function grantedScopes(): string[] {
+  if (!googleConnected()) return [];
+  const { scope = "" } = JSON.parse(readFileSync(PATHS.googleToken, "utf8")) as { scope?: string };
+  return scope.split(" ").filter(Boolean);
 }
 
 export function googleConnected(): boolean {
@@ -32,9 +42,7 @@ export function googleConnected(): boolean {
 
 /** Whether the saved login includes a permission (older logins may predate the Drive one). */
 export function hasScope(scope: string): boolean {
-  if (!googleConnected()) return false;
-  const { scope: granted = "" } = JSON.parse(readFileSync(PATHS.googleToken, "utf8")) as { scope?: string };
-  return granted.split(" ").includes(scope);
+  return grantedScopes().includes(scope);
 }
 
 /** Authorised client, refreshing and saving tokens as needed. */
@@ -52,7 +60,7 @@ export function googleClient(): OAuth2Client {
 /** One-time consent flow in the browser, with a local callback. */
 export async function connectGoogle(): Promise<void> {
   const c = client();
-  const url = c.generateAuthUrl({ access_type: "offline", prompt: "consent", scope: SCOPES });
+  const url = c.generateAuthUrl({ access_type: "offline", prompt: "consent", scope: GOOGLE_SCOPES });
   const code = await new Promise<string>((resolve, reject) => {
     const server = http.createServer((req, res) => {
       const u = new URL(req.url ?? "/", `http://127.0.0.1:${REDIRECT_PORT}`);
@@ -67,6 +75,6 @@ export async function connectGoogle(): Promise<void> {
     });
   });
   const { tokens } = await c.getToken(code);
-  writeFileSync(PATHS.googleToken, JSON.stringify(tokens, null, 2), { mode: 0o600 });
+  saveGoogleToken(tokens);
   console.log("Google connected.");
 }
