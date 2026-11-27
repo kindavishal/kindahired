@@ -1,0 +1,37 @@
+{
+  "name": "kindahired-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Runs your own Claude Code for your job-search hub.",
+  "author": {
+    "name": "kindavishal",
+    "email": "kindavishal@users.noreply.github.com"
+  },
+  "homepage": "https://kindahired.kindavishal.dev",
+  "license": "UNLICENSED",
+  "type": "module",
+  "main": "dist/main.js",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "icons": "node scripts/make-icons.mjs",
+    "bundle": "node scripts/bundle.mjs",
+    "build": "npm run icons && npm run bundle",
+    "start": "npm run build && electron .",
+    "dist": "npm run build && electron-builder --config electron-builder.config.cjs --publish never",
+    "dist:dir": "npm run build && electron-builder --config electron-builder.config.cjs --dir --publish never",
+    "typecheck": "tsc --noEmit -p .",
+    "test": "node --test test/*.test.ts"
+  },
+  "dependencies": {
+    "electron-updater": "6.8.11"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.4",
+    "electron": "45.5.0",
+    "electron-builder": "26.18.0",
+    "esbuild": "0.28.2",
+    "typescript": "^7.0.2"
+  }
+}

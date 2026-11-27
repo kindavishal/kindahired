@@ -8,7 +8,7 @@ import {
 } from "../db/opportunities.ts";
 import { reconcileActions } from "../loops/engine.ts";
 import { llm } from "../llm/client.ts";
-import { PlanUnavailableError } from "../llm/providers.ts";
+import { PlanUnavailableError, siteOf } from "../llm/providers.ts";
 import { backfillQuery, getMessages, listMessageIds, RECENT_QUERY, type MailMessage } from "../sources/gmail.ts";
 import { readLinkedInJob, syncLinkedInJobs, type SavedJob } from "../sources/linkedin.ts";
 import { readPage } from "../sources/web.ts";
@@ -320,6 +320,8 @@ export async function addFromLink(url: string, note?: string): Promise<{ opportu
     : await llm.research("identify", {
         effort: "low",
         maxSearches: 3,
+        // The task is one link, so pages are read only on that link's site.
+        allowedDomains: siteOf(url),
         system: "Identify the job posting at a link. Read the page if you can; search if the page needs a login.",
         prompt: `Link: ${url}${note ? `\nMy note: ${note}` : ""}\n\nWhich company and which role is this? Say if it isn't a job posting.`,
       });

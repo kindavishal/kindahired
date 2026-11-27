@@ -1,5 +1,5 @@
 {
-  "name": "job-hunting-tool",
+  "name": "kindahired",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -9,8 +9,12 @@
   "scripts": {
     "jh": "tsx src/cli.ts",
     "daemon": "tsx src/daemon.ts",
+    "router": "tsx src/hub/router.ts",
+    "hub": "tsx src/hub/cli.ts",
+    "gateway": "tsx src/hub/gateway.ts",
+    "worker": "tsx src/worker/client.ts",
     "typecheck": "tsc --noEmit",
-    "test": "JH_DATA_DIR=data/test JH_PROFILE=context/profile.example.json JH_PLAYBOOK=context/playbook.example.md JH_TIMEZONE=Asia/Kolkata MY_EMAILS=sam@example.com JH_NO_TELEGRAM=1 FIRECRAWL_API_KEY= X_BEARER_TOKEN= X_API_KEY= X_API_SECRET= X_CLIENT_ID= tsx --test test/*.test.ts"
+    "test": "JH_DATA_DIR=data/test JH_GEMINI_RPM=60000 JH_PROFILE=context/profile.example.json JH_PLAYBOOK=context/playbook.example.md JH_TIMEZONE=Asia/Kolkata MY_EMAILS=sam@example.com JH_NO_TELEGRAM=1 FIRECRAWL_API_KEY= X_BEARER_TOKEN= X_API_KEY= X_API_SECRET= X_CLIENT_ID= tsx --test test/*.test.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.13.0",

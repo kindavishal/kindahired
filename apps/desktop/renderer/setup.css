@@ -1,0 +1,57 @@
+/* The settings window. Tokens follow the dashboard's (DESIGN.md): platform sans, neutrals, colour only for state. */
+:root {
+  --bg: #fafafa; --surface: #fff; --surface-2: #f5f5f5;
+  --ink: #0a0a0a; --ink-2: #525252; --ink-3: #6b6b6b;
+  --line: #e5e5e5; --line-strong: #d4d4d4;
+  --accent: #171717; --on-accent: #fafafa;
+  --ok: #15803d; --danger: #c10007; --warn: #92400e;
+  --focus: #1d4ed8;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0a0a0a; --surface: #171717; --surface-2: #262626;
+    --ink: #fafafa; --ink-2: #a3a3a3; --ink-3: #8a8a8a;
+    --line: #262626; --line-strong: #404040;
+    --accent: #fafafa; --on-accent: #0a0a0a;
+    --ok: #4ade80; --danger: #f87171; --warn: #fbbf24;
+    --focus: #60a5fa;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--ink); }
+body { font: 14px/20px ui-sans-serif, -apple-system, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+main { padding: 32px 32px 20px; display: flex; flex-direction: column; gap: 24px; }
+h1 { font-size: 24px; line-height: 30px; font-weight: 600; margin: 0 0 8px; letter-spacing: -0.01em; }
+h2 { font-size: 15px; line-height: 22px; font-weight: 600; margin: 0; }
+.lede { margin: 0; color: var(--ink-2); font-size: 15px; line-height: 22px; }
+.lede b { color: var(--ink); font-weight: 500; }
+form, .claude { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+label { font-weight: 500; }
+input[type=url], input[type=password] {
+  font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line-strong);
+  border-radius: 6px; padding: 8px 10px; width: 100%;
+}
+input:focus-visible, button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.hint { margin: 0; color: var(--ink-3); font-size: 13px; }
+.check { display: flex; gap: 8px; align-items: flex-start; font-weight: 400; color: var(--ink-2); }
+.check input { margin: 3px 0 0; accent-color: var(--accent); }
+.actions { display: flex; gap: 8px; justify-content: flex-end; }
+button { font: inherit; font-weight: 500; border-radius: 6px; padding: 8px 14px; cursor: pointer; border: 1px solid transparent; }
+button:disabled { opacity: 0.5; cursor: default; }
+.primary { background: var(--accent); color: var(--on-accent); }
+.secondary { background: var(--surface); color: var(--ink); border-color: var(--line-strong); }
+.secondary:hover:not(:disabled) { background: var(--surface-2); }
+.link { background: none; padding: 0; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+.results { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.results:empty { display: none; }
+.results li, .status { display: flex; gap: 8px; align-items: baseline; margin: 0; }
+/* State is shown by shape as well as colour. */
+.results li::before, .status::before { content: "•"; width: 12px; flex: none; color: var(--ink-3); }
+.ok::before { content: "✓" !important; color: var(--ok) !important; }
+.bad::before { content: "✕" !important; color: var(--danger) !important; }
+.warn::before { content: "!" !important; color: var(--warn) !important; font-weight: 700; }
+.status { font-weight: 500; }
+.hint:empty { display: none; }
+footer { display: flex; justify-content: space-between; color: var(--ink-3); font-size: 12px; }

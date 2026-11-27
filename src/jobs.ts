@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { existsSync } from "node:fs";
 import { AI_MODE } from "./llm/client.ts";
 import { geminiAvailable, PlanUnavailableError } from "./llm/providers.ts";
+import { WorkerOfflineError } from "./worker/queue.ts";
 import { loadProfile, localClock, PATHS } from "./config.ts";
 import { all, get, kvGet, kvSet, logEvent, run } from "./db/index.ts";
 import { getOpportunity, PAST_DECISION, updateOpportunity } from "./db/opportunities.ts";
@@ -32,9 +33,16 @@ export function isAccountError(err: unknown): boolean {
 
 /** One Telegram notice per 12 hours about an account problem, instead of one per failed call. */
 export async function warnAccountOnce(err: unknown) {
-  const last = kvGet("ai.warnedAt");
+  // On the hub, Claude steps run on my own computer: that being off is its own notice, not a plan problem.
+  const offline = err instanceof WorkerOfflineError;
+  const key = offline ? "ai.warnedOfflineAt" : "ai.warnedAt";
+  const last = kvGet(key);
   if (last && Date.now() - new Date(last).getTime() < 12 * 3600_000) return;
-  kvSet("ai.warnedAt", new Date().toISOString());
+  kvSet(key, new Date().toISOString());
+  if (offline) {
+    await send("Paused: your computer is offline, so Claude steps are waiting. Nothing is lost; they resume when it's back online.", undefined, { silent: true }).catch(() => {});
+    return;
+  }
   const text = String(err);
   const reason = err instanceof PlanUnavailableError
     ? (/limit/i.test(text) ? "your Claude plan hit its usage limit for now" : `Claude Code isn't available (${text.slice(0, 120)})`)

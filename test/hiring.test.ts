@@ -39,13 +39,15 @@ const brief = (people: BriefData["people"]): BriefData => ({ people, team: "Deve
 test("research saves a brief, and the first touch names the person to write to", async () => {
   const o = upsertOpportunity("Acme", "Developer Advocate", { status: "applied", date_applied: "2026-11-24", linkedin_job_id: "4464442700" });
   let prompt = "";
-  llm.research = (async () => "Web: Sam Lee is Head of DevRel at Acme (linkedin.com/in/samlee), posted about the role on 20 Nov.") as typeof llm.research;
+  llm.research = (async (label: string) => label === "profile:Riya Shah" ? "https://www.linkedin.com/in/riya-shah-talent"
+    : label.startsWith("profile:") ? "none"
+    : "Web: Sam Lee is Head of DevRel at Acme (linkedin.com/in/samlee), posted about the role on 20 Nov.") as typeof llm.research;
   llm.structured = (async (_l: string, _s: unknown, opts: { prompt: string }) => {
     prompt = opts.prompt;
     return brief([
-      { name: "Riya Shah", title: "Talent Partner", part: "recruiter", confidence: "high", evidence: "Listed on LinkedIn's hiring team.", source_url: null, linkedin_url: null },
-      { name: "Sam Lee", title: "Head of DevRel", part: "hiring_manager", confidence: "medium", evidence: "Leads DevRel and posted about the role on 20 Nov.", source_url: null, linkedin_url: "https://www.linkedin.com/in/samlee" },
-      { name: "Guess Person", title: null, part: "hiring_manager", confidence: "low", evidence: "Title only.", source_url: null, linkedin_url: null },
+      { name: "Riya Shah", title: "Talent Partner", part: "recruiter", confidence: "high", evidence: "Listed on LinkedIn's hiring team.", source_url: null, linkedin_url: null, x_url: null },
+      { name: "Sam Lee", title: "Head of DevRel", part: "hiring_manager", confidence: "medium", evidence: "Leads DevRel and posted about the role on 20 Nov.", source_url: null, linkedin_url: "https://www.linkedin.com/in/samlee", x_url: "https://twitter.com/samlee" },
+      { name: "Guess Person", title: null, part: "hiring_manager", confidence: "low", evidence: "Title only.", source_url: null, linkedin_url: null, x_url: "https://x.com/search?q=guess" },
     ]);
   }) as typeof llm.structured;
   const b = await researchHiring(o.id, { linkedin: async () => ({ text: pageText.replace("Anil Kumar KL", "Riya Shah"), closed: false }) });
@@ -55,6 +57,11 @@ test("research saves a brief, and the first touch names the person to write to",
 
   const saved = getBrief(get<{ hiring_brief: string }>("SELECT hiring_brief FROM opportunities WHERE id = $id", { id: o.id })!)!;
   assert.equal(saved.people.length, 3);
+  // A profile the research missed is looked up; X profiles are kept (as x.com), anything else isn't a profile.
+  assert.equal(saved.people[0].linkedin_url, "https://www.linkedin.com/in/riya-shah-talent");
+  assert.equal(saved.people[1].x_url, "https://x.com/samlee");
+  assert.equal(saved.people[2].linkedin_url, null);
+  assert.equal(saved.people[2].x_url, null);
   // The hiring manager beats the recruiter; a low-confidence guess is never picked.
   assert.equal(bestContact(saved)!.name, "Sam Lee");
 

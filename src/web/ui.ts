@@ -143,7 +143,7 @@ export const emptyState = (title: string, body = "") =>
 
 // ---------- shell ----------
 
-export type Tab = "home" | "tasks" | "interviews" | "insights" | "progress" | "roles" | "people" | "companies" | "sources" | "timers" | "";
+export type Tab = "home" | "tasks" | "interviews" | "insights" | "progress" | "roles" | "people" | "companies" | "sources" | "timers" | "setup" | "";
 
 /** Counts shown in the sidebar. The server registers a provider so every page shows live numbers. */
 export type NavCounts = { pending: number; roles: number; interviews?: number };
@@ -154,7 +154,7 @@ export const setShellPort = (p: number) => { shellPort = p; };
 
 const TAB_TITLE: Record<Tab, string> = {
   home: "Home", tasks: "All tasks", interviews: "Interviews", insights: "What is working", progress: "Progress", roles: "Roles", people: "People",
-  companies: "Companies", sources: "Watched pages", timers: "Reminder timings", "": "",
+  companies: "Companies", sources: "Watched pages", timers: "Reminder timings", setup: "Setup", "": "",
 };
 
 type PageOpts = { tab?: Tab; port?: number; flash?: string | null; wide?: boolean; meta?: string };
@@ -176,16 +176,17 @@ ${link("companies", "/companies", "building", "Companies")}
 <nav class="nav" aria-label="Settings">
 ${link("sources", "/sources", "eye", "Watched pages")}
 ${link("timers", "/timers", "timer", "Reminder timings")}
+${process.env.JH_HUB === "1" ? link("setup", "/setup", "check", "Setup") : ""}
 </nav>`;
-  const heading = o.tab ? TAB_TITLE[o.tab] : title.replace(/ · Job hunt$/, "");
+  const heading = o.tab ? TAB_TITLE[o.tab] : title.replace(/ · kindahired$/, "");
   return `<!doctype html><html lang="en" class="no-js"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light dark"><title>${esc(title)}</title>
 <link rel="icon" href="data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="#171717"/><path d="M9 17l4.5 4.5L23 11" stroke="#fafafa" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>')}">
 <style>${CSS}</style></head><body>
 <a class="skip" href="#main">Skip to content</a>
 <div class="app">
-<aside class="sidebar" aria-label="Job hunt">
-<a class="brand" href="/">${icon("briefcase")}Job hunt</a>
+<aside class="sidebar" aria-label="kindahired">
+<a class="brand" href="/">${icon("briefcase")}kindahired</a>
 <a class="btn primary block" href="/search" data-cmd>${icon("plus-circle")}<span class="nav-text">Add a job link</span><kbd class="kbd on-dark">⌘K</kbd></a>
 ${nav}
 <p class="sidebar-foot">Drag <a class="bookmarklet" href="javascript:void(window.open('http://127.0.0.1:${o.port ?? shellPort}/add?url='+encodeURIComponent(location.href)))">${icon("bookmark")}Save job</a> to your bookmarks bar to save roles from any page.</p>
@@ -295,7 +296,7 @@ p{margin:0}
 .wrap{max-width:var(--content-max);margin:0 auto;padding:var(--s8) var(--s6) var(--s12)}
 
 /* controls */
-input[type=url],input[type=text],input[type=search],input[type=number],select{font:inherit;height:var(--control);padding:0 10px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--surface);color:var(--ink);box-shadow:var(--shadow-xs);transition:border-color .16s var(--ease)}
+input[type=url],input[type=text],input[type=email],input[type=password],input[type=search],input[type=number],select{font:inherit;height:var(--control);padding:0 10px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--surface);color:var(--ink);box-shadow:var(--shadow-xs);transition:border-color .16s var(--ease)}
 input::placeholder{color:var(--ink-3)}
 input:hover,select:hover{border-color:var(--line-strong)}
 input:focus-visible,select:focus-visible{border-color:var(--chart-mid);box-shadow:var(--ring)}
@@ -743,6 +744,20 @@ details.fold>.prose{margin-top:10px}
 .timer-in{display:flex;align-items:center;gap:var(--s2);color:var(--ink-2)}
 .timer-in span{min-width:40px}
 .timer-in input{width:84px;text-align:right;font-variant-numeric:tabular-nums}
+/* setup pages (hub mode) */
+.setup{max-width:720px}
+.setup-row{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s2) var(--s4);padding:var(--s3) var(--s4);border-top:1px solid var(--line)}
+.setup-row:first-child{border-top:0}
+.setup-row>div{flex:1 1 280px;min-width:0}
+.setup-row .card-sub{margin-top:2px}
+.form-row{display:grid;gap:6px;padding:var(--s3) var(--s4);border-top:1px solid var(--line)}
+.form-row:first-child{border-top:0}
+.form-row>label,.form-row>legend{font-weight:500}
+.form-row input[type=text],.form-row input[type=email],.form-row input[type=url],.form-row input[type=password],.form-row input[type=number]{width:100%;min-width:0}
+.form-row textarea.field{min-height:96px}
+.form-row textarea.field.tall{min-height:420px}
+fieldset.form-row{border:0;border-top:1px solid var(--line);margin:0}
+.choice{display:flex;align-items:center;gap:var(--s2);font-weight:400}
 .ladder{margin:0;padding:var(--s3) var(--s4) var(--s3) 36px;line-height:22px}
 .ladder li+li{margin-top:6px}
 .empty{padding:28px var(--s4);text-align:center;color:var(--ink-3)}

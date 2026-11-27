@@ -1,4 +1,4 @@
-# Job Hunting Tool: design
+# kindahired: design
 
 A personal system that turns every job opportunity into a ready-to-act pack and makes sure
 no conversation goes quiet without a decision. Rules for all generated content live in

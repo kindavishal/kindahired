@@ -8,6 +8,7 @@ import { getOpportunity, updateOpportunity, type Opportunity } from "../db/oppor
 import { completeAction, dueActions, reconcileActions, remindAgain, snoozeAction, stalledRoles, type ActionRow } from "../loops/engine.ts";
 import { BOARD_LABEL, boardUrl, describeCompanyScan, getCompany, knownPeopleAt, listCompanies, removeCompany, setCompanyStatus, type CompanyScan } from "../pipeline/companies.ts";
 import { getBrief, type HiringBrief } from "../pipeline/hiring-brief.ts";
+import { isLinkedInProfile, isXProfile, linkedInSearchUrl, xSearchUrl } from "../pipeline/profiles.ts";
 import { keepsInTouch, loadRelationships, logTouch, setStayInTouch, type Relationship } from "../pipeline/relationships.ts";
 import { DEFAULT_TIMERS, getTimers, resetTimers, setTimers, TIMER_SPECS, type TimerKey } from "../loops/timers.ts";
 import { NOT_A_POSTING } from "../notify/messages.ts";
@@ -21,8 +22,19 @@ import {
   postButton, setNavCounts, setShellPort, sourceLabel, statusBadge,
 } from "./ui.ts";
 import { isLink, searchAll, searchPageBody } from "./search.ts";
+import { handleWorker } from "../worker/routes.ts";
 import { interviewCard, interviewPage, interviewsPage, upcomingCount, upcomingInterviews } from "./interviews.ts";
 import { clearOpened, directActions, markOpened, openedTasks, type Direct } from "./actions.ts";
+import { telegramConnectRoute } from "./telegram-connect.ts";
+import { desktopConnectRoute } from "./desktop-connect.ts";
+import { googleConnectRoute } from "./google-connect.ts";
+import { setupCallout, setupRoute } from "./setup.ts";
+import { hubMode, refuseCrossOrigin, sameOrigin } from "./forms.ts";
+import { fromGateway, gatewaySecret } from "../hub/gateway-secret.ts";
+import { setupProfileRoute } from "./setup-profile.ts";
+import { setupPlaybookRoute } from "./setup-playbook.ts";
+import { setupKeysRoute } from "./setup-keys.ts";
+import { setupExportRoute } from "./setup-export.ts";
 import {
   alertFunnel, clearStaleDrafts, interviewStats, isLead, outreachStats, pct, readyIcRoles, replyWindow, splitStories,
   stageCounts, waitingForReply, weeklyPace, type Split,
@@ -284,9 +296,10 @@ function home(q: URLSearchParams) {
     week ? `<a class="later-item" href="/tasks#coming-up"><span class="later-num num">${week}</span><span>${week === 1 ? "task comes" : "tasks come"} up this week</span>${icon("chevron")}</a>` : "",
   ].filter(Boolean).join("");
 
-  return page("Home · Job hunt", `
+  return page("Home · kindahired", `
 <div class="focus">
 <div><h1>${hello}${name ? `, ${esc(name)}` : ""}.</h1><p class="lede">${esc(nextInterview ? `Your interview comes first. ${lede}` : lede)}</p></div>
+${setupCallout()}
 ${nextInterview ? interviewCard(nextInterview) : ""}
 ${queue.length ? `<section aria-labelledby="h-now"><h2 id="h-now" class="sr">Do these in order</h2>
 <ol class="focus-list" data-due="${due.length - waiting.length}">${queue.map((r) => focusItem(r, ctx)).join("")}</ol>
@@ -379,7 +392,7 @@ ${upcoming.length ? `<ol class="timeline">${upcoming.map((a, i) => { const at = 
 <button type="button" class="btn quiet" data-batch="snooze">Remind tomorrow<kbd class="kbd">H</kbd></button>
 <button type="button" class="btn danger" data-batch="drop">Remove</button></div>`;
 
-  return page("Tasks · Job hunt", `
+  return page("Tasks · kindahired", `
 <div class="vstack home-head"><div><h1>All tasks</h1><p class="lede">Everything that is due, by type of work. Home shows only the few that matter most.</p></div>${tiles}</div>
 <div class="home-grid">
 ${decks}${aside}
@@ -405,7 +418,7 @@ function insightsPage(q: URLSearchParams) {
   const totalOut = o.sent + o.drafted || 1;
   const funnel = [["Alerts received", g.total], ["Passed first check", g.passed], ["You applied", g.applied], ["Got an interview", g.interviews]] as const;
 
-  return page("What is working · Job hunt", `
+  return page("What is working · kindahired", `
 <div class="vstack page-stack">
 <div><h1>What your job search is telling you</h1><p class="lede">These come from your own data. The numbers are still small, so treat them as hints, not rules.</p></div>
 <section class="vstack section-stack" aria-labelledby="h-int">
@@ -442,7 +455,7 @@ function progressPage(q: URLSearchParams) {
   const waits = allWaits.slice(0, 5);
   const span = Math.max(30, ...waits.map((x) => x.days + 4));
   const lates = waits.filter((x) => x.late);
-  return page("Progress · Job hunt", `
+  return page("Progress · kindahired", `
 <div class="vstack page-stack-sm">
 <div><h1>Where your job search stands</h1><p class="lede">${plural(open, "role is", "roles are")} still open. You are in interviews for ${c.interviewing ?? 0} and have ${plural(c.offer ?? 0, "offer")}.${p.thisWeek > p.beforeSum && p.thisWeek ? " This week you applied to more roles than in the six weeks before it together." : ""}</p></div>
 <section class="card" aria-labelledby="h-st"><div class="card-head"><h2 id="h-st">Open roles at each stage</h2><p class="card-sub">Select a stage to see its roles.</p></div>
@@ -506,7 +519,7 @@ function list(q: URLSearchParams) {
 <td data-label="Updated" class="c-meta muted num">${day(o.updated_at)}</td></tr>`;
   }).join("");
 
-  return page(`${heading} · Job hunt`, `
+  return page(`${heading} · kindahired`, `
 <div class="page-head"><div><h1>${esc(heading)}</h1><p aria-live="polite"><span class="num" data-filter-count>${rows.length}</span> ${source ? "roles" : `${esc(filter.label.toLowerCase())} role${rows.length === 1 ? "" : "s"}`}</p></div></div>
 <div class="filters">${tabs}
 <div class="search">${icon("search")}<label class="sr" for="role-q">Search roles</label><input id="role-q" type="search" placeholder="Search role or company  /" data-filter="tbody tr[data-row]" autocomplete="off" value="${esc(q.get("q") ?? "")}"></div></div>
@@ -534,7 +547,7 @@ function hiringSection(o: Opportunity, pending: boolean): string {
   const link = (url: string | null, label: string) => (url ? `<a href="${esc(url)}" target="_blank" rel="noopener">${label}</a>` : "");
   const people = b.people.map((p) => `<li class="person"><div class="person-head"><span class="who">${esc(p.name)}</span>${badge(PART_LABEL[p.part] ?? p.part, "neutral")}${badge(CONF[p.confidence][0], CONF[p.confidence][1])}</div>
 ${p.title ? `<p class="small muted">${esc(p.title)}</p>` : ""}<p class="small" style="margin-top:6px">${esc(p.evidence)}</p>
-<p class="small" style="margin-top:4px;display:flex;gap:12px;flex-wrap:wrap">${link(p.linkedin_url, "LinkedIn profile")}${link(p.source_url, "Source")}</p></li>`).join("");
+<p class="small" style="margin-top:4px;display:flex;gap:12px;flex-wrap:wrap">${isLinkedInProfile(p.linkedin_url) ? link(p.linkedin_url, "LinkedIn profile") : link(linkedInSearchUrl(p.name, o.company), "Search LinkedIn")}${isXProfile(p.x_url) ? link(p.x_url, "X profile") : link(xSearchUrl(p.name, o.company), "Search X")}${link(p.source_url, "Source")}</p></li>`).join("");
   const list = (title: string, items: string[]) => (items.length ? `<div style="padding:12px 16px;border-top:1px solid var(--line)"><h3 class="small" style="font-weight:600;margin-bottom:6px">${title}</h3><ul class="small" style="margin:0;padding-left:18px;line-height:22px">${items.join("")}</ul></div>` : "");
   return `<section class="block">${head}<div class="panel">
 ${people ? `<ul class="list">${people}</ul>` : emptyState("No one named yet", "The sources didn't name anyone with enough evidence.")}
@@ -767,7 +780,7 @@ ${found.n ? `<a href="/list?source=${encodeURIComponent(`watch:${src.label}`)}">
 ${src.last_error ? `<p class="small tone-danger" style="margin-top:6px">${esc(src.last_error)}</p>` : ""}</div>
 <div class="item-actions">${postButton(`/s/${src.id}/scan`, "Scan now")}${src.status === "paused" ? postButton(`/s/${src.id}/resume`, "Resume", { variant: "quiet" }) : postButton(`/s/${src.id}/pause`, "Pause", { variant: "quiet" })}${postButton(`/s/${src.id}/remove`, "Remove", { variant: "danger", confirm: `Stop watching ${src.label}? Roles already found there stay.` })}</div></li>`;
   });
-  return page("Watched pages · Job hunt", `
+  return page("Watched pages · kindahired", `
 <div class="page-head"><div><h1>Watched pages</h1><p style="max-width:68ch">Job boards, careers pages and curated feeds, checked on a timer. New postings that fit your targets arrive in Telegram as one list; the rest are left out.</p></div></div>
 ${note ? `<div class="callout note" role="status">${esc(note)}</div>` : ""}
 <section class="stack" style="margin-bottom:32px"><div><div class="section-head"><h2>Watch a page</h2></div>
@@ -843,7 +856,7 @@ function peoplePage(q: URLSearchParams) {
 ${r.linkedin_url ? `<a class="btn quiet sm" href="${esc(r.linkedin_url)}" target="_blank" rel="noopener">LinkedIn${icon("external")}</a>` : ""}</div></li>`;
   }).join("");
 
-  return page("People · Job hunt", `
+  return page("People · kindahired", `
 <div class="vstack page-stack-sm">
 <div><h1>People</h1><p class="lede">Everyone you have talked to about work. Keep in touch with them, and tell them before you apply at their company.</p></div>
 <div class="tiles">
@@ -909,7 +922,7 @@ ${c.status === "paused" ? `<form method="post" action="/c/${c.id}/resume"><butto
 </div></details></div></li>`;
   });
 
-  return page("Companies · Job hunt", `
+  return page("Companies · kindahired", `
 <div class="vstack page-stack-sm">
 <div><h1>Target companies</h1><p class="lede">The companies you most want to work at, checked through their own job board. New roles that fit reach Telegram within a few hours.</p></div>
 ${note ? `<div class="callout note" role="status"><p class="prose">${esc(note)}</p></div>` : ""}
@@ -948,7 +961,7 @@ function timersPage(q: URLSearchParams) {
 <div class="timer-in"><input id="t-${k}" type="number" name="${k}" value="${t[k]}" min="${spec.min}" max="${spec.max}" step="1" inputmode="numeric" required${changed ? " data-changed" : ""}><span>${spec.unit}</span></div></div>`;
   };
   const d = (n: number) => `${n} day${n === 1 ? "" : "s"}`;
-  return page("Timers · Job hunt", `
+  return page("Timers · kindahired", `
 <div class="page-head"><div><h1>Timers</h1><p style="max-width:68ch">How long each step of an application can wait before the tool asks you to act. Every role in play always has one next step with a due date; these set the dates.</p></div></div>
 <div class="stack" style="max-width:820px">
 <section><div class="section-head"><h2>After you apply</h2></div><div class="panel"><ol class="ladder">
@@ -987,6 +1000,8 @@ const ACTION_MSG: Record<string, string> = { done: "Marked as done.", drop: "Rem
 const OPP_MSG: Record<string, string> = { research: "Researching who's hiring. Reload in a few minutes.", remind: "The reminder is back on your list.", applied: "Marked as applied. Follow-up reminders start now.", drop: "Role dropped.", repack: "Rebuilding the pack. It arrives in a few minutes.", build: "Building the pack. It arrives in a few minutes." };
 const OUTREACH_MSG: Record<string, string> = { note_sent: "Marked note sent.", dm_sent: "Marked DM sent.", replied: "Marked as replied.", skipped: "Skipped.", conversation: "Marked as in conversation." };
 
+let warnedNoSecret = false;
+
 export function startServer(port = env.port, hooks?: Hooks) {
   setShellPort(port);
   setNavCounts(() => ({
@@ -1004,6 +1019,29 @@ export function startServer(port = env.port, hooks?: Hooks) {
       res.end(s ?? message("Not found", "Page not found", `<p class="muted">That role or page doesn't exist any more. It may have been merged with a duplicate.</p><p>${linkButton("/", "Back to Home", "primary")}</p>`));
     };
     try {
+      // On the hub, only the gateway may talk to an engine: every request, /worker/* included.
+      if (hubMode() && !fromGateway(req)) {
+        if (!gatewaySecret() && !warnedNoSecret) {
+          warnedNoSecret = true;
+          console.error("JH_HUB=1 but HUB_GATEWAY_SECRET is not set: refusing every request. Set it in hub.env (the same value as in gateway.env).");
+        }
+        res.writeHead(403, { "content-type": "text/plain; charset=utf-8" });
+        return res.end("Forbidden");
+      }
+      if (url.pathname.startsWith("/worker/")) return await handleWorker(req, res, url);
+      // Forms carry no CSRF token: a change must come from a page on this dashboard.
+      if (req.method !== "GET" && req.method !== "HEAD" && !sameOrigin(req)) {
+        if (inline) return json(403, { ok: false, error: "That request came from another site. Nothing was changed." });
+        return refuseCrossOrigin(res);
+      }
+      if (await telegramConnectRoute(req, res, url)) return;
+      if (desktopConnectRoute(req, res, url)) return;
+      if (await googleConnectRoute(req, res, url)) return;
+      if (setupRoute(req, res, url)) return;
+      if (await setupProfileRoute(req, res, url)) return;
+      if (await setupPlaybookRoute(req, res, url)) return;
+      if (await setupKeysRoute(req, res, url)) return;
+      if (setupExportRoute(req, res, url)) return;
       const m = url.pathname.match(/^\/(a|o|r)\/(\d+)\/(\w+)$/);
       if (req.method === "POST" && m) {
         const [, scope, idText, verb] = m;
@@ -1182,7 +1220,7 @@ export function startServer(port = env.port, hooks?: Hooks) {
         const q = url.searchParams.get("q") ?? "";
         const hits = searchAll(q);
         if (url.searchParams.get("format") === "json") return json(200, { q, link: isLink(q), hits });
-        return htmlOut(page("Search · Job hunt", searchPageBody(q, hits, icon), { tab: "" }));
+        return htmlOut(page("Search · kindahired", searchPageBody(q, hits, icon), { tab: "" }));
       }
       if (url.pathname === "/interviews") return htmlOut(interviewsPage());
       const iv = url.pathname.match(/^\/interviews\/(\d+)$/);

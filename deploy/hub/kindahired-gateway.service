@@ -1,0 +1,17 @@
+[Unit]
+Description=kindahired hub gateway
+After=network.target
+
+[Service]
+User=kindahired
+WorkingDirectory=/srv/kindahired/app
+EnvironmentFile=/srv/kindahired/hub/gateway.env
+ExecStart=/usr/bin/npm run gateway
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+ProtectSystem=full
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

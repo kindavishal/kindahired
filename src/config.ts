@@ -1,19 +1,37 @@
 import { existsSync, mkdirSync, readFileSync } from "node:fs";
+import os from "node:os";
 import path from "node:path";
+import { migrateLegacyDb } from "./legacy-db.ts";
 
 export const ROOT = path.resolve(import.meta.dirname, "..");
-if (existsSync(path.join(ROOT, ".env"))) process.loadEnvFile(path.join(ROOT, ".env"));
+const IS_HUB = process.env.JH_HUB === "1";
+// On a hub the repo's own .env is the owner's personal one (bot token, keys): never load it into a
+// person's engine. Hub processes read only hub-dir files.
+if (!IS_HUB && existsSync(path.join(ROOT, ".env"))) process.loadEnvFile(path.join(ROOT, ".env"));
 
 export const DATA_DIR = process.env.JH_DATA_DIR ?? path.join(ROOT, "data");
+// The person's own settings (on the hub, one folder per person). Variables already set win.
+if (existsSync(path.join(DATA_DIR, ".env"))) process.loadEnvFile(path.join(DATA_DIR, ".env"));
+// Hub-wide settings come last, so precedence is: process env > person .env > hub.env (as in systemd).
+if (IS_HUB) {
+  const root = process.env.JH_HUB_ROOT || process.env.JH_MAC_ROOT || (process.platform === "darwin" ? path.join(os.homedir(), "kindahired-hub") : "/srv/kindahired");
+  const hubEnv = path.join(process.env.JH_HUB_DIR || path.join(root, "hub"), "hub.env");
+  if (existsSync(hubEnv)) process.loadEnvFile(hubEnv);
+}
+// Databases created before the rename are moved to the new file name before anything opens them.
+mkdirSync(DATA_DIR, { recursive: true });
+migrateLegacyDb(DATA_DIR);
+// On the hub each person's profile and playbook live in their own folder, never the shared repo's.
+const CONTEXT_DIR = process.env.JH_HUB === "1" ? path.join(DATA_DIR, "context") : path.join(ROOT, "context");
 export const PATHS = {
-  db: path.join(DATA_DIR, "jobhunt.db"),
+  db: path.join(DATA_DIR, "kindahired.db"),
   resumes: path.join(DATA_DIR, "resumes"),
   browserProfile: path.join(DATA_DIR, "browser-profile"),
   googleToken: path.join(DATA_DIR, "google-token.json"),
   xToken: path.join(DATA_DIR, "x-token.json"),
   logs: path.join(DATA_DIR, "logs"),
-  playbook: process.env.JH_PLAYBOOK ?? path.join(ROOT, "context", "playbook.md"),
-  profile: process.env.JH_PROFILE ?? path.join(ROOT, "context", "profile.json"),
+  playbook: process.env.JH_PLAYBOOK ?? path.join(CONTEXT_DIR, "playbook.md"),
+  profile: process.env.JH_PROFILE ?? path.join(CONTEXT_DIR, "profile.json"),
 };
 for (const dir of [DATA_DIR, PATHS.resumes, PATHS.logs]) mkdirSync(dir, { recursive: true });
 

@@ -7,6 +7,7 @@ import { LinkedInUnavailable, readLinkedInJob } from "../sources/linkedin.ts";
 import { evidenceBlock } from "./evidence.ts";
 import { findCompanyByName, knownPeopleAt, readBoard } from "./companies.ts";
 import { Brief, type HiringBrief } from "./hiring-brief.ts";
+import { findLinkedInProfile, isLinkedInProfile, isXProfile } from "./profiles.ts";
 
 export { bestContact, getBrief, type HiringBrief } from "./hiring-brief.ts";
 
@@ -98,7 +99,7 @@ export async function researchHiring(id: number, deps: { linkedin?: typeof readL
 
   // 4. One web search for who's hiring and who's talking about it.
   const web = await llm.research(`hiring:${id}`, {
-    effort: "medium", maxSearches: 6,
+    effort: "medium", maxSearches: 10,
     system: `You research who is hiring for one job opening, for ${loadProfile().name}. Public information only. Give a link and a date for every claim, and say plainly when you're unsure.`,
     prompt: [
       `Role: ${o.role}`, `Company: ${company}`,
@@ -106,7 +107,9 @@ export async function researchHiring(id: number, deps: { linkedin?: typeof readL
       o.jd_text && `Job description (summary):\n${o.jd_text.slice(0, 2500)}`,
       "\nFind: (1) the hiring manager or the person this role reports to; (2) the recruiter or talent partner hiring for it; " +
         "(3) anyone who posted or shared this opening on LinkedIn or X (with the post link and date); (4) the team it sits in and who leads it; " +
-        "(5) recent news about that team or the company that matters for this role. For each person give name, title, LinkedIn profile URL if you find it, and the evidence.",
+        "(5) recent news about that team or the company that matters for this role. For each person give name, title and the evidence.\n" +
+        "Then, for each person you name, search for their own profiles (for example \"<name> <company> linkedin\" and \"<name> <company> x.com\") " +
+        "and give the exact URLs: their linkedin.com/in/ profile and their x.com/<handle> profile. Only give a profile you're confident is the same person; say \"not found\" otherwise.",
     ].filter(Boolean).join("\n"),
   }).catch((err) => { logEvent("hiring.research_failed", id, String(err).slice(0, 200)); return ""; });
   if (web.trim()) { notes.push(`Web research:\n${web}`); sources.push("web search"); }
@@ -125,7 +128,18 @@ export async function researchHiring(id: number, deps: { linkedin?: typeof readL
     prompt: `<evidence>\n${evidence}\n</evidence>\n\nRole: ${o.role} at ${company}\n${o.jd_text ? `Job description:\n${o.jd_text.slice(0, 3000)}\n` : ""}\n<notes>\n${notes.join("\n\n") || "(nothing found)"}\n</notes>`,
   });
 
-  const brief: HiringBrief = { ...data, known: knownPeopleAt(o.company), related, sources, researched_at: nowIso() };
+  // Profiles the research didn't turn up: look each one up, so every person on the page links somewhere real.
+  // One at a time: the LinkedIn lookups share one logged-in browser.
+  const people: HiringBrief["people"] = [];
+  for (const p of data.people) {
+    people.push({
+      ...p,
+      linkedin_url: isLinkedInProfile(p.linkedin_url) ? p.linkedin_url : await findLinkedInProfile(p.name, company).catch(() => null),
+      x_url: isXProfile(p.x_url) ? p.x_url.replace("twitter.com", "x.com") : null,
+    });
+  }
+
+  const brief: HiringBrief = { ...data, people, known: knownPeopleAt(o.company), related, sources, researched_at: nowIso() };
   run("UPDATE opportunities SET hiring_brief = $b, hiring_brief_at = $at WHERE id = $id", { b: JSON.stringify(brief), at: brief.researched_at, id });
   logEvent("hiring.researched", id, { people: brief.people.length, sources });
   return brief;

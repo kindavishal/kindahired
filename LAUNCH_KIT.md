@@ -223,7 +223,7 @@ Notes: keep each caption on screen for at least 2 s; transitions are simple cuts
 
 - [ ] Start the public repo from a fresh history (or audit history) so no past commit carries secrets.
 - [ ] `.env` stays ignored; ship only `.env.example` with empty values and comments.
-- [ ] `data/` fully ignored: `jobhunt.db*` and backup copies, `google-token.json`, `browser-profile/`, `linkedin-session.json`, `agent/`, `import/`, generated PDFs.
+- [ ] `data/` fully ignored: `kindahired.db*` and backup copies, `google-token.json`, `browser-profile/`, `linkedin-session.json`, `agent/`, `import/`, generated PDFs.
 - [ ] Any X OAuth tokens and Telegram chat IDs live only in `data/` or `.env`.
 - [ ] `context/profile.json` ignored; ship a `context/profile.example.json`.
 - [ ] Replace the personal playbook with a template `context/playbook.example.md` (keep the rules, drop the personal location, portfolio and sources).

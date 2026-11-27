@@ -1,0 +1,27 @@
+# One engine per person: systemctl enable --now kindahired-engine@<id>
+#
+# All engines run as the single `kindahired` user. Each person's data folder is mode 700, which keeps
+# people apart only from other Linux users, not from each other's engines.
+# Follow-up: a pre-created user per person (jh-<id>) with User=jh-%i, or DynamicUser plus
+# per-instance ReadWritePaths, so one engine cannot read another person's folder.
+[Unit]
+Description=kindahired engine for %i
+After=network.target
+
+[Service]
+User=kindahired
+WorkingDirectory=/srv/kindahired/app
+Environment=JH_DATA_DIR=/srv/kindahired/people/%i
+# Shared hub settings first (Google OAuth client, public URL), then the person's own. systemd lets
+# the later file win, so a variable in the person's .env replaces the hub.env one (see hub.env.template).
+EnvironmentFile=-/srv/kindahired/hub/hub.env
+EnvironmentFile=/srv/kindahired/people/%i/.env
+ExecStart=/usr/bin/npx tsx src/daemon.ts
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+ProtectSystem=full
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

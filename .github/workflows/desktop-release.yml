@@ -1,0 +1,115 @@
+# Builds the desktop app (apps/desktop) and publishes it to GitHub Releases when a tag like
+# desktop-v0.2.0 is pushed. The version comes from the tag.
+#
+# Secrets (all optional; without them the macOS build is unsigned and not notarized):
+#   CSC_LINK           base64 of the Developer ID Application certificate (.p12)
+#   CSC_KEY_PASSWORD   that .p12's password
+#   APPLE_API_KEY      contents of the App Store Connect API key (.p8)
+#   APPLE_API_KEY_ID   that key's ID
+#   APPLE_API_ISSUER   the issuer ID shown above the keys list
+#   RELEASES_TOKEN     fine-grained token with Contents: read and write on kindavishal/kindahired-releases,
+#                      the public repo installers and update files are published to (the source stays private)
+name: Desktop release
+
+on:
+  push:
+    tags: ["desktop-v*"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: desktop-release-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  draft:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create a draft release for the tag
+        env:
+          GH_TOKEN: ${{ secrets.RELEASES_TOKEN }}
+          TAG: ${{ github.ref_name }}
+          REPO: kindavishal/kindahired-releases
+        run: |
+          if ! gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
+            gh release create "$TAG" --repo "$REPO" --draft \
+              --title "Desktop ${TAG#desktop-v}" --notes "Desktop app ${TAG#desktop-v}."
+          fi
+
+  build:
+    needs: draft
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            platform: --mac
+          - os: ubuntu-latest
+            platform: --linux
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: apps/desktop
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: apps/desktop/package-lock.json
+
+      - run: npm ci
+
+      - name: Set the version from the tag
+        run: npm version "${GITHUB_REF_NAME#desktop-v}" --no-git-tag-version --allow-same-version
+
+      - name: Write the App Store Connect key to a file
+        if: runner.os == 'macOS'
+        env:
+          APPLE_API_KEY_CONTENT: ${{ secrets.APPLE_API_KEY }}
+        run: |
+          if [ -n "$APPLE_API_KEY_CONTENT" ]; then
+            key="$RUNNER_TEMP/AuthKey.p8"
+            printf '%s\n' "$APPLE_API_KEY_CONTENT" > "$key"
+            chmod 600 "$key"
+            echo "APPLE_API_KEY=$key" >> "$GITHUB_ENV"
+          else
+            echo "No APPLE_API_KEY secret: the app won't be notarized."
+          fi
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        env:
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+        run: |
+          # Empty secrets would still be set; unset them so the build skips signing cleanly.
+          [ -n "$CSC_LINK" ] || unset CSC_LINK CSC_KEY_PASSWORD
+          npm run build
+          npx electron-builder --config electron-builder.config.cjs ${{ matrix.platform }} --publish never
+
+      - name: Upload to the release
+        env:
+          GH_TOKEN: ${{ secrets.RELEASES_TOKEN }}
+          REPO: kindavishal/kindahired-releases
+        run: |
+          shopt -s nullglob
+          files=(release/*.dmg release/*.zip release/*.blockmap release/*.AppImage release/*.deb release/latest*.yml)
+          if [ ${#files[@]} -eq 0 ]; then echo "Nothing was built." >&2; exit 1; fi
+          gh release upload "$GITHUB_REF_NAME" --repo "$REPO" --clobber "${files[@]}"
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ secrets.RELEASES_TOKEN }}
+          REPO: kindavishal/kindahired-releases
+        run: gh release edit "$GITHUB_REF_NAME" --repo "$REPO" --draft=false --latest

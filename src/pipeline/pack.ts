@@ -9,10 +9,11 @@ import { renderResumePdf } from "../resume/render.ts";
 import { ResumeSchema, stripPlaceholders, validateResume, type Resume, type ResumeIssue } from "../resume/schema.ts";
 import { evidenceBlock } from "./evidence.ts";
 import { getBrief } from "./hiring-brief.ts";
+import { findLinkedInProfile, linkedInSearchUrl } from "./profiles.ts";
 import { readPage } from "../sources/web.ts";
 import { firecrawlAvailable, firecrawlSearch, FirecrawlUnavailable, type SearchResult } from "../sources/firecrawl.ts";
 import {
-  findPeopleOnLinkedIn, findProfileOnLinkedIn, LinkedInUnavailable, readLinkedInJob, type PersonCandidate,
+  findPeopleOnLinkedIn, LinkedInUnavailable, readLinkedInJob, type PersonCandidate,
 } from "../sources/linkedin.ts";
 
 function systemPrompt(extra: string): string {
@@ -257,35 +258,9 @@ export async function buildSummary(opportunityId: number, opts: { context?: stri
 
 export { stripPlaceholders } from "../resume/schema.ts";
 
-/** LinkedIn profile for a named person: my logged-in search first, then a web search, then a search link. */
+/** LinkedIn profile for a named person, or a people-search link when none is found. */
 async function profileLink(name: string, company: string): Promise<string> {
-  try {
-    const found = await findProfileOnLinkedIn(name, company);
-    if (found) return found;
-  } catch (err) {
-    if (!(err instanceof LinkedInUnavailable)) logEvent("profile.lookup_failed", name, String(err));
-  }
-  // One Firecrawl search (2 credits) usually finds the profile; the result must carry their surname.
-  if (firecrawlAvailable()) {
-    try {
-      const results = await firecrawlSearch(`${name} ${company.replace(/\(.*?\)/g, "").trim()} site:linkedin.com/in`, { limit: 5, label: `profile:${name}` });
-      const surname = name.trim().split(/\s+/).pop()!.toLowerCase();
-      const hit = results.find((r) => /linkedin\.com\/in\//i.test(r.url) && `${r.title} ${r.url}`.toLowerCase().includes(surname));
-      if (hit) return hit.url.replace(/[?#].*$/, "");
-    } catch (err) {
-      if (!(err instanceof FirecrawlUnavailable)) logEvent("firecrawl.failed", name, String(err).slice(0, 200));
-    }
-  }
-  try {
-    const notes = await llm.research(`profile:${name}`, {
-      effort: "low", maxSearches: 2,
-      system: "Find one person's public LinkedIn profile URL.",
-      prompt: `LinkedIn profile URL (linkedin.com/in/...) of ${name}, who works at ${company}. Reply with the URL only, or "none".`,
-    });
-    const url = notes.match(/https?:\/\/(?:[a-z]{2,3}\.)?linkedin\.com\/in\/[^\s)"'\]>]+/i)?.[0];
-    if (url) return url.replace(/[.,;]+$/, "");
-  } catch { /* fall through to a search link */ }
-  return `https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(`${name} ${company.replace(/\(.*?\)/g, "").trim()}`)}`;
+  return (await findLinkedInProfile(name, company)) ?? linkedInSearchUrl(name, company);
 }
 
 /** The tailored resume on its own: written from evidence, checked, blanks stripped, rendered. */

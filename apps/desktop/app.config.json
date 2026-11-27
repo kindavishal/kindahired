@@ -1,0 +1,6 @@
+{
+  "appId": "com.kindavishal.kindahired",
+  "productName": "kindahired",
+  "github": { "owner": "kindavishal", "repo": "kindahired-releases" },
+  "linuxMaintainer": "kindavishal <kindavishal@users.noreply.github.com>"
+}

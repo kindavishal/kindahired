@@ -54,7 +54,7 @@ async function resumeLink(o: Opportunity): Promise<string> {
   let folder = kvGet("drive.resumeFolder");
   if (!folder) {
     const f = await api.files.create({
-      requestBody: { name: "Job Hunting Tool — resumes", mimeType: "application/vnd.google-apps.folder" },
+      requestBody: { name: "kindahired — resumes", mimeType: "application/vnd.google-apps.folder" },
       fields: "id",
     });
     folder = f.data.id!;

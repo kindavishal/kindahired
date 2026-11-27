@@ -15,6 +15,7 @@ export const Brief = z.object({
     evidence: z.string().describe("Why this person, in one sentence, naming the source and its date."),
     source_url: z.string().nullable().describe("Link to the evidence, copied exactly from the notes. Null if none."),
     linkedin_url: z.string().nullable().describe("Their linkedin.com/in/ profile, copied exactly from the notes. Null if not in the notes."),
+    x_url: z.string().nullable().describe("Their own X (Twitter) profile, as https://x.com/<handle>, copied exactly from the notes. Not a post link. Null if not in the notes."),
   })).max(6),
   team: z.string().nullable().describe("The team the role sits in, who leads it, and anything known about its size or recent changes. Null if unknown."),
   signals: z.array(z.object({
