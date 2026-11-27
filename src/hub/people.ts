@@ -25,9 +25,10 @@ export interface Person {
   chatId: number | null;
 }
 
-/** Where the hub lives: ~/kindahired-hub on a Mac, /srv/kindahired on the Linux VM. */
-export const hubRoot = () => (process.platform === "darwin" ? path.join(os.homedir(), "kindahired-hub") : "/srv/kindahired");
-export const hubDir = () => process.env.JH_HUB_DIR || (process.platform === "darwin" ? path.join(hubRoot(), "hub") : "/srv/kindahired/hub");
+/** Where the hub lives: JH_HUB_ROOT, else ~/kindahired-hub on a Mac and /srv/kindahired on the Linux VM. */
+export const hubRoot = () =>
+  process.env.JH_HUB_ROOT || process.env.JH_MAC_ROOT || (process.platform === "darwin" ? path.join(os.homedir(), "kindahired-hub") : "/srv/kindahired");
+export const hubDir = () => process.env.JH_HUB_DIR || path.join(hubRoot(), "hub");
 export const peoplePath = (dir = hubDir()) => path.join(dir, "people.json");
 
 export function loadPeople(dir = hubDir()): Person[] {

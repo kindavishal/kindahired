@@ -14,7 +14,8 @@ export const DATA_DIR = process.env.JH_DATA_DIR ?? path.join(ROOT, "data");
 if (existsSync(path.join(DATA_DIR, ".env"))) process.loadEnvFile(path.join(DATA_DIR, ".env"));
 // Hub-wide settings come last, so precedence is: process env > person .env > hub.env (as in systemd).
 if (IS_HUB) {
-  const hubEnv = path.join(process.env.JH_HUB_DIR || (process.platform === "darwin" ? path.join(os.homedir(), "kindahired-hub", "hub") : "/srv/kindahired/hub"), "hub.env");
+  const root = process.env.JH_HUB_ROOT || process.env.JH_MAC_ROOT || (process.platform === "darwin" ? path.join(os.homedir(), "kindahired-hub") : "/srv/kindahired");
+  const hubEnv = path.join(process.env.JH_HUB_DIR || path.join(root, "hub"), "hub.env");
   if (existsSync(hubEnv)) process.loadEnvFile(hubEnv);
 }
 // Databases created before the rename are moved to the new file name before anything opens them.

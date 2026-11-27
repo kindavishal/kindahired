@@ -1,117 +1,110 @@
-# Hub setup: your Mac (launchd)
+# Running the hub on a Mac
 
-The same hub as `deploy/hub/`, run as launchd LaunchAgents instead of systemd units. Contracts are in
-[../../docs/hub-build.md](../../docs/hub-build.md). Layout:
+The hub can run on a Mac instead of a Linux VM: the same gateway, router and one engine per person,
+started by launchd. The Mac has to stay on, awake and online.
 
-```
-~/kindahired-hub/
-  app/      a separate git clone of this repo on branch hub (never your dev checkout)
-  hub/      JH_HUB_DIR: people.json, gateway.env, router.env, hub.env
-  people/   JH_PEOPLE_DIR: one folder per person
-  logs/     one log per launchd job
-```
+## Layout
 
-Labels are `dev.kindahired.gateway`, `dev.kindahired.router` and `dev.kindahired.engine.<id>`. The
-gateway runs under `caffeinate -s`, so the Mac stays awake while on power.
-
-1. Create the folders:
-   ```
-   mkdir -p ~/kindahired-hub/{hub,people,logs} && chmod 700 ~/kindahired-hub/hub ~/kindahired-hub/people
-   ```
-2. Clone the repo into `app/` and switch to the hub branch:
-   ```
-   git clone <repo url> ~/kindahired-hub/app
-   cd ~/kindahired-hub/app && git checkout hub
-   ```
-3. Install dependencies and Chromium (Node 24 required; `mac:install` pins whichever `node` runs it):
-   ```
-   npm ci
-   npx playwright install chromium
-   ```
-4. Write the three env files in `~/kindahired-hub/hub/` (mode 600) from the templates:
-   ```
-   cd ~/kindahired-hub/app
-   cp deploy/hub/gateway.env.template ~/kindahired-hub/hub/gateway.env
-   cp deploy/hub/router.env.template  ~/kindahired-hub/hub/router.env
-   cp deploy/hub/hub.env.template     ~/kindahired-hub/hub/hub.env
-   chmod 600 ~/kindahired-hub/hub/*.env
-   ```
-   Fill them in: `gateway.env` (Cloudflare Access team domain and AUD), `router.env` (the bot token
-   and webhook secret), `hub.env` (the Google client id and secret, and `JH_PUBLIC_URL`). Add
-   `JH_HUB_DIR=<your home>/kindahired-hub/hub` to `gateway.env` and `router.env` only if you want it
-   explicit; the plists already set it. The env files are sourced by `sh`, so keep values free of
-   spaces or quote them.
-5. Add the first person (this prints the keys file to fill in and the mac command):
-   ```
-   cd ~/kindahired-hub/app && npm run hub -- add-person sam sam@example.com
-   ```
-   On a Mac the default folders are the layout above; no extra variables needed.
-6. Install the tunnel. In Cloudflare Zero Trust, create a remotely-managed tunnel for the hub, route the
-   hub's hostname to `http://127.0.0.1:8080`, then:
-   ```
-   brew install cloudflared
-   sudo cloudflared service install <token>
-   ```
-   The token comes from the tunnel's page in the Cloudflare dashboard. It is a secret: paste it
-   yourself, and do not share it or commit it. Access policies (Allow list, Bypass for
-   `/telegram/webhook` and `/worker/*`) are as in `deploy/hub/cloudflared-config.example.yml`.
-7. Write the launchd plists:
-   ```
-   cd ~/kindahired-hub/app && npm run hub -- mac:install
-   ```
-   For one person only: `npm run hub -- mac:install --person sam`.
-8. Start everything with the `launchctl bootstrap gui/$(id -u) <plist>` lines that step 7 printed. To
-   start by hand: `launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/dev.kindahired.gateway.plist`
-   (and `.router`, `.engine.<id>`).
-9. Point Telegram at the hub (the token and secret live in `router.env`):
-   ```
-   cd ~/kindahired-hub/app && set -a && . ../hub/router.env && set +a && npm run hub -- telegram:webhook https://<hub domain>/telegram/webhook
-   ```
-10. Checks:
-    ```
-    curl http://127.0.0.1:8080/healthz          # ok
-    launchctl print gui/$(id -u)/dev.kindahired.gateway | grep -E "state|pid"
-    tail -f ~/kindahired-hub/logs/*.log
-    ```
-    LaunchAgents run while you are logged in. Turn on automatic login for the Mac's user if it must
-    come back after a reboot unattended.
-
-## Updating
+Everything lives under one root folder, set with `JH_HUB_ROOT` (default `~/kindahired-hub`). The
+owner's hub uses `/Volumes/Cache/kindahired`:
 
 ```
-cd ~/kindahired-hub/app && git pull && npm ci
-launchctl kickstart -k gui/$(id -u)/dev.kindahired.gateway
-launchctl kickstart -k gui/$(id -u)/dev.kindahired.router
-launchctl kickstart -k gui/$(id -u)/dev.kindahired.engine.sam     # one per person
+<root>/
+  code/     your working copy of the repo (where changes are made; optional)
+  app/      a separate clone on branch hub that the live hub runs from
+  bin/      node and cloudflared, the only programs the services run
+  hub/      people.json, gateway.env, router.env, hub.env, tunnel-token (all mode 600)
+  people/   one data folder per person (mode 700)
 ```
 
-Re-run `npm run hub -- mac:install` only if the node binary moved or the plist templates changed
-(then `launchctl bootout` and `bootstrap` the changed ones). `npm run hub -- mac:uninstall` prints the
-bootout and `rm` commands.
+Outside the root there are only the launchd plists (`~/Library/LaunchAgents/dev.kindahired.*.plist`)
+and launchd's own logs (`~/Library/Logs/kindahired/`), because launchd itself can't open files on an
+external drive.
 
-## Moving the owner's existing setup in
+## External drives and Full Disk Access
 
-Do this after step 5 has created `people/<id>/` for yourself, before step 8.
+macOS won't let a background service read or write an external drive unless the program has Full
+Disk Access. A shell started by launchd is refused too, so the services never use one: each runs
+`<root>/bin/node` or `<root>/bin/cloudflared` directly, and those two binaries are the only ones
+given Full Disk Access. A dedicated copy of node keeps the permission away from the node you use
+for everything else. On the internal drive none of this is needed.
+
+## Set up
+
+1. Make the folders and the dedicated node:
+
+   ```bash
+   export JH_HUB_ROOT=/Volumes/Cache/kindahired
+   mkdir -p $JH_HUB_ROOT/{bin,hub,people} && chmod 700 $JH_HUB_ROOT/hub $JH_HUB_ROOT/people
+   cp "$(which node)" $JH_HUB_ROOT/bin/node
+   ```
+
+2. Clone the app and install:
+
+   ```bash
+   git clone <repo url> $JH_HUB_ROOT/app && cd $JH_HUB_ROOT/app && git checkout hub && npm ci && npx playwright install chromium
+   ```
+
+3. Write the env files from the templates and fill them in (owner checklist, sections 5 to 7):
+
+   ```bash
+   cd $JH_HUB_ROOT/app
+   cp deploy/hub/gateway.env.template $JH_HUB_ROOT/hub/gateway.env
+   cp deploy/hub/router.env.template  $JH_HUB_ROOT/hub/router.env
+   cp deploy/hub/hub.env.template     $JH_HUB_ROOT/hub/hub.env
+   chmod 600 $JH_HUB_ROOT/hub/*.env
+   ```
+
+4. Cloudflare Tunnel. Download cloudflared into `bin/`, save the tunnel token to `hub/tunnel-token`
+   (mode 600), and run it as a launchd service that reads the token from that file
+   (`cloudflared tunnel --no-autoupdate --logfile <root>/logs/cloudflared.log run --token-file <root>/hub/tunnel-token`).
+   Its public hostname points at `http://localhost:8080`.
+
+5. Give **Full Disk Access** to `<root>/bin/node` and `<root>/bin/cloudflared` (System Settings →
+   Privacy & Security → Full Disk Access → +, then Cmd+Shift+G to paste the path).
+
+6. Add people, then write and start the services:
+
+   ```bash
+   cd $JH_HUB_ROOT/app
+   npm run hub -- add-person <id> <email>
+   npm run hub -- mac:install
+   ```
+
+   `mac:install` writes a plist for `awake` (caffeinate, keeps the Mac awake on power), `gateway`,
+   `router` and each person's engine, and prints the `launchctl bootstrap` commands to run.
+
+7. Point Telegram at the hub:
+
+   ```bash
+   cd $JH_HUB_ROOT/app && node --env-file=$JH_HUB_ROOT/hub/router.env --import tsx src/hub/cli.ts telegram:webhook https://<hub domain>/
+   ```
+
+8. Check: `curl http://127.0.0.1:8080/healthz` returns `ok`, `launchctl print gui/$(id -u)/dev.kindahired.gateway`
+   shows it running, and `tail -f ~/Library/Logs/kindahired/*.log` shows no errors.
+
+## Day to day
+
+- Restart one service: `launchctl kickstart -k gui/$(id -u)/dev.kindahired.<name>`
+- Stop one: `launchctl bootout gui/$(id -u)/dev.kindahired.<name>`; start it again with
+  `launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/dev.kindahired.<name>.plist`
+- Update: `cd $JH_HUB_ROOT/app && git pull && npm ci`, then kickstart each service.
+- Remove everything: `npm run hub -- mac:uninstall` prints the commands.
+
+## Moving an existing local setup in
 
 1. Stop the old local daemon (whichever exists):
+   `launchctl bootout gui/$(id -u)/local.kindahired.daemon` or `local.jobhunt.daemon`.
+2. Copy its data and context into the person's folder:
+
+   ```bash
+   cp -R <old>/data/. $JH_HUB_ROOT/people/<id>/
+   mkdir -p $JH_HUB_ROOT/people/<id>/context
+   cp <old>/context/profile.json <old>/context/playbook.md $JH_HUB_ROOT/people/<id>/context/
    ```
-   launchctl bootout gui/$(id -u)/local.kindahired.daemon
-   launchctl bootout gui/$(id -u)/local.jobhunt.daemon
-   ```
-2. Copy the data (the old checkout is `<old>`). `jobhunt.db` is renamed to `kindahired.db` on first start:
-   ```
-   cp -R <old>/data/. ~/kindahired-hub/people/<id>/
-   mkdir -p ~/kindahired-hub/people/<id>/context
-   cp <old>/context/profile.json <old>/context/playbook.md ~/kindahired-hub/people/<id>/context/
-   ```
-3. Split the old repo `.env`. The hub never reads a repo `.env`:
-   - Personal keys (`GEMINI_API_KEY`, `ANTHROPIC_API_KEY`, `MY_EMAILS`, and the like) go into
-     `people/<id>/.env`, below the lines `add-person` wrote. Do not copy `TELEGRAM_BOT_TOKEN` or
-     `PORT` there; the file already has the relay values.
-   - `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` go into `hub/hub.env`.
-   - `TELEGRAM_BOT_TOKEN` goes into `hub/router.env`.
-4. Set your chat id in `hub/people.json` (your entry's `"chatId"`, a number), using:
-   ```
-   sqlite3 ~/kindahired-hub/people/<id>/kindahired.db "select value from kv where key='telegram.chatId'"
-   ```
-5. Start the hub (step 8) and check the dashboard. Keep the old checkout until you are happy.
+
+   A `jobhunt.db` is renamed to `kindahired.db` the first time the engine starts.
+3. Move personal keys (Gemini, Anthropic, `MY_EMAILS`, Firecrawl, X) from the old `.env` into
+   `people/<id>/.env`, the Google client into `hub/hub.env`, and the bot token into `hub/router.env`.
+4. Put the person's Telegram chat id in `people.json`:
+   `sqlite3 $JH_HUB_ROOT/people/<id>/kindahired.db "select value from kv where key='telegram.chatId'"`.
