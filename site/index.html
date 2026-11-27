@@ -34,7 +34,7 @@
       <a href="#faq">FAQ</a>
     </div>
     <a class="btn btn-outline" href="https://app-kindahired.kindavishal.dev/">Sign in</a>
-    <a class="btn btn-primary" href="#setup">Get started</a>
+    <a class="btn btn-primary" href="#get">Get early access</a>
   </nav>
 </header>
 
@@ -44,7 +44,7 @@
       <h1>Every job posting, turned into a pack you can act on.</h1>
       <p class="lede">An honest fit read, the real apply link, a tailored resume, a cover note and the right people to contact. All ready before you open your laptop. You still press send.</p>
       <div class="row">
-        <a class="btn btn-primary btn-lg" href="#setup">Get started</a>
+        <a class="btn btn-primary btn-lg" href="#get">Get early access</a>
         <a class="btn btn-outline btn-lg" href="#how">See how it works<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
       </div>
       <ul class="proof">
@@ -197,13 +197,32 @@
     </div>
   </section>
 
-  <section id="setup" class="wrap section" style="padding-bottom:0">
-    <h2 class="h2">Running in an evening</h2>
-    <ol class="setup">
-      <li><span><strong>Connect Gmail and Calendar</strong><span class="muted">Read-only. It can see alerts and replies, never send.</span></span></li>
-      <li><span><strong>Link the Telegram bot</strong><span class="muted">Packs and reminders land on your phone, quiet at night.</span></span></li>
-      <li><span><strong>Point it at your portfolio</strong><span class="muted">It builds the evidence bank every resume line comes from.</span></span></li>
-    </ol>
+  <section id="get" class="wrap section" style="padding-bottom:0">
+    <h2 class="h2">Get kindahired</h2>
+    <p class="muted get-lede">It's in early access. Ask for a spot and you'll get an email when you're in.</p>
+    <div class="get-grid">
+      <form class="card get-card" id="ask" novalidate>
+        <h3>Request early access</h3>
+        <label class="field"><span>Email</span><input type="email" name="email" required autocomplete="email" placeholder="you@example.com"></label>
+        <label class="field"><span>LinkedIn profile</span><input type="url" name="linkedin" required autocomplete="url" placeholder="linkedin.com/in/your-name"></label>
+        <label class="hp" aria-hidden="true">Website <input name="website" tabindex="-1" autocomplete="off"></label>
+        <button class="btn btn-primary btn-lg" type="submit">Request access</button>
+        <p class="form-note" role="status" aria-live="polite"></p>
+      </form>
+      <div class="card get-card">
+        <h3>Already in?</h3>
+        <ol class="setup setup-tight">
+          <li><span><strong>Download the app</strong><span class="muted">For Mac and Linux.</span></span></li>
+          <li><span><strong>Install Claude Code</strong><span class="muted">And sign in to your Claude account. Packs run on your own plan.</span></span></li>
+          <li><span><strong>Sign in to kindahired</strong><span class="muted">With the email you were invited on.</span></span></li>
+        </ol>
+        <div class="row">
+          <a class="btn btn-outline btn-lg" id="dl-main" href="https://github.com/kindavishal/kindahired/releases/latest">Download the app</a>
+          <a class="btn btn-ghost btn-lg" href="https://claude.com/claude-code" target="_blank" rel="noopener">Get Claude Code</a>
+        </div>
+        <p class="muted small" id="dl-other"></p>
+      </div>
+    </div>
   </section>
 
   <section id="faq" class="wrap section faq">
@@ -212,6 +231,7 @@
       <details open><summary>Does it apply for me?<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><p>No. It opens the application with everything ready to paste. You press submit.</p></details>
       <details><summary>What if the fit read is wrong?<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><p>Every verdict shows its reasons. Build the pack anyway, or change the rules it follows in your playbook.</p></details>
       <details><summary>Which roles does it work for?<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><p>It started with community and DevRel roles. Your profile lists the role families you want, and screening follows it.</p></details>
+      <details><summary>Why an app?<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><p>Packs and research are written by Claude Code on your own computer, on your own Claude plan. The app connects it. Everything else reaches you in Telegram.</p></details>
       <details><summary>Why "kindahired"?<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><p>Because it won't promise you the job. It gets you ready, keeps you on track, and leaves the last step to you.</p></details>
     </div>
   </section>
@@ -221,7 +241,7 @@
       <svg width="48" height="48" aria-hidden="true"><use href="#mark"/></svg>
       <h2>Spend your evenings on the roles worth it.</h2>
       <p>Prepares everything. Sends nothing.</p>
-      <a class="btn btn-light btn-lg" href="#setup">Get started</a>
+      <a class="btn btn-light btn-lg" href="#get">Get early access</a>
     </div>
   </section>
 </main>
@@ -231,5 +251,6 @@
   <nav aria-label="Footer"><a href="#privacy">Privacy</a><a href="#faq">FAQ</a></nav>
   <span>© 2026 kindahired</span>
 </footer>
+<script src="get.js" defer></script>
 </body>
 </html>
