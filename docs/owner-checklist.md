@@ -136,7 +136,18 @@ ssh-keygen -t ed25519 -C "jobhunt-hub"
      web traffic goes through Cloudflare).
    - SSH keys: paste the contents of `~/.ssh/id_ed25519.pub`.
    - Boot volume: set it to **150 GB** (Always Free includes 200 GB in total).
-   - If you see "Out of capacity", try another availability domain, or retry later.
+   - If you see "Out of capacity", try these in order:
+     1. **Ask for less:** 2 OCPUs and 12 GB, or even 1 OCPU and 6 GB. Smaller requests fit more
+        often, and 2/12 is plenty for 12 people. You can grow the shape later from **Edit → Shape**,
+        within the free 4/24.
+     2. **Upgrade to Pay As You Go** (step 2). Free-only accounts are served last when ARM capacity is
+        tight. Upgraded accounts usually get a VM within minutes, and the A1 shape stays free up to
+        4 OCPUs and 24 GB. Set the $1 budget alert first.
+     3. **Keep retrying.** Capacity frees up during the day. The **Create** button can be pressed
+        again every few minutes.
+     4. **Run the hub on your Mac for now.** The same code runs there behind the same Cloudflare
+        Tunnel, so testers see no difference. Moving to Oracle later means copying the data folder
+        across.
 5. When it shows **Running**, copy the public IP and check that you can log in:
 
 ```bash
