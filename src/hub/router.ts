@@ -145,7 +145,12 @@ export async function startRouter(o: RouterOptions): Promise<Router> {
   }
 
   async function getUpdates(person: Person, p: Params, res: http.ServerResponse) {
-    const offset = Number(p.offset ?? 0) || 0;
+    let offset = Number(p.offset ?? 0) || 0;
+    // An engine that used to poll Telegram directly remembers Telegram's update ids, which are far
+    // above the router's own. An offset past anything issued here can't be a confirmation, so it is
+    // ignored rather than allowed to discard queued updates.
+    const last = (db.prepare("SELECT next FROM counters WHERE person = ?").get(person.id) as { next: number } | undefined)?.next ?? 0;
+    if (offset > last + 1) offset = 0;
     const limit = clamp(Number(p.limit ?? 100) || 100, 1, 100);
     const timeout = clamp(Number(p.timeout ?? 0) || 0, 0, MAX_POLL_S);
     // Bot API semantics: asking from an offset confirms everything before it.

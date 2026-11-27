@@ -131,6 +131,13 @@ test("getUpdates follows Bot API offsets: earlier updates are confirmed and gone
   assert.deepEqual(next.map((u: { update_id: number }) => u.update_id), [4]);
 });
 
+test("a stale offset from polling Telegram directly is ignored instead of dropping the queue", async () => {
+  await webhook(msg(111, "moved over"));
+  const got = (await relay("ana", "getUpdates", { offset: 108621211, timeout: 0 })).json.result;
+  assert.ok(got.length >= 1, "queued updates are still delivered");
+  assert.ok(got.some((u: { message?: { text?: string } }) => u.message?.text === "moved over"));
+});
+
 test("getUpdates holds the request until an update arrives, or the timeout passes", async () => {
   const started = Date.now();
   const waiting = relay("ana", "getUpdates", { offset: 0, timeout: 5 });
