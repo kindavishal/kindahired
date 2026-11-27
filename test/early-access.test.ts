@@ -6,7 +6,7 @@ import path from "node:path";
 import { after, before, beforeEach, test } from "node:test";
 import { personIdFor, validateRequest } from "../src/hub/early-access.ts";
 import { savePeople, type Person } from "../src/hub/people.ts";
-import { allowEmail, inviteText, provision, type ProvisionDeps, type Step } from "../src/hub/provision.ts";
+import { inviteText, provision, type ProvisionDeps, type Step } from "../src/hub/provision.ts";
 import { startRouter, type Router } from "../src/hub/router.ts";
 
 test("the form: an email and a LinkedIn profile link, cleaned up", () => {
@@ -26,16 +26,15 @@ test("person ids come from the email and never clash", () => {
 test("the invite says what to do, with this email", () => {
   const m = inviteText("asha@example.com", "https://kindahired.example");
   assert.match(m.text, /Download the app for Mac or Linux: https:\/\/kindahired\.example/);
-  assert.match(m.text, /sign in with asha@example\.com/);
+  assert.match(m.text, /sign in with asha@example\.com\. We'll email you a code/);
 });
 
-function fakeDeps(fail: Partial<Record<"engine" | "allow" | "invite", boolean>> = {}) {
+function fakeDeps(fail: Partial<Record<"engine" | "invite", boolean>> = {}) {
   const calls: string[] = [];
   const people: { id: string; email: string }[] = [{ id: "asha", email: "someone@else.com" }];
   const deps: ProvisionDeps = {
     addPerson: (id, email) => { calls.push(`add ${id}`); people.push({ id, email }); },
     startEngine: (id) => { calls.push(`engine ${id}`); if (fail.engine) throw new Error("launchctl failed"); return "started"; },
-    allowEmail: async (e) => { calls.push(`allow ${e}`); if (fail.allow) throw new Error("Cloudflare isn't set up"); return "added"; },
     sendInvite: async (e) => { calls.push(`invite ${e}`); if (fail.invite) throw new Error("smtp down"); return "sent"; },
     people: () => people,
   };
@@ -43,38 +42,25 @@ function fakeDeps(fail: Partial<Record<"engine" | "allow" | "invite", boolean>> 
 }
 
 test("approving: every step, and a retry only redoes what failed", async () => {
-  const first = fakeDeps({ allow: true });
+  const first = fakeDeps({ invite: true });
   const r1 = await provision({ email: "asha@example.com", person: null }, first.deps);
   assert.equal(r1.person, "asha-2");
-  assert.deepEqual(first.calls, ["add asha-2", "engine asha-2", "allow asha@example.com"]);
-  assert.deepEqual(r1.steps.map((s) => [s.name, s.ok]), [["account", true], ["engine", true], ["sign-in", false], ["email", false]]);
+  assert.deepEqual(first.calls, ["add asha-2", "engine asha-2", "invite asha@example.com"]);
+  assert.deepEqual(r1.steps.map((s) => [s.name, s.ok]), [["account", true], ["engine", true], ["email", false]]);
 
-  // Retry with Cloudflare fixed: the account exists and the engine already started.
+  // Retry with email fixed: the account exists and the engine already started.
   const again = fakeDeps();
   again.people.push({ id: "asha-2", email: "asha@example.com" });
   const r2 = await provision({ email: "asha@example.com", person: "asha-2" }, again.deps, r1.steps);
-  assert.deepEqual(again.calls, ["allow asha@example.com", "invite asha@example.com"]);
+  assert.deepEqual(again.calls, ["invite asha@example.com"]);
   assert.ok(r2.steps.every((s) => s.ok));
 });
 
-test("Cloudflare: adds the email to the policy once, keeping the rest of it", async () => {
-  const policy = { id: "p1", name: "Dashboards", decision: "allow", include: [{ email: { email: "me@example.com" } }], exclude: [], require: [], session_duration: "720h", created_at: "x" };
-  const sent: { method: string; body?: any }[] = [];
-  const fakeFetch = (async (_url: string, init: RequestInit = {}) => {
-    sent.push({ method: init.method ?? "GET", body: init.body ? JSON.parse(String(init.body)) : undefined });
-    return new Response(JSON.stringify({ success: true, result: policy }), { status: 200 });
-  }) as typeof fetch;
-  const env = { CF_API_TOKEN: "t", CF_ACCOUNT_ID: "a", CF_ACCESS_POLICY_ID: "p1" };
-  assert.equal(await allowEmail("new@example.com", env, fakeFetch), "Added to the sign-in list");
-  const put = sent.find((s) => s.method === "PUT")!;
-  assert.deepEqual(put.body.include, [{ email: { email: "me@example.com" } }, { email: { email: "new@example.com" } }]);
-  assert.equal(put.body.session_duration, "720h");
-  assert.equal(put.body.id, undefined);
-  assert.equal(put.body.created_at, undefined);
-  sent.length = 0;
-  assert.equal(await allowEmail("ME@example.com", env, fakeFetch), "Already on the sign-in list");
-  assert.ok(!sent.some((s) => s.method === "PUT"));
-  await assert.rejects(allowEmail("x@example.com", {}, fakeFetch), /Cloudflare isn't set up/);
+test("no invite while their dashboard isn't running", async () => {
+  const d = fakeDeps({ engine: true });
+  const r = await provision({ email: "b@example.com", person: null }, d.deps);
+  assert.deepEqual(d.calls, ["add b", "engine b"]);
+  assert.deepEqual(r.steps.map((s) => [s.name, s.ok]), [["account", true], ["engine", false], ["email", false]]);
 });
 
 // ---------- Through the router ----------
@@ -118,7 +104,6 @@ beforeEach(async () => {
   const deps: ProvisionDeps = {
     addPerson: (id) => { provisioned.push(`add ${id}`); },
     startEngine: (id) => { provisioned.push(`engine ${id}`); return "started"; },
-    allowEmail: async (e) => { provisioned.push(`allow ${e}`); return "added"; },
     sendInvite: async (e) => { provisioned.push(`invite ${e}`); return "sent"; },
     people: () => [],
   };
@@ -174,7 +159,7 @@ test("Approve in Telegram runs every step and updates the message; others' taps 
   await tap(111, "ea:approve:1");
   assert.deepEqual(provisioned, []);
   await tap(900, "ea:approve:1");
-  assert.deepEqual(provisioned, ["add new", "engine new", "allow new@example.com", "invite new@example.com"]);
+  assert.deepEqual(provisioned, ["add new", "engine new", "invite new@example.com"]);
   const edit = calls.find((c) => c.method === "editMessageText")!;
   assert.match(edit.body.text, /Approved\./);
   assert.ok(calls.some((c) => c.method === "answerCallbackQuery"));
@@ -199,9 +184,9 @@ test("/admin: only through the gateway, only for admins; changes only from the p
 });
 
 test("a step that failed shows on /admin with a retry", async () => {
-  const steps: Step[] = [{ name: "sign-in", ok: false, detail: "Cloudflare isn't set up" }];
+  const steps: Step[] = [{ name: "email", ok: false, detail: "Email isn't set up" }];
   const { adminPage } = await import("../src/hub/admin-page.ts");
-  const html = adminPage({ requests: [{ id: 3, email: "x@example.com", linkedin: "https://www.linkedin.com/in/x", created_at: 0, status: "approved", decided_at: 0, person: "x", steps: JSON.stringify(steps), telegram_message: null }], people: [] });
+  const html = adminPage({ requests: [{ id: 3, email: "x@example.com", linkedin: "https://www.linkedin.com/in/x", created_at: 0, status: "approved", decided_at: 0, person: "x", steps: JSON.stringify(steps), telegram_message: null, verified: 0 }], people: [] });
   assert.match(html, /Retry failed steps/);
-  assert.match(html, /Cloudflare isn&#39;t set up/);
+  assert.match(html, /Email isn&#39;t set up/);
 });

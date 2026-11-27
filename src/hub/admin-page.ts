@@ -43,7 +43,7 @@ export function adminPage(o: { requests: AccessRequest[]; people: PersonRow[]; f
   const decided = o.requests.filter((r) => r.status !== "pending");
   const failed = (r: AccessRequest) => r.status === "approved" && /"ok":false/.test(r.steps ?? "");
   const reqRow = (r: AccessRequest) => `<tr>
-<td><div class="who">${esc(r.email)}</div><a href="${esc(r.linkedin)}" target="_blank" rel="noopener">LinkedIn</a>${stepsList(r.steps)}</td>
+<td><div class="who">${esc(r.email)}</div><a href="${esc(r.linkedin)}" target="_blank" rel="noopener">LinkedIn</a>${r.verified ? ` <span class="muted">· email confirmed</span>` : ""}${stepsList(r.steps)}</td>
 <td>${r.status === "pending" ? `asked ${ago(r.created_at, now)}` : `${esc(r.status)} ${ago(r.decided_at, now)}`}</td>
 <td class="actions">${r.status === "pending"
     ? button(`/admin/requests/${r.id}/approve`, "Approve", "primary") + button(`/admin/requests/${r.id}/decline`, "Decline")

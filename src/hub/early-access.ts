@@ -21,6 +21,8 @@ export interface AccessRequest {
   steps: string | null;
   /** The Telegram message that announced it, so it can be updated. */
   telegram_message: number | null;
+  /** 1 when it came from someone signed in, so the email is proven. */
+  verified: number;
 }
 
 export function initRequests(db: DatabaseSync): void {
@@ -39,6 +41,8 @@ CREATE TABLE IF NOT EXISTS access_requests (
 );
 CREATE INDEX IF NOT EXISTS access_requests_ip ON access_requests (ip, created_at);
 `);
+  const cols = (db.prepare("PRAGMA table_info(access_requests)").all() as { name: string }[]).map((c) => c.name);
+  if (!cols.includes("verified")) db.exec("ALTER TABLE access_requests ADD COLUMN verified INTEGER NOT NULL DEFAULT 0");
 }
 
 /** Checks the form: an email address and a LinkedIn profile link. */
@@ -66,15 +70,21 @@ export const PER_IP_PER_HOUR = 5;
  * Adds a request. An email that already asked gets the existing request back (`created` false), so
  * asking twice is harmless and tells nobody whether an address was already there.
  */
-export function addRequest(db: DatabaseSync, r: { email: string; linkedin: string; ip: string }, now = Date.now()): { request: AccessRequest; created: boolean } | { error: "rate" } {
+export function addRequest(db: DatabaseSync, r: { email: string; linkedin: string; ip: string; verified?: boolean }, now = Date.now()): { request: AccessRequest; created: boolean } | { error: "rate" } {
   const existing = db.prepare("SELECT * FROM access_requests WHERE email = ?").get(r.email) as AccessRequest | undefined;
-  if (existing) return { request: existing, created: false };
+  if (existing) {
+    if (r.verified && !existing.verified) db.prepare("UPDATE access_requests SET verified = 1 WHERE id = ?").run(existing.id);
+    return { request: { ...existing, verified: r.verified ? 1 : existing.verified }, created: false };
+  }
   const recent = db.prepare("SELECT count(*) AS n FROM access_requests WHERE ip = ? AND created_at > ?").get(r.ip, now - 3_600_000) as { n: number };
   if (recent.n >= PER_IP_PER_HOUR) return { error: "rate" };
-  const request = db.prepare("INSERT INTO access_requests (email, linkedin, ip, created_at) VALUES (?, ?, ?, ?) RETURNING *")
-    .get(r.email, r.linkedin, r.ip, now) as unknown as AccessRequest;
+  const request = db.prepare("INSERT INTO access_requests (email, linkedin, ip, created_at, verified) VALUES (?, ?, ?, ?, ?) RETURNING *")
+    .get(r.email, r.linkedin, r.ip, now, r.verified ? 1 : 0) as unknown as AccessRequest;
   return { request, created: true };
 }
+
+export const requestByEmail = (db: DatabaseSync, email: string) =>
+  db.prepare("SELECT * FROM access_requests WHERE email = ?").get(email.trim().toLowerCase()) as AccessRequest | undefined;
 
 export const getRequest = (db: DatabaseSync, id: number) =>
   db.prepare("SELECT * FROM access_requests WHERE id = ?").get(id) as AccessRequest | undefined;
