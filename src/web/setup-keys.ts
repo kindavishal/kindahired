@@ -172,8 +172,8 @@ ${v ? `<label class="choice"><input type="checkbox" name="${s.key}__remove" valu
 
 function keysPage(values: Map<string, string>, o: { errors?: string[]; flash?: string | null } = {}): string {
   return page("AI keys · kindahired", `<div class="stack setup">${backToSetup}
-<div><h1>AI keys and settings</h1><p class="lede">Keys are stored only in your own settings file on the hub. This page never shows a saved key again, only its last four characters.</p>
-<p class="hint">Leave a key field empty to keep the key you have. Saving restarts your engine, which takes a few seconds.</p></div>
+<div><h1>AI keys and settings</h1><p class="lede">Your keys are kept only in your own settings. This page never shows a saved key again, only its last four characters.</p>
+<p class="hint">Leave a key field empty to keep the key you have.</p></div>
 ${errorBox(o.errors ?? [])}
 <form method="post" action="/setup/keys" class="stack" autocomplete="off">
 <div class="panel">${KEY_SPECS.map((s) => row(s, values)).join("")}</div>
@@ -182,10 +182,10 @@ ${errorBox(o.errors ?? [])}
 }
 
 function restartingPage(): string {
-  const done = "/setup/keys?flash=" + encodeURIComponent("Saved. Your engine has restarted.");
-  return page("Restarting · kindahired", `<noscript><meta http-equiv="refresh" content="8;url=${esc(done)}"></noscript>
-<div class="stack setup"><h1>Saved. Restarting your engine…</h1>
-<p class="lede">This page reloads once the engine answers again, usually within 10 seconds.</p>
+  const done = "/setup/keys?flash=" + encodeURIComponent("Saved.");
+  return page("Saving · kindahired", `<noscript><meta http-equiv="refresh" content="8;url=${esc(done)}"></noscript>
+<div class="stack setup"><h1>Saving…</h1>
+<p class="lede">This takes a few seconds. The page reloads when it's done.</p>
 <p class="hint"><a href="${esc(done)}">Reload now</a></p></div>
 <script>(function(){var boot=${JSON.stringify(BOOT)};function tick(){fetch('/setup/keys/ping',{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).then(function(j){if(j&&j.boot!==boot){location.href=${JSON.stringify(done)}}else{setTimeout(tick,1500)}},function(){setTimeout(tick,1500)})}setTimeout(tick,2000)})();</script>`, { tab: "setup" });
 }

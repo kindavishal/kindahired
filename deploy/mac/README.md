@@ -76,7 +76,15 @@ for everything else. On the internal drive none of this is needed.
    ```
 
    `mac:install` writes a plist for `awake` (caffeinate, keeps the Mac awake on power), `gateway`,
-   `router` and each person's engine, and prints the `launchctl bootstrap` commands to run.
+   `router`, each person's engine and `watchdog`, and prints the `launchctl bootstrap` commands to run.
+
+   Also turn off system sleep, which caffeinate alone doesn't always stop: `sudo pmset -a sleep 0`.
+
+   The watchdog runs every minute. If the gateway, router or an engine accepts a connection but doesn't
+   answer within 10 seconds (twice, 5 seconds apart), it restarts that service. That is what happens when
+   the external drive drops and remounts: the processes lose their own files and spin at full CPU with
+   the port still open, and the site times out. It also kills esbuild helpers left behind by a dead
+   service. Each restart is a line in `~/Library/Logs/kindahired/watchdog.log`.
 
 7. Point Telegram at the hub:
 
@@ -89,6 +97,8 @@ for everything else. On the internal drive none of this is needed.
 
 ## Day to day
 
+- Site not responding: `cat ~/Library/Logs/kindahired/watchdog.log` shows what was restarted and when;
+  `pmset -g log | grep -E "Sleep|Wake|ExternalMedia"` shows whether the Mac slept or the drive remounted.
 - Restart one service: `launchctl kickstart -k gui/$(id -u)/dev.kindahired.<name>`
 - Stop one: `launchctl bootout gui/$(id -u)/dev.kindahired.<name>`; start it again with
   `launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/dev.kindahired.<name>.plist`

@@ -219,6 +219,27 @@ details p { margin-top: 10px; color: var(--ink-2); }
 .footer nav a { text-decoration: none; }
 .footer nav a:hover { color: var(--ink); }
 
+/* Get kindahired: the early-access form and the download */
+.get-lede { margin-top: 12px; font-size: 16px; line-height: 24px; }
+.get-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; margin-top: 40px; }
+.get-card { padding: 28px; display: flex; flex-direction: column; gap: 16px; }
+.get-card h3 { margin: 0; font-size: 20px; line-height: 28px; font-weight: 600; }
+.field { display: flex; flex-direction: column; gap: 6px; font-weight: 500; }
+.field input { font: inherit; font-weight: 400; height: 44px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink); }
+.field input:focus-visible { box-shadow: var(--ring); border-radius: 8px; }
+.field input[aria-invalid="true"] { border-color: var(--danger); }
+.hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.form-note:empty { display: none; }
+.form-note.bad { color: var(--danger); }
+.get-done { display: flex; flex-direction: column; gap: 8px; }
+.get-done p { font-size: 15px; line-height: 22px; }
+.setup-tight { margin: 0; grid-template-columns: 1fr; gap: 16px; }
+.btn-ghost { background: transparent; color: var(--ink); }
+.btn-ghost:hover { background: var(--surface-2); }
+.small { font-size: 13px; line-height: 20px; }
+#dl-other:empty { display: none; }
+#dl-other a { text-underline-offset: 3px; }
+
 @media (max-width: 720px) {
   .nav-links { display: none; }
   .nav { justify-content: space-between; }

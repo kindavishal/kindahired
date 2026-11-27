@@ -7,8 +7,12 @@
 #   APPLE_API_KEY      contents of the App Store Connect API key (.p8)
 #   APPLE_API_KEY_ID   that key's ID
 #   APPLE_API_ISSUER   the issuer ID shown above the keys list
-#   RELEASES_TOKEN     fine-grained token with Contents: read and write on kindavishal/kindahired-releases,
-#                      the public repo installers and update files are published to (the source stays private)
+#   RELEASES_TOKEN     fine-grained token with Contents: read and write on kindavishal/kindahired-releases.
+#                      Only while the old releases repo is mirrored: 0.1.0 installs look for updates there.
+#                      Delete this secret (and archive that repo) once those installs have updated.
+#
+# Releases are published to this repo. When RELEASES_TOKEN is set, each one is also mirrored to
+# kindavishal/kindahired-releases.
 name: Desktop release
 
 on:
@@ -17,6 +21,9 @@ on:
 
 permissions:
   contents: write
+
+env:
+  MIRROR_REPO: kindavishal/kindahired-releases
 
 concurrency:
   group: desktop-release-${{ github.ref_name }}
@@ -28,14 +35,18 @@ jobs:
     steps:
       - name: Create a draft release for the tag
         env:
-          GH_TOKEN: ${{ secrets.RELEASES_TOKEN }}
           TAG: ${{ github.ref_name }}
-          REPO: kindavishal/kindahired-releases
+          OWN_TOKEN: ${{ github.token }}
+          MIRROR_TOKEN: ${{ secrets.RELEASES_TOKEN }}
         run: |
-          if ! gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
-            gh release create "$TAG" --repo "$REPO" --draft \
-              --title "Desktop ${TAG#desktop-v}" --notes "Desktop app ${TAG#desktop-v}."
-          fi
+          draft() {
+            if ! GH_TOKEN="$2" gh release view "$TAG" --repo "$1" >/dev/null 2>&1; then
+              GH_TOKEN="$2" gh release create "$TAG" --repo "$1" --draft \
+                --title "Desktop ${TAG#desktop-v}" --notes "Desktop app ${TAG#desktop-v}."
+            fi
+          }
+          draft "$GITHUB_REPOSITORY" "$OWN_TOKEN"
+          if [ -n "$MIRROR_TOKEN" ]; then draft "$MIRROR_REPO" "$MIRROR_TOKEN"; fi
 
   build:
     needs: draft
@@ -96,13 +107,16 @@ jobs:
 
       - name: Upload to the release
         env:
-          GH_TOKEN: ${{ secrets.RELEASES_TOKEN }}
-          REPO: kindavishal/kindahired-releases
+          OWN_TOKEN: ${{ github.token }}
+          MIRROR_TOKEN: ${{ secrets.RELEASES_TOKEN }}
         run: |
           shopt -s nullglob
           files=(release/*.dmg release/*.zip release/*.blockmap release/*.AppImage release/*.deb release/latest*.yml)
           if [ ${#files[@]} -eq 0 ]; then echo "Nothing was built." >&2; exit 1; fi
-          gh release upload "$GITHUB_REF_NAME" --repo "$REPO" --clobber "${files[@]}"
+          GH_TOKEN="$OWN_TOKEN" gh release upload "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --clobber "${files[@]}"
+          if [ -n "$MIRROR_TOKEN" ]; then
+            GH_TOKEN="$MIRROR_TOKEN" gh release upload "$GITHUB_REF_NAME" --repo "$MIRROR_REPO" --clobber "${files[@]}"
+          fi
 
   publish:
     needs: build
@@ -110,6 +124,10 @@ jobs:
     steps:
       - name: Publish the release
         env:
-          GH_TOKEN: ${{ secrets.RELEASES_TOKEN }}
-          REPO: kindavishal/kindahired-releases
-        run: gh release edit "$GITHUB_REF_NAME" --repo "$REPO" --draft=false --latest
+          OWN_TOKEN: ${{ github.token }}
+          MIRROR_TOKEN: ${{ secrets.RELEASES_TOKEN }}
+        run: |
+          GH_TOKEN="$OWN_TOKEN" gh release edit "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --draft=false --latest
+          if [ -n "$MIRROR_TOKEN" ]; then
+            GH_TOKEN="$MIRROR_TOKEN" gh release edit "$GITHUB_REF_NAME" --repo "$MIRROR_REPO" --draft=false --latest
+          fi

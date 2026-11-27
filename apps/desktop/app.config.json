@@ -1,6 +1,10 @@
 {
   "appId": "com.kindavishal.kindahired",
   "productName": "kindahired",
-  "github": { "owner": "kindavishal", "repo": "kindahired-releases" },
+  "hubUrl": "https://app-kindahired.kindavishal.dev/",
+  "github": {
+    "owner": "kindavishal",
+    "repo": "kindahired"
+  },
   "linuxMaintainer": "kindavishal <kindavishal@users.noreply.github.com>"
 }

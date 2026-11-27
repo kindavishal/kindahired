@@ -130,7 +130,7 @@ test("keys: updates only its own keys, keeps the rest and the comments, mode 600
   writeFileSync(envPath, ENV_START);
   const res = await post("/setup/keys", { MY_EMAILS: "asha@example.com", JH_TIMEZONE: "Asia/Kolkata", GEMINI_API_KEY: GEMINI, JH_QUICK: "gemini" });
   assert.equal(res.status, 200);
-  assert.match(await res.text(), /Saved\. Restarting your engine…/);
+  assert.match(await res.text(), /<h1>Saving…<\/h1>/);
   await new Promise((r) => setImmediate(r));
   assert.equal(restarts, 1);
   const out = readFileSync(envPath, "utf8");
@@ -260,7 +260,7 @@ test("cross-origin and origin-less POSTs are refused on every setup route", asyn
 
 test("setup checklist and the one Home callout", async () => {
   const html = await (await get("/setup")).text();
-  for (const t of ["Profile", "Playbook", "AI keys", "Google", "Telegram", "Desktop app"]) assert.match(html, new RegExp(`>${t}<`));
+  for (const t of ["Profile", "Playbook", "AI keys", "Google", "Telegram", "Install the app"]) assert.match(html, new RegExp(`>${t}<`));
   const home = await (await get("/")).text();
   assert.match(home, /Finish setup \(\d of 6\)/);
   assert.ok(!home.includes("Connect Telegram"));
@@ -274,4 +274,63 @@ test("setup routes don't exist outside hub mode", async () => {
     assert.equal((await post(p, {})).status, 404, p);
   }
   assert.ok(!(await (await get("/")).text()).includes("Finish setup"));
+});
+
+test("desktop pairing: the signed-in app gets its worker token, nothing else does", async () => {
+  process.env.JH_WORKER_TOKEN = "wt-test-token";
+  try {
+    const pairReq = (headers: Record<string, string>) => fetch(base + "/desktop/pair", { method: "POST", redirect: "manual", headers: { ...GW, ...headers } });
+    const ok = await pairReq({ origin: base, "x-kindahired-app": "1" });
+    assert.equal(ok.status, 200);
+    assert.deepEqual(await ok.json(), { ok: true, token: "wt-test-token" });
+    assert.equal((await pairReq({ origin: "https://evil.example", "x-kindahired-app": "1" })).status, 403);
+    assert.equal((await pairReq({ "x-kindahired-app": "1" })).status, 403);
+    assert.equal((await pairReq({ origin: base })).status, 400);
+    assert.equal((await fetch(base + "/desktop/pair", { headers: GW, redirect: "manual" })).status, 404);
+  } finally {
+    delete process.env.JH_WORKER_TOKEN;
+  }
+});
+
+test("Claude actions: Download the app, then '… in the app' in a browser, the action itself in the app", async () => {
+  const { upsertOpportunity } = await import("../src/db/opportunities.ts");
+  const { kvSet } = await import("../src/db/index.ts");
+  process.env.JH_CLAUDE_VIA = "worker";
+  try {
+    const o = upsertOpportunity("Acme", "Growth Lead", { status: "found" });
+    const view = (ua = "Mozilla/5.0") => fetch(`${base}/o/${o.id}`, { headers: { ...GW, "user-agent": ua } }).then((r) => r.text());
+
+    // No app yet: the browser offers the download, with one line saying why.
+    let html = await view();
+    assert.match(html, /href="\/app"[^>]*>.*Download the app/);
+    assert.match(html, /Packs are built by the kindahired app on your computer/);
+    assert.ok(!html.includes(`action="/o/${o.id}/build"`));
+
+    // The app has connected: the browser sends them to it.
+    kvSet("worker.lastSeen", new Date().toISOString());
+    html = await view();
+    assert.match(html, new RegExp(`href="kindahired://open/o/${o.id}"[^>]*>Build pack in the app`));
+    assert.ok(!html.includes("Download the app"));
+
+    // Inside the app, the action is the real button.
+    html = await view("Mozilla/5.0 Electron kindahired-app/0.2.0");
+    assert.ok(html.includes(`action="/o/${o.id}/build"`));
+    assert.ok(!html.includes("kindahired://"));
+  } finally {
+    delete process.env.JH_CLAUDE_VIA;
+  }
+});
+
+test("app page shows no token; /desktop sends everyone to it", async () => {
+  process.env.JH_WORKER_TOKEN = "wt-secret";
+  try {
+    const app = await (await get("/app")).text();
+    assert.match(app, /Get the kindahired app/);
+    assert.ok(!app.includes("wt-secret"));
+    const desk = await get("/desktop");
+    assert.equal(desk.status, 303);
+    assert.equal(desk.headers.get("location"), "/app");
+  } finally {
+    delete process.env.JH_WORKER_TOKEN;
+  }
 });

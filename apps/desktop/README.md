@@ -10,13 +10,17 @@ It has its own `package.json`; nothing here is added to the repo's root dependen
 
 ## What it does
 
-- **First run** opens a small settings window that asks for the hub address and the worker token
-  (both from the person's hub dashboard). **Check** calls `GET /healthz`, then `GET /worker/status`
-  with the token. (Status rather than a `waitMs=0` claim: a claim would take a waiting job off the
-  queue, and the hub only hands it back after the job's timeout.)
+- **First run** opens the dashboard window on the built-in hub (`hubUrl` in `app.config.json`), where
+  the person signs in with the email code. Once a hub page has loaded, the app runs
+  `POST /desktop/pair` from that page (same origin, with the `x-kindahired-app: 1` header) and keeps
+  the worker token it gets back. If Claude Code is missing or signed out, the small settings window
+  opens to help with that. Nobody copies a hub address or a token.
+- **Testing against another hub:** `npx electron . --hub=http://localhost:8080 --user-data-dir=/tmp/kh-dev`.
+- **Links:** `kindahired://open/<path>` opens that dashboard page in the app (only paths on the hub).
+  The dashboard's requests carry `kindahired-app/<version>` in the user agent, so the hub can tell
+  the app from a browser.
 - **Where things are kept:** the token is encrypted with Electron `safeStorage` (the macOS Keychain,
-  or GNOME Keyring / KWallet on Linux) in `worker-token.bin`; the hub address and preferences are in
-  `settings.json`. Both live in the app's data folder (`~/Library/Application Support/kindahired`,
+  or GNOME Keyring / KWallet on Linux) in `worker-token.bin`; preferences are in `settings.json`. Both live in the app's data folder (`~/Library/Application Support/kindahired`,
   `~/.config/kindahired`). The worker runs Claude Code in `<data folder>/agent`, an empty folder:
   the app sets `JH_DATA_DIR` to its data folder, and the worker never loads the repo's `config.ts`
   or `.env` (`scripts/bundle.mjs` fails the build if it would).
@@ -108,9 +112,8 @@ in your shell, with `APPLE_API_KEY` set to the `.p8` file's path.
    - **Linux:** the `.AppImage` (make it executable: `chmod +x kindahired-*.AppImage`, then run it;
      it updates itself), or the `.deb` (`sudo apt install ./kindahired-*.deb`; it tells you when a
      new version is out).
-3. Open the app. In the window, paste your hub address and worker token from your hub dashboard,
-   press **Check**, then **Save**. The tick icon in the menu bar or tray shows the status.
-4. **Open dashboard** in the tray menu opens your hub; sign in there once with the email code.
+3. Open the app and sign in with your email code. The tick icon in the menu bar or tray shows the
+   status.
 
 On Linux the tray needs a desktop with tray support (GNOME needs the AppIndicator extension), and
 the token is best kept with GNOME Keyring or KWallet installed.

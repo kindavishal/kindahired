@@ -27,6 +27,7 @@ import { interviewCard, interviewPage, interviewsPage, upcomingCount, upcomingIn
 import { clearOpened, directActions, markOpened, openedTasks, type Direct } from "./actions.ts";
 import { telegramConnectRoute } from "./telegram-connect.ts";
 import { desktopConnectRoute } from "./desktop-connect.ts";
+import { APP_PAGE, claudeButton, claudeGate, claudeHint, waitingFor, withViewer } from "./app-presence.ts";
 import { googleConnectRoute } from "./google-connect.ts";
 import { setupCallout, setupRoute } from "./setup.ts";
 import { hubMode, refuseCrossOrigin, sameOrigin } from "./forms.ts";
@@ -537,13 +538,25 @@ const PART_LABEL: Record<string, string> = {
 };
 const CONF: Record<string, [string, string]> = { high: ["Confirmed", "ok"], medium: ["Likely", "accent"], low: ["Worth checking", "muted"] };
 
+/** The note on a role whose pack is queued or building: honest about whether the app is there to build it. */
+function packingNote(): string {
+  switch (waitingFor()) {
+    case "install": return `<div class="callout accent" role="status"><p>The pack is built by the kindahired app on your computer, with your own Claude plan. Install it and the pack starts on its own.</p>${linkButton(APP_PAGE, `${icon("download")}Download the app`, "primary")}</div>`;
+    case "open": return `<div class="callout accent" role="status">The pack starts when the kindahired app is open on your computer.</div>`;
+    case "running": return `<div class="callout accent" role="status">The pack is being built. It arrives in Telegram and on this page, usually within a few minutes.</div>`;
+  }
+}
+
 /** Who's hiring: people with how sure and why, the team, signals, people I know, related openings. */
 function hiringSection(o: Opportunity, pending: boolean): string {
   const b: HiringBrief | null = getBrief(o);
-  const button = postButton(`/o/${o.id}/research`, b ? `${icon("refresh")}Research again` : "Research who's hiring", { variant: b ? "quiet" : "default" });
+  const button = claudeButton(`/o/${o.id}/research`, b ? `${icon("refresh")}Research again` : "Research who's hiring", `/o/${o.id}`, { variant: b ? "quiet" : "default" });
   const head = `<div class="section-head"><h2>Who's hiring</h2>${b ? `<span class="tail small muted">Researched ${day(b.researched_at)}${b.sources.length ? ` from ${esc(b.sources.join(", "))}` : ""}</span>` : ""}</div>`;
   if (pending) return `<section class="block">${head}<div class="callout accent" role="status">Researching who's hiring. This takes a few minutes; reload the page to see it.</div></section>`;
-  if (!b) return `<section class="block">${head}<div class="panel">${emptyState("Not researched yet", `It runs on its own for roles you're about to apply to or have applied to. ${button}`)}</div></section>`;
+  if (!b) {
+    const why = claudeGate() === "download" ? `${claudeHint("Who's hiring is researched")}` : "It runs on its own for roles you're about to apply to or have applied to.";
+    return `<section class="block">${head}<div class="panel">${emptyState("Not researched yet", `${why} ${button}`)}</div></section>`;
+  }
   const link = (url: string | null, label: string) => (url ? `<a href="${esc(url)}" target="_blank" rel="noopener">${label}</a>` : "");
   const people = b.people.map((p) => `<li class="person"><div class="person-head"><span class="who">${esc(p.name)}</span>${badge(PART_LABEL[p.part] ?? p.part, "neutral")}${badge(CONF[p.confidence][0], CONF[p.confidence][1])}</div>
 ${p.title ? `<p class="small muted">${esc(p.title)}</p>` : ""}<p class="small" style="margin-top:6px">${esc(p.evidence)}</p>
@@ -590,8 +603,8 @@ function detail(id: number, q: URLSearchParams) {
     hasResume ? linkButton(`/resume/${o.id}/edit`, "Edit resume", "quiet") : "",
     isOpen ? postButton(`/o/${o.id}/applied`, "Mark applied", { variant: o.apply_url ? "default" : "primary" }) : "",
     packing ? "" : o.pack_status === "ready"
-      ? postButton(`/o/${o.id}/repack`, `${icon("refresh")}Rebuild pack`, { variant: "quiet", confirm: "Rebuild the pack? The fit read, resume and drafts are written again." })
-      : isOpen ? postButton(`/o/${o.id}/build`, "Build pack") : "",
+      ? claudeButton(`/o/${o.id}/repack`, `${icon("refresh")}Rebuild pack`, `/o/${o.id}`, { variant: "quiet", confirm: "Rebuild the pack? The fit read, resume and drafts are written again." })
+      : isOpen ? claudeButton(`/o/${o.id}/build`, "Build pack", `/o/${o.id}`) : "",
     `<span class="spacer"></span>`,
     isClosed ? "" : postButton(`/o/${o.id}/drop`, "Drop role", { variant: "danger", confirm: `Drop ${o.role} at ${o.company}? Its reminders close too.` }),
   ].join("");
@@ -645,11 +658,11 @@ ${r.reply ? `<div class="callout" style="margin-top:14px"><b>Their reply:</b> ${
     : emptyState("No next step", `You dropped this role's reminders. ${postButton(`/o/${o.id}/remind`, "Remind me", { variant: "primary" })}`)}</div></section>` : "";
 
   const main = [
+    o.pack_error ? `<div class="callout danger" role="alert"><b>The pack didn't finish.</b> ${esc(o.pack_error)}</div>` : "",
+    packing ? packingNote() : "",
     upNext,
     meetingsHtml,
     isLive ? hiringSection(o, researchingRoles.has(o.id)) : "",
-    o.pack_error ? `<div class="callout danger" role="alert"><b>The pack didn't finish.</b> ${esc(o.pack_error)}</div>` : "",
-    packing ? `<div class="callout accent" role="status">The pack is being built. It arrives in Telegram and on this page, usually within a few minutes.</div>` : "",
     prose("Fit", o.fit_read),
     prose("Next step", o.next_step),
     copyBlock("Cover note", o.cover_note),
@@ -666,7 +679,7 @@ ${r.reply ? `<div class="callout" style="margin-top:14px"><b>Their reply:</b> ${
 <a class="back" href="/list">${icon("back")}Roles</a>
 <header class="role-head"><h1>${esc(o.role)}</h1><p class="company">${esc(o.company)}</p>
 <div class="badges">${statusBadge(o.status)}${fitBadge(o.fit_verdict)}${closes?.tone ? badge(closes.text, closes.tone) : ""}</div></header>
-<div class="toolbar">${toolbar}</div>
+<div class="toolbar">${toolbar}</div>${!packing && (isOpen || o.pack_status === "ready") ? claudeHint("Packs are built") : ""}
 <div class="split flip"><div class="stack">${main || emptyState("No pack yet", "Build the pack to get the fit read, resume and drafts.")}</div>
 <aside><div class="panel"><dl class="facts">${facts.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("")}</dl></div></aside></div>`,
     { tab: "roles", flash: q.get("flash") });
@@ -962,7 +975,7 @@ function timersPage(q: URLSearchParams) {
   };
   const d = (n: number) => `${n} day${n === 1 ? "" : "s"}`;
   return page("Timers · kindahired", `
-<div class="page-head"><div><h1>Timers</h1><p style="max-width:68ch">How long each step of an application can wait before the tool asks you to act. Every role in play always has one next step with a due date; these set the dates.</p></div></div>
+<div class="page-head"><div><h1>Timers</h1><p style="max-width:68ch">How long each step of an application can wait before kindahired asks you to act. Every role in play always has one next step with a due date; these set the dates.</p></div></div>
 <div class="stack" style="max-width:820px">
 <section><div class="section-head"><h2>After you apply</h2></div><div class="panel"><ol class="ladder">
 <li>Within ${t.firstTouchHours} hours: reach a person (recruiter or hiring manager).</li>
@@ -1009,7 +1022,7 @@ export function startServer(port = env.port, hooks?: Hooks) {
     roles: get<{ n: number }>(`SELECT count(*) n FROM opportunities WHERE status IN (${ACTIVE.map((s) => `'${s}'`).join(",")})`)!.n,
     interviews: upcomingCount(),
   }));
-  const server = http.createServer(async (req, res) => {
+  const handle = async (req: http.IncomingMessage, res: http.ServerResponse) => {
     const url = new URL(req.url ?? "/", "http://localhost");
     const inline = req.headers["x-inline"] === "1";
     const redirect = (to: string) => { res.writeHead(303, { location: to }); res.end(); };
@@ -1125,7 +1138,7 @@ export function startServer(port = env.port, hooks?: Hooks) {
       if (req.method === "POST" && url.pathname === "/sources") {
         const form = await body(req);
         const link = form.get("url") ?? "";
-        const r = hooks ? await hooks.watchPage(link, { label: form.get("label") || undefined, intervalHours: Number(form.get("interval")) || undefined, via: "web" }) : { text: "The dashboard isn't connected to the scanner. Start it with npm run daemon." };
+        const r = hooks ? await hooks.watchPage(link, { label: form.get("label") || undefined, intervalHours: Number(form.get("interval")) || undefined, via: "web" }) : { text: "That couldn't be added right now. Try again in a minute." };
         return redirect(`/sources?note=${encodeURIComponent(r.text)}`);
       }
       if (url.pathname === "/sources") return htmlOut(sourcesPage(url.searchParams));
@@ -1134,7 +1147,7 @@ export function startServer(port = env.port, hooks?: Hooks) {
         const names = (form.get("names") ?? "").trim();
         const link = (form.get("link") ?? "").trim();
         const text = link ? `${names} | ${link}` : names;
-        const r = hooks?.addCompanies ? await hooks.addCompanies(text, "web") : { lines: ["The dashboard isn't connected to the scanner. Start it with npm run daemon."] };
+        const r = hooks?.addCompanies ? await hooks.addCompanies(text, "web") : { lines: ["That couldn't be added right now. Try again in a minute."] };
         return redirect(`/companies?note=${encodeURIComponent(r.lines.join("\n") || "Nothing to add.")}`);
       }
       const pm = url.pathname.match(/^\/p\/(\d+)\/(touch|stop|keep)$/);
@@ -1187,20 +1200,23 @@ export function startServer(port = env.port, hooks?: Hooks) {
           const result = await hooks.addLink(link, form.get("note") || undefined);
           if (result === NOT_A_POSTING) {
             return htmlOut(message("Not a single posting", "That link isn't a single job posting",
-              `<p class="muted">If it's a job board or careers page, the tool can check it every few hours and send you the roles that fit.</p>
+              `<p class="muted">If it's a job board or careers page, kindahired can check it every few hours and send you the roles that fit.</p>
 <p class="small muted" style="overflow-wrap:anywhere">${esc(link)}</p>
 <div class="btn-row">${postButton("/sources", "Watch this page", { variant: "primary", hidden: { url: link, interval: "6" } })}${linkButton("/", "Back to Home", "quiet")}</div>`));
           }
+          const wait = waitingFor();
           return htmlOut(message("Saved", esc(result),
-            `<p class="muted">The pack (fit read, resume, cover note and people to contact) arrives in Telegram when it's ready, usually within a few minutes. It also appears under Roles.</p>
-<div class="btn-row">${linkButton("/", "Back to Home", "primary")}${backLink ? linkButton(backLink, "Back to the job", "quiet") : ""}</div>`));
+            `<p class="muted">${wait === "install" ? "The pack (fit read, resume, cover note and people to contact) is built by the kindahired app on your computer, with your own Claude plan. Install it and the pack starts on its own."
+              : wait === "open" ? "The pack (fit read, resume, cover note and people to contact) starts when the kindahired app is open on your computer. It appears under Roles."
+              : "The pack (fit read, resume, cover note and people to contact) arrives in Telegram when it's ready, usually within a few minutes. It also appears under Roles."}</p>
+<div class="btn-row">${wait === "install" ? linkButton(APP_PAGE, `${icon("download")}Download the app`, "primary") + linkButton("/", "Back to Home", "quiet") : linkButton("/", "Back to Home", "primary")}${backLink ? linkButton(backLink, "Back to the job", "quiet") : ""}</div>`));
         }
         else if (link) run("INSERT INTO inbox_items (source, external_id, url, status) VALUES ('web', $u, $u, 'new') ON CONFLICT DO NOTHING", { u: link });
-        return redirect(back("/", link ? "Link saved. It's processed when the daemon runs." : "Paste a link first."));
+        return redirect(back("/", link ? "Link saved." : "Paste a link first."));
       }
       if (req.method === "GET" && url.pathname === "/add" && !url.searchParams.get("url")) {
         return htmlOut(message("Add a job link", "Add a job link",
-          `<p class="muted">Paste a posting from LinkedIn, X or a careers page. The pack arrives in Telegram in a few minutes.</p>
+          `<p class="muted">Paste a posting from LinkedIn, X or a careers page.</p>
 <form method="post" action="/add" class="vstack section-stack"><div><label for="add-url" class="small muted">Job link</label>
 <input id="add-url" type="url" name="url" required autofocus class="full" placeholder="https://"></div>
 <div class="btn-row"><button class="btn primary">Make a pack</button>${linkButton("/", "Cancel", "quiet")}</div></form>`));
@@ -1281,7 +1297,8 @@ export function startServer(port = env.port, hooks?: Hooks) {
       res.end(message("Something went wrong", "This page couldn't load",
         `<p class="muted">The dashboard hit an error. Your data is unchanged. Reload to try again; if it keeps happening, the message below helps with the fix.</p><pre>${esc(String((err as Error)?.stack ?? err))}</pre><p>${linkButton("/", "Back to Home", "primary")}</p>`));
     }
-  });
+  };
+  const server = http.createServer((req, res) => withViewer(req, () => handle(req, res)));
   server.listen(port, "127.0.0.1", () => console.log(`Dashboard: http://127.0.0.1:${port}`));
   return server;
 }

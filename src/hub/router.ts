@@ -4,7 +4,11 @@ import http from "node:http";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { fileURLToPath } from "node:url";
+import type { PersonRow } from "./admin-page.ts";
+import { initRequests } from "./early-access.ts";
+import { earlyAccess } from "./early-access-routes.ts";
 import { findByChatId, findByRelaySecret, hubDir, loadPeople, savePeople, type Person } from "./people.ts";
+import { realDeps, type ProvisionDeps } from "./provision.ts";
 
 /**
  * The Telegram router. It owns the one real bot token on the hub. Telegram sends every update to
@@ -17,6 +21,7 @@ import { findByChatId, findByRelaySecret, hubDir, loadPeople, savePeople, type P
  *   POST /telegram/webhook                  Telegram's webhook (checks the secret header)
  *   POST /relay/bot<relaySecret>/<method>   the Bot API stand-in, for engines on this machine
  *   POST /relay/bot<relaySecret>/jhLinkCode a one-time code and t.me link for linking a chat
+ *   POST /early-access, /admin...           early access and the operator's page (early-access-routes.ts)
  */
 
 export interface RouterOptions {
@@ -32,6 +37,10 @@ export interface RouterOptions {
   /** Skips the getMe call that otherwise finds the bot's username for link URLs. */
   botUsername?: string;
   log?: (msg: string) => void;
+  /** What approving an early-access request does. Tests replace it. */
+  deps?: ProvisionDeps;
+  env?: NodeJS.ProcessEnv;
+  engineStatus?: (p: Person) => Promise<PersonRow["app"]>;
 }
 
 export interface Router {
@@ -53,7 +62,7 @@ const MAX_BODY = 55 * 1024 * 1024; // Telegram's own upload limit is 50 MB
 type Update = {
   update_id?: number;
   message?: { text?: string; chat?: { id: number } };
-  callback_query?: { id?: string; message?: { chat?: { id: number } } };
+  callback_query?: { id?: string; data?: string; message?: { chat?: { id: number } } };
 };
 type Params = Record<string, unknown>;
 
@@ -90,6 +99,7 @@ CREATE TABLE IF NOT EXISTS counters (person TEXT PRIMARY KEY, next INTEGER NOT N
 CREATE TABLE IF NOT EXISTS link_codes (code TEXT PRIMARY KEY, person TEXT NOT NULL, expires_at INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS callbacks (id TEXT PRIMARY KEY, person TEXT NOT NULL, created_at INTEGER NOT NULL);
 `);
+  initRequests(db);
   return db;
 }
 
@@ -105,6 +115,8 @@ export async function startRouter(o: RouterOptions): Promise<Router> {
   const telegram = (method: string, init: RequestInit) => fetch(`${base}/bot${o.botToken}/${method}`, init);
   const telegramJson = (method: string, body: Params) =>
     telegram(method, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+
+  const ea = earlyAccess({ db, dir, log, telegramJson, deps: o.deps ?? realDeps(), env: o.env, engineStatus: o.engineStatus });
 
   const wake = (person: string) => {
     const set = waiters.get(person);
@@ -126,6 +138,8 @@ export async function startRouter(o: RouterOptions): Promise<Router> {
   }
 
   async function onUpdate(u: Update) {
+    // An operator's Approve / Decline tap is handled here, not passed to their engine.
+    if (await ea.onCallback(u)) return;
     const chat = u.message?.chat?.id ?? u.callback_query?.message?.chat?.id;
     if (chat === undefined) { log(`dropped update ${u.update_id} with no chat`); return; }
     const owner = findByChatId(chat, dir);
@@ -253,6 +267,8 @@ export async function startRouter(o: RouterOptions): Promise<Router> {
       const m = url.pathname.match(/^\/relay\/bot([^/]+)\/(\w+)$/);
       if (m) return await relay(req, res, url, decodeURIComponent(m[1]), m[2]);
       if (url.pathname === "/healthz") { res.writeHead(200); return res.end("ok"); }
+      if (url.pathname === "/early-access") return await ea.publicRoute(req, res);
+      if (url.pathname === "/admin" || url.pathname.startsWith("/admin/")) return await ea.adminRoute(req, res, url);
       res.writeHead(404);
       res.end("not found");
     } catch (err) {
@@ -287,10 +303,16 @@ export async function startRouter(o: RouterOptions): Promise<Router> {
   };
 }
 
-/** Loads `<JH_HUB_DIR>/.env` when it exists, without overriding variables already set. */
+/**
+ * Loads `<JH_HUB_DIR>/.env` and `<JH_HUB_DIR>/hub.env` when they exist, without overriding variables
+ * already set. hub.env holds the early-access settings (ADMIN_EMAILS, Cloudflare, SMTP) and the
+ * gateway secret the admin page checks.
+ */
 export function loadHubEnv() {
-  const file = path.join(hubDir(), ".env");
-  if (existsSync(file)) process.loadEnvFile(file);
+  for (const name of [".env", "hub.env"]) {
+    const file = path.join(hubDir(), name);
+    if (existsSync(file)) process.loadEnvFile(file);
+  }
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

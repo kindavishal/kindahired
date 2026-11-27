@@ -118,7 +118,7 @@ export const icon = (name: keyof typeof PATHS | string) =>
 
 // ---------- components ----------
 
-type BtnOpts = { variant?: "primary" | "default" | "quiet" | "danger"; inline?: boolean; confirm?: string; hidden?: Record<string, string>; title?: string };
+export type BtnOpts = { variant?: "primary" | "default" | "quiet" | "danger"; inline?: boolean; confirm?: string; hidden?: Record<string, string>; title?: string };
 /** A one-button POST form. `inline` lets the script submit it in place, without a reload. */
 export function postButton(action: string, label: string, o: BtnOpts = {}) {
   const hidden = Object.entries(o.hidden ?? {}).map(([k, v]) => `<input type="hidden" name="${esc(k)}" value="${esc(v)}">`).join("");
@@ -316,6 +316,8 @@ form{margin:0}
 .btn.icon-only{width:var(--control);padding:0}.btn.sm.icon-only{width:var(--control-sm)}
 .btn.block{width:100%;justify-content:flex-start}
 .btn[aria-busy=true]{opacity:.6;pointer-events:none}
+.steps{padding-left:var(--s5)}.steps>li+li{margin-top:var(--s4)}.steps>li>*+*{margin-top:var(--s2)}
+.icon-link{display:inline-flex;align-items:center;gap:6px}
 .btn-row{display:flex;flex-wrap:wrap;gap:var(--s2);align-items:center}
 .splitbtn{display:inline-flex}
 .splitbtn>form>.btn{border-radius:var(--r-sm) 0 0 var(--r-sm)}

@@ -167,3 +167,20 @@ test("the gateway won't start without a secret", () => {
     if (saved !== undefined) process.env.HUB_GATEWAY_SECRET = saved;
   }
 });
+
+test("early access reaches the router with no sign-in, and never with a gateway secret or email", async () => {
+  const r = await call("/early-access", { "x-kindahired-gateway": "spoofed", "x-kindahired-email": "boss@example.com" }, { method: "POST", body: "{}" });
+  assert.equal(await r.text(), "from router");
+  const h = seen.filter((s) => s.name === "router" && s.url === "/early-access").at(-1)!.headers;
+  assert.equal(h["x-kindahired-gateway"], undefined);
+  assert.equal(h["x-kindahired-email"], undefined);
+});
+
+test("/admin needs a sign-in and carries the signed-in email, never the client's", async () => {
+  assert.equal((await call("/admin", { "x-kindahired-email": "boss@example.com" })).status, 401);
+  const r = await call("/admin", { "cf-access-jwt-assertion": good("someone@example.com"), "x-kindahired-email": "boss@example.com" });
+  assert.equal(await r.text(), "from router");
+  const h = seen.filter((s) => s.name === "router" && s.url === "/admin").at(-1)!.headers;
+  assert.equal(h["x-kindahired-email"], "someone@example.com");
+  assert.equal(h["x-kindahired-gateway"], SECRET);
+});

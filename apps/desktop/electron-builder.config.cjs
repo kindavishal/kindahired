@@ -21,6 +21,8 @@ module.exports = {
   directories: { output: "release", buildResources: "build" },
   files: ["dist/**", "renderer/**", "assets/**", "package.json", "!**/*.map"],
   artifactName: "${productName}-${version}-${arch}.${ext}",
+  // kindahired://open/<path> links open that dashboard page in the app.
+  protocols: [{ name: app.productName, schemes: ["kindahired"] }],
   publish: [{ provider: "github", owner: app.github.owner, repo: app.github.repo, releaseType: "release" }],
   mac: {
     target: [

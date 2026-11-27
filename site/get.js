@@ -1,0 +1,73 @@
+// The "Get kindahired" section: the early-access form, and a download button for this computer.
+(() => {
+  // Where the form goes. ?hub=http://localhost:8080 points a local preview at a local hub.
+  const hub = new URLSearchParams(location.search).get("hub") || "https://app-kindahired.kindavishal.dev";
+  const repo = "kindavishal/kindahired";
+
+  // ---------- Download ----------
+  const isLinux = /linux/i.test(navigator.userAgentData?.platform || navigator.platform || navigator.userAgent) && !/android/i.test(navigator.userAgent);
+  const main = document.getElementById("dl-main");
+  const other = document.getElementById("dl-other");
+  const link = (href, text) => {
+    const a = document.createElement("a");
+    a.href = href;
+    a.textContent = text;
+    return a;
+  };
+  fetch(`https://api.github.com/repos/${repo}/releases/latest`, { headers: { accept: "application/vnd.github+json" } })
+    .then((r) => (r.ok ? r.json() : null))
+    .then((rel) => {
+      const asset = (re) => rel?.assets?.find((a) => re.test(a.name))?.browser_download_url;
+      const dmg = asset(/\.dmg$/), appImage = asset(/\.AppImage$/), deb = asset(/\.deb$/);
+      if (isLinux && appImage) {
+        main.href = appImage;
+        main.textContent = "Download for Linux";
+        other.replaceChildren("Also as a ", ...(deb ? [link(deb, ".deb"), " or for "] : ["version for "]), ...(dmg ? [link(dmg, "Mac")] : []), ".");
+      } else if (dmg) {
+        main.href = dmg;
+        main.textContent = "Download for Mac";
+        const linux = [appImage && link(appImage, ".AppImage"), deb && link(deb, ".deb")].filter(Boolean);
+        if (linux.length) other.replaceChildren("Also for Linux: ", ...linux.flatMap((a, i) => (i ? [" or ", a] : [a])), ".");
+      }
+    })
+    .catch(() => { /* the button keeps pointing at the releases page */ });
+
+  // ---------- Early access ----------
+  const form = document.getElementById("ask");
+  const note = form.querySelector(".form-note");
+  const button = form.querySelector("button");
+  const say = (text, bad = false) => {
+    note.textContent = text;
+    note.className = `form-note${bad ? " bad" : ""}`;
+  };
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(form));
+    for (const input of form.querySelectorAll("input[required]")) input.removeAttribute("aria-invalid");
+    const missing = [...form.querySelectorAll("input[required]")].find((i) => !i.value.trim());
+    if (missing) {
+      missing.setAttribute("aria-invalid", "true");
+      missing.focus();
+      return say(missing.name === "email" ? "Enter your email address." : "Add your LinkedIn profile link.", true);
+    }
+    button.disabled = true;
+    say("Sending…");
+    try {
+      const res = await fetch(`${hub}/early-access`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(data) });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok || !body.ok) throw new Error(body.error || "Something went wrong. Try again in a minute.");
+      const done = document.createElement("div");
+      done.className = "get-done";
+      const h = document.createElement("h3");
+      h.textContent = "Thanks, you're on the list.";
+      const p = document.createElement("p");
+      p.className = "muted";
+      p.textContent = `You'll get an email at ${data.email.trim()} when you're in.`;
+      done.append(h, p);
+      form.replaceChildren(done);
+    } catch (err) {
+      button.disabled = false;
+      say(err instanceof TypeError ? "Couldn't reach kindahired. Check your connection and try again." : err.message, true);
+    }
+  });
+})();
