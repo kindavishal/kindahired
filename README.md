@@ -1,6 +1,8 @@
 # kindahired
 
-A personal job-search assistant that runs on your Mac.
+A job-search assistant. You get the roles worth your time, a ready-to-send pack for each one, and a nudge whenever a conversation needs your reply.
+
+**Get it:** download the app for macOS or Linux from [the latest release](https://github.com/kindavishal/kindahired/releases/latest), then sign in. kindahired is in early access; request a spot at [kindahired.kindavishal.dev](https://kindahired.kindavishal.dev).
 
 - **Every relevant posting becomes a ready-to-act pack.** Sources: job-alert emails, LinkedIn saved jobs, or a link you send it. Each pack has an honest fit read, the exact apply link, a tailored resume PDF, a cover note, form answers, and 2–3 people to contact with drafted messages.
 - **No conversation goes quiet without a decision.** Every reply you owe, follow-up due, unsent note and closing date becomes an action with a due time. Actions resolve on their own when things change.
@@ -18,11 +20,15 @@ Rules for everything it writes live in your `context/playbook.md` (start from [`
 3. **No blanks in the resume.** The resume never contains "[FILL IN]": anything uncertain is left out. If the cover note or form answers need something only you know, the bot lists the questions. Reply to that message with one answer per line, and it sends the completed text back.
 
 
-## Setup (one time, about 20 minutes)
+## Run your own copy
+
+The rest of this page is for running kindahired yourself on one computer, instead of using the app. The hosted setup (one server for several people, plus the desktop app) is described in [docs/desktop-app-plan.md](docs/desktop-app-plan.md) and [deploy/hub/README.md](deploy/hub/README.md).
+
+### Setup (one time, about 20 minutes)
 
 All commands run from this folder.
 
-### 1. Configuration file
+#### 1. Configuration file
 
 ```bash
 cp .env.example .env
@@ -30,7 +36,7 @@ cp .env.example .env
 
 Fill in `MY_EMAILS` (the addresses you send from, comma separated). No API key is needed in the default setup. Times are shown in this computer's time zone; set `JH_TIMEZONE` (for example `Europe/London`) to use another.
 
-### Your profile
+#### Your profile
 
 Two files describe you. They stay on this computer and out of git.
 
@@ -42,7 +48,7 @@ cp context/playbook.example.md context/playbook.md
 - **`context/profile.json`**: your name, headline, location, contact details and portfolio link go on every resume. `targets` lists the role families you're going for; the tool screens postings against them and builds its Gmail, X and LinkedIn searches from them. Add `keywords` (short phrases such as `"devrel"`) if the targets alone don't catch how roles are usually titled.
 - **`context/playbook.md`**: the rules every step follows: where you can work, how you write, what to skip. Fill in the bracketed parts.
 
-### AI setup (free: Gemini's free tier and your Claude plan)
+#### AI setup (free: Gemini's free tier and your Claude plan)
 
 The AI work is split by what each step needs:
 
@@ -59,7 +65,7 @@ To set it up:
 
 Until a Gemini key is set, recent email is screened through Claude Code, and the 90-day backfill waits so it doesn't use up your plan. Each pack takes several Claude Code steps and counts toward your plan's usage limits. If you hit a limit, packs wait and the bot tells you.
 
-### 2. Google: Gmail and Calendar (read-only) and your tracker sheet
+#### 2. Google: Gmail and Calendar (read-only) and your tracker sheet
 
 1. In [Google Cloud Console](https://console.cloud.google.com/), create a project.
 2. Enable the **Gmail API**, the **Google Sheets API** and the **Google Calendar API**.
@@ -71,7 +77,7 @@ Until a Gemini key is set, recent email is screened through Claude Code, and the
 npm run jh -- auth:google
 ```
 
-### 3. Import your tracker
+#### 3. Import your tracker
 
 Pulls the Roles, Outreach and Facts tabs, then reads your "Next step" notes to set the real status and due dates:
 
@@ -79,7 +85,7 @@ Pulls the Roles, Outreach and Facts tabs, then reads your "Next step" notes to s
 npm run jh -- import
 ```
 
-### 4. Build your evidence bank from your portfolio
+#### 4. Build your evidence bank from your portfolio
 
 Reads the site in `portfolio` (in your profile) plus the facts from your tracker, and turns them into the list of true facts every resume line must trace back to:
 
@@ -89,7 +95,7 @@ npm run jh -- evidence:build
 
 It lists facts where sources disagree, such as different dates for the same job. Until you settle them, resumes use the portfolio's version and flag the question.
 
-### 5. Telegram
+#### 5. Telegram
 
 1. In Telegram, message **@BotFather**, send `/newbot`, and put the token into `.env` as `TELEGRAM_BOT_TOKEN`.
 2. Link your chat:
@@ -98,7 +104,7 @@ It lists facts where sources disagree, such as different dates for the same job.
 npm run jh -- telegram:link
 ```
 
-### 6. LinkedIn
+#### 6. LinkedIn
 
 A browser window opens. Log in yourself; the session stays in `data/browser-profile`.
 
@@ -106,7 +112,7 @@ A browser window opens. Log in yourself; the session stays in `data/browser-prof
 npm run jh -- linkedin:login
 ```
 
-### 7. Run it
+#### 7. Run it
 
 Try it in the foreground first:
 
@@ -317,3 +323,7 @@ npm test
 ```
 
 Tests run against the example profile and playbook, so they work on a fresh clone. They cover the sheet import (the real Roles tab test runs only when `data/import/roles.json` exists), the open-loop rules, the no-invention resume check, PDF rendering, Gmail filing and the full pack pipeline, with stand-in AI responses.
+
+## License
+
+[Functional Source License 1.1, MIT Future License](LICENSE.md). You can use, change and share kindahired for anything except offering a competing product or service. Each version becomes MIT licensed two years after it's released.

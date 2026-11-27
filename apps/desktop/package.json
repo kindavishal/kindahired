@@ -8,7 +8,7 @@
     "email": "kindavishal@users.noreply.github.com"
   },
   "homepage": "https://kindahired.kindavishal.dev",
-  "license": "UNLICENSED",
+  "license": "FSL-1.1-MIT",
   "type": "module",
   "main": "dist/main.js",
   "engines": {

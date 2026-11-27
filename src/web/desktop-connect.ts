@@ -9,7 +9,7 @@ import { esc, icon, linkButton, page } from "./ui.ts";
  */
 
 const hubMode = () => process.env.JH_HUB === "1";
-const RELEASES_REPO = "kindavishal/kindahired-releases";
+const RELEASES_REPO = "kindavishal/kindahired";
 const RELEASES = `https://github.com/${RELEASES_REPO}/releases/latest`;
 
 type Downloads = { version: string; mac?: string; appImage?: string; deb?: string };

@@ -76,27 +76,10 @@ as a password manager, and delete the loose copies.
 
 ## 2. Where releases are served from
 
-`kindavishal/kindahired` is **private**. The desktop app's auto-update downloads from GitHub
-Releases, and it can't read a private repo's releases without a token built into the app, which you
-shouldn't ship. Pick one:
-
-- **A. Make `kindahired` public** (Settings → General → Danger Zone → Change visibility).
-  Simplest. First check that nothing private is in the git history:
-
-```bash
-git log --all -p | grep -iE "api[_-]?key|secret|token|password" | grep -v "process.env\|example\|placeholder" | head
-```
-
-- **B. Keep the code private and publish releases to a public repo, `kindavishal/kindahired-releases`
-  (recommended).**
-  1. Create the repo on GitHub as Public, with a README.
-  2. Create a fine-grained personal access token: GitHub → Settings → Developer settings →
-     Fine-grained tokens → **Generate**.
-     - Repository access: only `kindahired-releases`.
-     - Permissions: **Contents: Read and write**.
-     - Expiry: 1 year.
-  3. `gh secret set RELEASES_TOKEN` and paste the token at the prompt.
-  4. Tell me, and I'll point `app.config.json` and the release workflow at that repo.
+Done: `kindahired` is public (FSL-1.1-MIT), and releases are published to it. Until the 0.1.0
+installs have updated, the release workflow also mirrors each release to the old
+`kindavishal/kindahired-releases` repo, because 0.1.0 checks there for updates. After that, delete the
+`RELEASES_TOKEN` secret and archive `kindahired-releases`.
 
 ---
 
