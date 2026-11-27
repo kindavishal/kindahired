@@ -2,6 +2,9 @@ import crypto from "node:crypto";
 import http from "node:http";
 import { pathToFileURL } from "node:url";
 import { GATEWAY_HEADER } from "./gateway-secret.ts";
+
+/** The signed-in email, passed to the router for /admin. Never taken from the client. */
+const EMAIL_HEADER = "x-kindahired-email";
 import { loadPeople, pick, type Person } from "./people.ts";
 
 const JWKS_TTL_MS = 60 * 60 * 1000;
@@ -87,18 +90,19 @@ export function createGateway(opts: GatewayOptions): http.Server {
   const HOP = new Set(["connection", "keep-alive", "proxy-authenticate", "proxy-authorization", "te", "trailer", "transfer-encoding", "upgrade"]);
 
   /** Passes the request on. `engine` adds the gateway secret; a client's own copy is always dropped. */
-  function proxy(req: http.IncomingMessage, res: http.ServerResponse, target: { host: string; port: number; engine?: boolean }): void {
+  function proxy(req: http.IncomingMessage, res: http.ServerResponse, target: { host: string; port: number; engine?: boolean; email?: string }): void {
     const headers: http.OutgoingHttpHeaders = {};
     if (target.engine) headers[GATEWAY_HEADER] = secret;
     for (const [name, value] of Object.entries(req.headers)) {
       const n = name.toLowerCase();
-      if (HOP.has(n) || n === GATEWAY_HEADER || n.startsWith("cf-access-") || n.startsWith("x-forwarded-") || n === "forwarded" || n === "x-real-ip") continue;
+      if (HOP.has(n) || n === GATEWAY_HEADER || n === EMAIL_HEADER || n.startsWith("cf-access-") || n.startsWith("x-forwarded-") || n === "forwarded" || n === "x-real-ip") continue;
       headers[n] = value;
     }
     const clientIp = (req.headers["cf-connecting-ip"] as string | undefined) ?? req.socket.remoteAddress ?? "";
     headers["x-forwarded-for"] = clientIp;
     headers["x-forwarded-proto"] = "https";
     headers["x-forwarded-host"] = req.headers.host ?? "";
+    if (target.email) headers[EMAIL_HEADER] = target.email;
     const upstream = http.request(
       { host: target.host, port: target.port, method: req.method, path: req.url, headers },
       (up) => {
@@ -121,6 +125,11 @@ export function createGateway(opts: GatewayOptions): http.Server {
     try {
       if (url.pathname === "/healthz") return text(res, 200, "ok");
 
+      // The landing page's early-access form. Cloudflare Access must let this path through (a Bypass policy).
+      if (url.pathname === "/early-access") {
+        return proxy(req, res, { host: routerUrl.hostname, port: Number(routerUrl.port || 80) });
+      }
+
       if (url.pathname === "/telegram/webhook") {
         return proxy(req, res, { host: routerUrl.hostname, port: Number(routerUrl.port || 80) });
       }
@@ -141,6 +150,10 @@ export function createGateway(opts: GatewayOptions): http.Server {
         if (e instanceof JwtError) return text(res, 403, "Sign-in could not be verified.");
         console.error("gateway: key fetch failed:", e);
         return text(res, 503, "Sign-in check is unavailable. Try again shortly.");
+      }
+      // The operator's page, served by the router. It checks the email against ADMIN_EMAILS itself.
+      if (url.pathname === "/admin" || url.pathname.startsWith("/admin/")) {
+        return proxy(req, res, { host: routerUrl.hostname, port: Number(routerUrl.port || 80), engine: true, email });
       }
       const person = pick.email(people(), email);
       if (!person) return forbiddenPage(res, email);

@@ -321,7 +321,7 @@ test("Claude actions: Download the app, then '… in the app' in a browser, the 
   }
 });
 
-test("app page for everyone; the debug page only for the operator", async () => {
+test("app page shows no token; /desktop sends everyone to it", async () => {
   process.env.JH_WORKER_TOKEN = "wt-secret";
   try {
     const app = await (await get("/app")).text();
@@ -330,12 +330,7 @@ test("app page for everyone; the debug page only for the operator", async () => 
     const desk = await get("/desktop");
     assert.equal(desk.status, 303);
     assert.equal(desk.headers.get("location"), "/app");
-    process.env.JH_OPERATOR = "1";
-    const debug = await (await get("/desktop")).text();
-    assert.match(debug, /Desktop debug/);
-    assert.ok(debug.includes("wt-secret"));
   } finally {
     delete process.env.JH_WORKER_TOKEN;
-    delete process.env.JH_OPERATOR;
   }
 });

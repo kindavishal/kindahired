@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -159,3 +160,24 @@ export const macCommands: Record<string, { usage: string; run: (args: string[]) 
   "mac:install": { usage: "mac:install [--person <id>]    write launchd plists for the gateway, router and engines, print the bootstrap commands", run: (a) => macInstall(a) },
   "mac:uninstall": { usage: "mac:uninstall [--person <id>]  print the bootout and rm commands", run: (a) => macUninstall(a) },
 };
+
+type Launchctl = (args: string[]) => void;
+const realLaunchctl: Launchctl = (args) => { execFileSync("/bin/launchctl", args, { stdio: "pipe" }); };
+
+/**
+ * Starts a newly added person's engine on this Mac: writes their plist and loads it, then reloads
+ * the watchdog so it checks them too. Run by the router when the operator approves someone.
+ */
+export function startPersonEngine(id: string, layout = macLayout(), launchctl: Launchctl = realLaunchctl): string {
+  const domain = `gui/${process.getuid?.() ?? 501}`;
+  fs.mkdirSync(layout.agents, { recursive: true });
+  fs.mkdirSync(layout.logs, { recursive: true });
+  const engine = plistFor(layout, { person: id });
+  fs.writeFileSync(engine.file, engine.xml);
+  launchctl(["bootstrap", domain, engine.file]);
+  const watchdog = plistFor(layout, "watchdog");
+  fs.writeFileSync(watchdog.file, watchdog.xml);
+  try { launchctl(["bootout", `${domain}/${watchdog.label}`]); } catch { /* it wasn't loaded */ }
+  launchctl(["bootstrap", domain, watchdog.file]);
+  return `${engine.label} started`;
+}

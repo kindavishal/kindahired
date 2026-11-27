@@ -1,12 +1,10 @@
 import type http from "node:http";
-import { workerStatus } from "../worker/queue.ts";
-import { APP_PAGE, appOnline, hasApp, inApp, openInAppUrl } from "./app-presence.ts";
+import { APP_PAGE, hasApp, inApp, openInAppUrl } from "./app-presence.ts";
 import { esc, icon, linkButton, page } from "./ui.ts";
 
 /**
- * The desktop app, for hub mode (JH_HUB=1): /app is where a person gets it, /desktop/pair hands the
- * signed-in app its worker token, and /desktop is the operator's debug view (JH_OPERATOR=1; anyone
- * else is sent to /app).
+ * The desktop app, for hub mode (JH_HUB=1): /app is where a person gets it, and /desktop/pair hands
+ * the signed-in app its worker token. The operator sees everyone's app status on /admin (the router).
  */
 
 const hubMode = () => process.env.JH_HUB === "1";
@@ -64,24 +62,6 @@ function appPage(downloads: Downloads | null): string {
 </ol></div>`, { tab: "setup" });
 }
 
-/** The operator's own view (JH_OPERATOR=1 in their .env): the hub address, the token and the worker's state. */
-function operatorPage(downloads: Downloads | null): string {
-  const hub = process.env.JH_PUBLIC_URL ?? "";
-  const token = process.env.JH_WORKER_TOKEN ?? "";
-  const { lastSeen, queued, claimed } = workerStatus();
-  const row = (k: string, v: string) => `<div><dt>${k}</dt><dd>${v}</dd></div>`;
-  return page("Desktop debug · kindahired", `<div class="stack"><h1>Desktop debug</h1>
-<div class="panel"><dl class="facts">
-${row("Hub address", `<code>${esc(hub || "(JH_PUBLIC_URL not set)")}</code>`)}
-${row("Worker token", `<details><summary>Show</summary><code>${esc(token || "(JH_WORKER_TOKEN not set)")}</code></details>`)}
-${row("Last seen", esc(lastSeen ? new Date(lastSeen).toLocaleString() : "never"))}
-${row("Online", appOnline() ? "yes" : "no")}
-${row("Queued / claimed", `${queued} / ${claimed}`)}
-${row("Latest release", esc(downloads?.version || "(GitHub not reachable)"))}
-</dl></div>
-<p>${linkButton(APP_PAGE, "Open the user page")}</p></div>`);
-}
-
 /**
  * POST /desktop/pair: the desktop app calls this from its dashboard window right after the person
  * signs in, and keeps the worker token it gets back. The server only lets same-origin POSTs through,
@@ -106,15 +86,15 @@ export function desktopConnectRoute(req: http.IncomingMessage, res: http.ServerR
     return true;
   }
   if (req.method !== "GET" || (url.pathname !== APP_PAGE && url.pathname !== "/desktop")) return false;
-  const operator = process.env.JH_OPERATOR === "1";
-  if (url.pathname === "/desktop" && !operator) {
+  // The old setup page's address: the app page replaced it.
+  if (url.pathname === "/desktop") {
     res.writeHead(303, { location: APP_PAGE });
     res.end();
     return true;
   }
   void latestDownloads().then((d) => {
     res.writeHead(200, { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" });
-    res.end(url.pathname === "/desktop" ? operatorPage(d) : appPage(d));
+    res.end(appPage(d));
   });
   return true;
 }
