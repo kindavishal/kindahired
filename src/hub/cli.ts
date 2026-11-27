@@ -10,7 +10,7 @@ const commands: Record<string, Command> = {
   "telegram:webhook": {
     usage: "telegram:webhook <public url>   point the bot's webhook at the hub (adds /telegram/webhook to a bare domain)",
     async run([raw]) {
-      if (!raw) throw new Error("Give the hub's public URL, for example https://kindahired.kindavishal.dev/");
+      if (!raw) throw new Error("Give the hub's public URL, for example https://app-kindahired.kindavishal.dev/");
       const token = process.env.TELEGRAM_BOT_TOKEN, secret = process.env.TELEGRAM_WEBHOOK_SECRET;
       if (!token || !secret) throw new Error("Set TELEGRAM_BOT_TOKEN and TELEGRAM_WEBHOOK_SECRET first.");
       const url = new URL(raw);

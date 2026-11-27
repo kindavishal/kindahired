@@ -178,7 +178,7 @@ ssh ubuntu@<public ip>
 2. **Add a site** with a domain you own, on the Free plan, and switch the domain's nameservers at
    your registrar to the two Cloudflare gives you. Or buy a domain in **Domain Registration**,
    which costs about $10–15 a year.
-3. Choose the hub's hostname, for example `kindahired.kindavishal.dev`, and **send it to me**.
+3. The hub runs at `app-kindahired.kindavishal.dev`. The landing page stays on Vercel at `kindahired.kindavishal.dev`, with a Sign in button pointing at the hub.
 
 ### 5b. Zero Trust team
 
@@ -206,9 +206,9 @@ Self-hosted**:
 
 | Application name | Domain and path | Policy |
 |---|---|---|
-| `kindahired dashboards` | `kindahired.kindavishal.dev` (no path) | Action **Allow**; Include **Emails**: you and each tester |
-| `kindahired telegram webhook` | `kindahired.kindavishal.dev` with path `telegram/webhook` | Action **Bypass**; Include **Everyone** |
-| `kindahired worker` | `kindahired.kindavishal.dev` with path `worker/` | Action **Bypass**; Include **Everyone** |
+| `kindahired dashboards` | `app-kindahired.kindavishal.dev` (no path) | Action **Allow**; Include **Emails**: you and each tester |
+| `kindahired telegram webhook` | `app-kindahired.kindavishal.dev` with path `telegram/webhook` | Action **Bypass**; Include **Everyone** |
+| `kindahired worker` | `app-kindahired.kindavishal.dev` with path `worker/` | Action **Bypass**; Include **Everyone** |
 
 The bypass paths are safe:
 - Telegram calls carry a secret header the router checks.
@@ -273,7 +273,7 @@ openssl rand -hex 32
 5. **Data access:** add the four scopes from step 2.
 6. **Clients → Create client:**
    - Type **Web application**, named `kindahired hub`.
-   - Authorized redirect URI: `https://kindahired.kindavishal.dev/oauth/google/callback`. It must match
+   - Authorized redirect URI: `https://app-kindahired.kindavishal.dev/oauth/google/callback`. It must match
      `JH_PUBLIC_URL` in `hub.env` plus `oauth/google/callback`, exactly.
    - Copy the **client ID and client secret** straight into `/srv/kindahired/hub/hub.env` on the VM
      (start from `deploy/hub/hub.env.template`; mode 600, owned by `kindahired`), as

@@ -29,11 +29,11 @@ The contracts are in [../../docs/hub-build.md](../../docs/hub-build.md).
    ```
    cloudflared tunnel login
    cloudflared tunnel create kindahired-hub
-   cloudflared tunnel route dns kindahired-hub kindahired.kindavishal.dev
+   cloudflared tunnel route dns kindahired-hub app-kindahired.kindavishal.dev
    ```
    Copy `cloudflared-config.example.yml` to `/etc/cloudflared/config.yml`, fill it in, then
    `sudo cloudflared service install`.
-7. In Cloudflare Zero Trust, add a self-hosted Access application for `kindahired.kindavishal.dev` with an
+7. In Cloudflare Zero Trust, add a self-hosted Access application for `app-kindahired.kindavishal.dev` with an
    Allow policy for your people's emails. Add two Bypass policies for the paths
    `/telegram/webhook` and `/worker/*` (see the config example for why). Note the application's
    AUD tag and your team domain.
@@ -59,9 +59,9 @@ The contracts are in [../../docs/hub-build.md](../../docs/hub-build.md).
     sudo systemctl enable --now kindahired-engine@sam
     ```
 11. Point Telegram at the hub:
-    `sudo -u kindahired npm run hub -- telegram:webhook https://kindahired.kindavishal.dev/telegram/webhook`
-12. Check: `curl https://kindahired.kindavishal.dev/healthz` returns `ok`, and signing in at
-    `https://kindahired.kindavishal.dev/` shows the person's dashboard.
+    `sudo -u kindahired npm run hub -- telegram:webhook https://app-kindahired.kindavishal.dev/telegram/webhook`
+12. Check: `curl https://app-kindahired.kindavishal.dev/healthz` returns `ok`, and signing in at
+    `https://app-kindahired.kindavishal.dev/` shows the person's dashboard.
 13. Nightly SQLite backup. Add to the `kindahired` crontab (`sudo -u kindahired crontab -e`):
     ```
     30 3 * * * for d in /srv/kindahired/people/*/; do [ -f "${d}kindahired.db" ] && sqlite3 "${d}kindahired.db" ".backup '${d}backup-$(date +\%a).db'"; done
