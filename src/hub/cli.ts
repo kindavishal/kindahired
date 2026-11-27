@@ -1,4 +1,5 @@
 import { adminCommands } from "./admin.ts";
+import { macCommands } from "./mac.ts";
 import { loadHubEnv } from "./router.ts";
 
 /** Hub admin commands: `npm run hub -- <command> [args]`. */
@@ -30,6 +31,8 @@ const commands: Record<string, Command> = {
 for (const [name, run] of Object.entries(adminCommands)) {
   commands[name] = { usage: name === "add-person" ? "add-person <id> <email>    create a person's data folder, port and secrets" : "list                       list people on the hub", async run(args) { for (const line of run(args)) console.log(line); } };
 }
+
+for (const [name, c] of Object.entries(macCommands)) commands[name] = { usage: c.usage, async run(args) { for (const line of c.run(args)) console.log(line); } };
 
 const help = () => console.log(`Usage: npm run hub -- <command>\n\n${Object.values(commands).map((c) => `  ${c.usage}`).join("\n")}`);
 

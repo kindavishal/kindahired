@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { randomBytes, timingSafeEqual } from "node:crypto";
+import os from "node:os";
 import path from "node:path";
 
 /**
@@ -24,7 +25,9 @@ export interface Person {
   chatId: number | null;
 }
 
-export const hubDir = () => process.env.JH_HUB_DIR || "/srv/kindahired/hub";
+/** Where the hub lives: ~/kindahired-hub on a Mac, /srv/kindahired on the Linux VM. */
+export const hubRoot = () => (process.platform === "darwin" ? path.join(os.homedir(), "kindahired-hub") : "/srv/kindahired");
+export const hubDir = () => process.env.JH_HUB_DIR || (process.platform === "darwin" ? path.join(hubRoot(), "hub") : "/srv/kindahired/hub");
 export const peoplePath = (dir = hubDir()) => path.join(dir, "people.json");
 
 export function loadPeople(dir = hubDir()): Person[] {

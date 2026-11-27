@@ -113,7 +113,18 @@ git log --all -p | grep -iE "api[_-]?key|secret|token|password" | grep -v "proce
 
 ---
 
-## 4. Oracle Cloud: the hub VM
+## 4. The hub: your Mac for now
+
+For now the hub runs on your Mac, behind the same Cloudflare Tunnel, so testers see no difference.
+Follow [deploy/mac/README.md](../deploy/mac/README.md): it sets up `~/kindahired-hub`, the launchd
+jobs and the tunnel, and moves your own setup in. Keep the Mac on power and logged in; the gateway
+runs under `caffeinate -s`. Section 5c (tunnel) is `sudo cloudflared service install <token>` there,
+with the token pasted by you from the Cloudflare dashboard.
+
+### Later: move to Oracle Cloud (off the Mac)
+
+The steps below put the hub on an Always Free VM. Do them when you want it off your Mac, then copy
+`people/` and `hub/` across (the setup is in `deploy/hub/README.md`).
 
 1. Sign up at [cloud.oracle.com](https://cloud.oracle.com) (Start for free).
    - **The home region is permanent.** Pick one near you and your testers. Busy regions can run out
