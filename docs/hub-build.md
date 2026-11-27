@@ -52,6 +52,7 @@ Settings shared by every engine live in `/srv/kindahired/hub/hub.env` (template:
 GOOGLE_CLIENT_ID=...                                  # the hub's one Google OAuth client
 GOOGLE_CLIENT_SECRET=...
 JH_PUBLIC_URL=https://<hub domain>/                   # links, and <url>oauth/google/callback
+HUB_GATEWAY_SECRET=...                                # openssl rand -hex 32; same value in gateway.env
 ```
 
 systemd lets the later file win, so a person's `.env` can replace these (only for a person on
@@ -71,7 +72,8 @@ cookie like any other page. The CLI loopback flow is unchanged for local mode.
 ## Setup pages on the hub
 
 Hub mode only, one module each under `src/web/`. Every POST needs an `Origin` (or, without one, a
-`Referer`) whose host matches `Host`; anything else gets 403 (`src/web/forms.ts`).
+`Referer`) whose host matches `Host`; anything else gets 403 (`src/web/forms.ts`). The server checks
+this for every dashboard route (see Gateway), and these pages check it again.
 
 - `/setup` (`setup.ts`): the checklist (Profile, Playbook, AI keys, Google, Telegram, Desktop app).
   Home shows one "Finish setup (n of 6)" callout until all six are done.
@@ -178,6 +180,20 @@ instead of spawning the process.
     unknown token gets 401.
 - It streams request and response bodies, passes `Host`, sets `X-Forwarded-*`, and removes
   `Cf-Access-*` headers before proxying.
+- **Engines answer only the gateway.** Engines listen on 127.0.0.1 with no sign-in of their own, so
+  the gateway adds `X-Kindahired-Gateway: <HUB_GATEWAY_SECRET>` to every request it passes to an
+  engine (dashboard, `/oauth/*`, `/worker/*`), after dropping any copy the client sent; the router
+  never gets it. With `JH_HUB=1` the engine answers 403 to any request without the matching header
+  (timing-safe compare), before any routing, `/worker/*` included. An engine with `JH_HUB=1` and no
+  `HUB_GATEWAY_SECRET` refuses everything and logs why once. The gateway won't start without the
+  secret. The same value lives in `gateway.env` and `hub.env` (`openssl rand -hex 32`). Outside hub
+  mode nothing changes.
+- **Every change must come from the dashboard.** The forms carry no CSRF token, so the engine
+  refuses (403, nothing changed) every non-GET request whose `Origin` (or, without one, `Referer`)
+  names a different host than `Host`, or that has neither. `/worker/*` is exempt (bearer token, no
+  browser). The gateway passes the original `Host`; behind it, `X-Forwarded-Host` is used instead
+  when the request carries the gateway secret. The bookmarklets only open a page (`GET /add?url=`,
+  `GET /sources?url=`), and the POST happens from that page.
 - An email that isn't in people.json gets 403 with a plain page: "You're signed in as … but don't
   have a dashboard here yet."
 - `GET /healthz` returns 200 with no auth.

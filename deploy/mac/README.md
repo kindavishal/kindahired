@@ -55,6 +55,10 @@ for everything else. On the internal drive none of this is needed.
    chmod 600 $JH_HUB_ROOT/hub/*.env
    ```
 
+   Generate the gateway secret once with `openssl rand -hex 32` and set it as
+   `HUB_GATEWAY_SECRET=` in both `gateway.env` and `hub.env` (the same value). The gateway won't
+   start without it, and in hub mode an engine refuses every request that doesn't carry it.
+
 4. Cloudflare Tunnel. Download cloudflared into `bin/`, save the tunnel token to `hub/tunnel-token`
    (mode 600), and run it as a launchd service that reads the token from that file
    (`cloudflared tunnel --no-autoupdate --logfile <root>/logs/cloudflared.log run --token-file <root>/hub/tunnel-token`).

@@ -39,12 +39,15 @@ The contracts are in [../../docs/hub-build.md](../../docs/hub-build.md).
    AUD tag and your team domain.
 8. Write the env files (mode 600, owned by `kindahired`):
    - `/srv/kindahired/hub/gateway.env`: `CF_ACCESS_TEAM_DOMAIN=<team>.cloudflareaccess.com`,
-     `CF_ACCESS_AUD=<aud tag>`, `JH_HUB_DIR=/srv/kindahired/hub`
+     `CF_ACCESS_AUD=<aud tag>`, `JH_HUB_DIR=/srv/kindahired/hub`, `HUB_GATEWAY_SECRET=<secret>`.
+     Generate the secret once with `openssl rand -hex 32`; the same value goes in `hub.env`. The
+     gateway won't start without it, and engines refuse every request that doesn't carry it.
    - `/srv/kindahired/hub/router.env`: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`,
      `JH_HUB_DIR=/srv/kindahired/hub`
    - `/srv/kindahired/hub/hub.env`, copied from `hub.env.template`: `GOOGLE_CLIENT_ID` and
-     `GOOGLE_CLIENT_SECRET` (the hub's one Google OAuth client) and `JH_PUBLIC_URL` (the hub's
-     address, with a trailing slash). Every engine loads it before the person's own `.env`, so a
+     `GOOGLE_CLIENT_SECRET` (the hub's one Google OAuth client), `JH_PUBLIC_URL` (the hub's
+     address, with a trailing slash) and `HUB_GATEWAY_SECRET` (the same value as in
+     `gateway.env`). Every engine loads it before the person's own `.env`, so a
      value in a person's file wins; keep these out of person files unless that person uses their
      own Google client. Restart the engines after changing it.
 9. Install the units and start the gateway and router:

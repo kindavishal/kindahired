@@ -46,11 +46,14 @@ beforeEach(() => {
   restarts = 0;
 });
 
-const get = (p: string) => fetch(base + p, { redirect: "manual" });
+// Hub mode: every request comes through the gateway, which adds the shared secret.
+process.env.HUB_GATEWAY_SECRET = "gw-test-secret";
+const GW = { "x-kindahired-gateway": "gw-test-secret" };
+const get = (p: string) => fetch(base + p, { redirect: "manual", headers: GW });
 const post = (p: string, form: Record<string, string>, origin: string | null = base) =>
   fetch(base + p, {
     method: "POST", redirect: "manual",
-    headers: { "content-type": "application/x-www-form-urlencoded", ...(origin ? { origin } : {}) },
+    headers: { ...GW, "content-type": "application/x-www-form-urlencoded", ...(origin ? { origin } : {}) },
     body: new URLSearchParams(form).toString(),
   });
 
@@ -248,7 +251,7 @@ test("cross-origin and origin-less POSTs are refused on every setup route", asyn
   // A Referer from this host passes when Origin is missing.
   const ref = await fetch(base + "/setup/playbook", {
     method: "POST", redirect: "manual",
-    headers: { "content-type": "application/x-www-form-urlencoded", referer: base + "/setup/playbook" },
+    headers: { ...GW, "content-type": "application/x-www-form-urlencoded", referer: base + "/setup/playbook" },
     body: "playbook=ok",
   });
   assert.equal(ref.status, 303);

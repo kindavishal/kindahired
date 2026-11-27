@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import http from "node:http";
 import { pathToFileURL } from "node:url";
+import { GATEWAY_HEADER } from "./gateway-secret.ts";
 import { loadPeople, pick, type Person } from "./people.ts";
 
 const JWKS_TTL_MS = 60 * 60 * 1000;
@@ -10,6 +11,8 @@ export interface GatewayOptions {
   teamDomain: string;
   aud: string;
   routerUrl?: string;
+  /** Sent to the engines as X-Kindahired-Gateway. Defaults to HUB_GATEWAY_SECRET; required. */
+  gatewaySecret?: string;
   /** Override the certs URL (tests). */
   certsUrl?: string;
   /** Override how people are loaded (tests). Defaults to people.json in JH_HUB_DIR. */
@@ -28,6 +31,8 @@ export function createGateway(opts: GatewayOptions): http.Server {
   const certsUrl = opts.certsUrl ?? `https://${opts.teamDomain}/cdn-cgi/access/certs`;
   const people = opts.loadPeople ?? (() => loadPeople());
   const now = opts.now ?? Date.now;
+  const secret = opts.gatewaySecret ?? process.env.HUB_GATEWAY_SECRET ?? "";
+  if (!secret) throw new Error("HUB_GATEWAY_SECRET is not set");
 
   let keys: Jwk[] = [];
   let fetchedAt = 0;
@@ -81,11 +86,13 @@ export function createGateway(opts: GatewayOptions): http.Server {
 
   const HOP = new Set(["connection", "keep-alive", "proxy-authenticate", "proxy-authorization", "te", "trailer", "transfer-encoding", "upgrade"]);
 
-  function proxy(req: http.IncomingMessage, res: http.ServerResponse, target: { host: string; port: number }): void {
+  /** Passes the request on. `engine` adds the gateway secret; a client's own copy is always dropped. */
+  function proxy(req: http.IncomingMessage, res: http.ServerResponse, target: { host: string; port: number; engine?: boolean }): void {
     const headers: http.OutgoingHttpHeaders = {};
+    if (target.engine) headers[GATEWAY_HEADER] = secret;
     for (const [name, value] of Object.entries(req.headers)) {
       const n = name.toLowerCase();
-      if (HOP.has(n) || n.startsWith("cf-access-") || n.startsWith("x-forwarded-") || n === "forwarded" || n === "x-real-ip") continue;
+      if (HOP.has(n) || n === GATEWAY_HEADER || n.startsWith("cf-access-") || n.startsWith("x-forwarded-") || n === "forwarded" || n === "x-real-ip") continue;
       headers[n] = value;
     }
     const clientIp = (req.headers["cf-connecting-ip"] as string | undefined) ?? req.socket.remoteAddress ?? "";
@@ -122,7 +129,7 @@ export function createGateway(opts: GatewayOptions): http.Server {
         const m = /^Bearer (.+)$/.exec(String(req.headers.authorization ?? ""));
         const person = m ? pick.workerToken(people(), m[1]) : undefined;
         if (!person) return text(res, 401, "Unauthorized");
-        return proxy(req, res, { host: "127.0.0.1", port: person.port });
+        return proxy(req, res, { host: "127.0.0.1", port: person.port, engine: true });
       }
 
       const token = req.headers["cf-access-jwt-assertion"];
@@ -137,7 +144,7 @@ export function createGateway(opts: GatewayOptions): http.Server {
       }
       const person = pick.email(people(), email);
       if (!person) return forbiddenPage(res, email);
-      proxy(req, res, { host: "127.0.0.1", port: person.port });
+      proxy(req, res, { host: "127.0.0.1", port: person.port, engine: true });
     } catch (e) {
       console.error("gateway error:", e);
       if (!res.headersSent) text(res, 500, "Something went wrong.");
@@ -165,6 +172,10 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const aud = process.env.CF_ACCESS_AUD;
   if (!teamDomain || !aud) {
     console.error("Set CF_ACCESS_TEAM_DOMAIN and CF_ACCESS_AUD.");
+    process.exit(1);
+  }
+  if (!process.env.HUB_GATEWAY_SECRET) {
+    console.error("Set HUB_GATEWAY_SECRET in gateway.env, the same value as in hub.env (generate one with: openssl rand -hex 32).");
     process.exit(1);
   }
   const port = Number(process.env.GATEWAY_PORT ?? 8080);

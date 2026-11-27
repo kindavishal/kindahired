@@ -49,9 +49,13 @@ beforeEach(() => {
   });
 });
 
-const get = (p: string) => fetch(base + p, { redirect: "manual" });
+// Hub mode: every request comes through the gateway, which adds the shared secret.
+process.env.HUB_GATEWAY_SECRET = "gw-test-secret";
+const GW = { "x-kindahired-gateway": "gw-test-secret" };
+const get = (p: string) => fetch(base + p, { redirect: "manual", headers: GW });
+const startPost = () => fetch(base + "/oauth/google/start", { method: "POST", redirect: "manual", headers: { ...GW, origin: base } });
 async function start(): Promise<URL> {
-  const res = await fetch(base + "/oauth/google/start", { method: "POST", redirect: "manual" });
+  const res = await startPost();
   assert.equal(res.status, 303);
   return new URL(res.headers.get("location")!);
 }
@@ -123,7 +127,7 @@ test("the status page explains the unverified-app screen and the Home callout sh
 test("the routes are absent outside hub mode", async () => {
   delete process.env.JH_HUB;
   assert.equal((await get("/google")).status, 404);
-  assert.equal((await fetch(base + "/oauth/google/start", { method: "POST", redirect: "manual" })).status, 404);
+  assert.equal((await startPost()).status, 404);
   assert.equal((await get("/oauth/google/callback?code=c&state=s")).status, 404);
   assert.doesNotMatch(await (await get("/")).text(), /href="\/google"/);
 });

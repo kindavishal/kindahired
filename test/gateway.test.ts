@@ -8,6 +8,7 @@ import type { Person } from "../src/hub/people.ts";
 
 const TEAM = "team.cloudflareaccess.com";
 const AUD = "test-aud";
+const SECRET = "gw-secret-for-tests";
 const { publicKey, privateKey } = crypto.generateKeyPairSync("rsa", { modulusLength: 2048 });
 const { privateKey: otherKey } = crypto.generateKeyPairSync("rsa", { modulusLength: 2048 });
 
@@ -56,7 +57,7 @@ before(async () => {
   ];
   const gw = createGateway({
     teamDomain: TEAM, aud: AUD, certsUrl: `http://127.0.0.1:${portOf(jwks)}/certs`,
-    routerUrl: `http://127.0.0.1:${portOf(router)}`, loadPeople: () => people,
+    routerUrl: `http://127.0.0.1:${portOf(router)}`, loadPeople: () => people, gatewaySecret: SECRET,
   });
   await new Promise<void>((r) => gw.listen(0, "127.0.0.1", () => r()));
   servers.push(gw);
@@ -144,4 +145,25 @@ test("Cf-Access headers are stripped and forwarded headers are set", async () =>
   assert.equal(h["x-forwarded-host"], new URL(base).host);
   assert.equal(h.host, new URL(base).host);
   assert.equal(h["x-forwarded-proto"], "https");
+});
+
+test("engines get the gateway secret; a client's own copy is replaced, and the router never sees it", async () => {
+  await call("/gw", { "cf-access-jwt-assertion": good("sam@example.com"), "x-kindahired-gateway": "spoofed" });
+  assert.equal(seen.filter((s) => s.url === "/gw").at(-1)!.headers["x-kindahired-gateway"], SECRET);
+  await call("/worker/status", { authorization: "Bearer wt-ana", "x-kindahired-gateway": "spoofed" });
+  assert.equal(seen.filter((s) => s.name === "ana" && s.url === "/worker/status").at(-1)!.headers["x-kindahired-gateway"], SECRET);
+  await call("/oauth/google/callback?state=s&code=c", { "cf-access-jwt-assertion": good("sam@example.com") });
+  assert.equal(seen.filter((s) => s.url.startsWith("/oauth/")).at(-1)!.headers["x-kindahired-gateway"], SECRET);
+  await call("/telegram/webhook", { "x-kindahired-gateway": "spoofed" }, { method: "POST", body: "{}" });
+  assert.equal(seen.filter((s) => s.name === "router").at(-1)!.headers["x-kindahired-gateway"], undefined);
+});
+
+test("the gateway won't start without a secret", () => {
+  const saved = process.env.HUB_GATEWAY_SECRET;
+  delete process.env.HUB_GATEWAY_SECRET;
+  try {
+    assert.throws(() => createGateway({ teamDomain: TEAM, aud: AUD, loadPeople: () => [] }), /HUB_GATEWAY_SECRET/);
+  } finally {
+    if (saved !== undefined) process.env.HUB_GATEWAY_SECRET = saved;
+  }
 });

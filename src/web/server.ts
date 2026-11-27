@@ -29,6 +29,8 @@ import { telegramConnectRoute } from "./telegram-connect.ts";
 import { desktopConnectRoute } from "./desktop-connect.ts";
 import { googleConnectRoute } from "./google-connect.ts";
 import { setupCallout, setupRoute } from "./setup.ts";
+import { hubMode, refuseCrossOrigin, sameOrigin } from "./forms.ts";
+import { fromGateway, gatewaySecret } from "../hub/gateway-secret.ts";
 import { setupProfileRoute } from "./setup-profile.ts";
 import { setupPlaybookRoute } from "./setup-playbook.ts";
 import { setupKeysRoute } from "./setup-keys.ts";
@@ -998,6 +1000,8 @@ const ACTION_MSG: Record<string, string> = { done: "Marked as done.", drop: "Rem
 const OPP_MSG: Record<string, string> = { research: "Researching who's hiring. Reload in a few minutes.", remind: "The reminder is back on your list.", applied: "Marked as applied. Follow-up reminders start now.", drop: "Role dropped.", repack: "Rebuilding the pack. It arrives in a few minutes.", build: "Building the pack. It arrives in a few minutes." };
 const OUTREACH_MSG: Record<string, string> = { note_sent: "Marked note sent.", dm_sent: "Marked DM sent.", replied: "Marked as replied.", skipped: "Skipped.", conversation: "Marked as in conversation." };
 
+let warnedNoSecret = false;
+
 export function startServer(port = env.port, hooks?: Hooks) {
   setShellPort(port);
   setNavCounts(() => ({
@@ -1015,7 +1019,21 @@ export function startServer(port = env.port, hooks?: Hooks) {
       res.end(s ?? message("Not found", "Page not found", `<p class="muted">That role or page doesn't exist any more. It may have been merged with a duplicate.</p><p>${linkButton("/", "Back to Home", "primary")}</p>`));
     };
     try {
+      // On the hub, only the gateway may talk to an engine: every request, /worker/* included.
+      if (hubMode() && !fromGateway(req)) {
+        if (!gatewaySecret() && !warnedNoSecret) {
+          warnedNoSecret = true;
+          console.error("JH_HUB=1 but HUB_GATEWAY_SECRET is not set: refusing every request. Set it in hub.env (the same value as in gateway.env).");
+        }
+        res.writeHead(403, { "content-type": "text/plain; charset=utf-8" });
+        return res.end("Forbidden");
+      }
       if (url.pathname.startsWith("/worker/")) return await handleWorker(req, res, url);
+      // Forms carry no CSRF token: a change must come from a page on this dashboard.
+      if (req.method !== "GET" && req.method !== "HEAD" && !sameOrigin(req)) {
+        if (inline) return json(403, { ok: false, error: "That request came from another site. Nothing was changed." });
+        return refuseCrossOrigin(res);
+      }
       if (await telegramConnectRoute(req, res, url)) return;
       if (desktopConnectRoute(req, res, url)) return;
       if (await googleConnectRoute(req, res, url)) return;
