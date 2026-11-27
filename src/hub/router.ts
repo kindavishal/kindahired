@@ -268,6 +268,7 @@ export async function startRouter(o: RouterOptions): Promise<Router> {
       if (m) return await relay(req, res, url, decodeURIComponent(m[1]), m[2]);
       if (url.pathname === "/healthz") { res.writeHead(200); return res.end("ok"); }
       if (url.pathname === "/early-access") return await ea.publicRoute(req, res);
+      if (url.pathname.startsWith("/early-access/")) return await ea.internalRoute(req, res, url);
       if (url.pathname === "/admin" || url.pathname.startsWith("/admin/")) return await ea.adminRoute(req, res, url);
       res.writeHead(404);
       res.end("not found");

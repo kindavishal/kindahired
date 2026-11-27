@@ -2,13 +2,15 @@ import { timingSafeEqual } from "node:crypto";
 import type http from "node:http";
 import type { DatabaseSync } from "node:sqlite";
 import { adminPage, type PersonRow } from "./admin-page.ts";
-import { addRequest, getRequest, listRequests, recordDecision, setTelegramMessage, validateRequest, type AccessRequest } from "./early-access.ts";
+import { addRequest, getRequest, listRequests, recordDecision, requestByEmail, setTelegramMessage, validateRequest, type AccessRequest } from "./early-access.ts";
 import { loadPeople, type Person } from "./people.ts";
 import { provision, type ProvisionDeps, type Step } from "./provision.ts";
 
 /**
  * The router's early-access and admin routes:
  *   POST /early-access                     the landing page's form (public; CORS for the landing page)
+ *   GET  /early-access/status              where a signed-in email's request stands (gateway only)
+ *   POST /early-access/verified            a request from someone signed in (gateway only)
  *   GET  /admin                            the operator's page (only through the gateway, after sign-in)
  *   POST /admin/requests/<id>/approve      approve (or retry what failed)
  *   POST /admin/requests/<id>/decline
@@ -68,7 +70,7 @@ export function earlyAccess(ctx: EarlyAccessContext) {
   // ---------- Telegram ----------
 
   const requestText = (r: AccessRequest, outcome = "") =>
-    `<b>Early access request</b>\n${esc(r.email)}\n${esc(r.linkedin)}${outcome ? `\n\n${outcome}` : ""}`;
+    `<b>Early access request</b>\n${esc(r.email)}${r.verified ? " (email confirmed)" : ""}\n${esc(r.linkedin)}${outcome ? `\n\n${outcome}` : ""}`;
   const stepsText = (steps: Step[]) => steps.map((s) => `${s.ok ? "✓" : "✕"} ${esc(s.name)}: ${esc(s.detail)}`).join("\n");
 
   async function notify(r: AccessRequest) {
@@ -173,6 +175,36 @@ export function earlyAccess(ctx: EarlyAccessContext) {
     reply(200, { ok: true });
   }
 
+  /** Calls from the gateway about a signed-in email: where its request stands, or a new request. */
+  async function internalRoute(req: http.IncomingMessage, res: http.ServerResponse, url: URL): Promise<void> {
+    const reply = (status: number, body: object) => {
+      res.writeHead(status, { "content-type": "application/json", "cache-control": "no-store" });
+      res.end(JSON.stringify(body));
+    };
+    const secret = env.HUB_GATEWAY_SECRET ?? "";
+    const email = String(req.headers["x-kindahired-email"] ?? "").trim().toLowerCase();
+    if (!secret || !sameSecret(String(req.headers["x-kindahired-gateway"] ?? ""), secret) || !email) return reply(403, { ok: false });
+    if (url.pathname === "/early-access/status" && req.method === "GET") {
+      return reply(200, { status: requestByEmail(ctx.db, email)?.status ?? "none" });
+    }
+    if (url.pathname === "/early-access/verified" && req.method === "POST") {
+      const raw = await readSmallBody(req);
+      let linkedin: unknown = "";
+      try { linkedin = (JSON.parse(raw ?? "{}") as { linkedin?: unknown }).linkedin; } catch { /* empty */ }
+      const v = validateRequest(email, linkedin);
+      if ("error" in v) return reply(400, { ok: false, error: v.error });
+      const ip = String(req.headers["x-forwarded-for"] ?? "").split(",")[0].trim();
+      const added = addRequest(ctx.db, { ...v, ip, verified: true });
+      if ("error" in added) return reply(429, { ok: false, error: "Too many requests from here. Try again in an hour." });
+      if (added.created) {
+        ctx.log(`early access: request from ${v.email} (signed in)`);
+        void notify(added.request);
+      }
+      return reply(200, { ok: true });
+    }
+    reply(404, { ok: false });
+  }
+
   /** /admin and its actions. The gateway has checked the sign-in and passes the email along. */
   async function adminRoute(req: http.IncomingMessage, res: http.ServerResponse, url: URL): Promise<void> {
     const secret = env.HUB_GATEWAY_SECRET ?? "";
@@ -198,5 +230,5 @@ export function earlyAccess(ctx: EarlyAccessContext) {
     res.end(adminPage({ requests: listRequests(ctx.db), people, flash: url.searchParams.get("flash") ?? undefined }));
   }
 
-  return { publicRoute, adminRoute, onCallback, decide };
+  return { publicRoute, internalRoute, adminRoute, onCallback, decide };
 }

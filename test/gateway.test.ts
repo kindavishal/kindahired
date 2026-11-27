@@ -3,8 +3,13 @@ import crypto from "node:crypto";
 import http from "node:http";
 import type { AddressInfo } from "node:net";
 import { after, before, test } from "node:test";
+import { mkdtempSync } from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { createGateway } from "../src/hub/gateway.ts";
+import type { Mail } from "../src/hub/mail.ts";
 import type { Person } from "../src/hub/people.ts";
+import { openSigninStore } from "../src/hub/signin.ts";
 
 const TEAM = "team.cloudflareaccess.com";
 const AUD = "test-aud";
@@ -23,6 +28,7 @@ const good = (email: string, over: Record<string, unknown> = {}) =>
 
 interface Seen { name: string; url: string; headers: http.IncomingHttpHeaders; body: string }
 const seen: Seen[] = [];
+const mails: Mail[] = [];
 const servers: http.Server[] = [];
 
 function listen(handler: http.RequestListener): Promise<http.Server> {
@@ -58,6 +64,8 @@ before(async () => {
   const gw = createGateway({
     teamDomain: TEAM, aud: AUD, certsUrl: `http://127.0.0.1:${portOf(jwks)}/certs`,
     routerUrl: `http://127.0.0.1:${portOf(router)}`, loadPeople: () => people, gatewaySecret: SECRET,
+    signin: openSigninStore(path.join(mkdtempSync(path.join(os.tmpdir(), "jh-gw-")), "gateway.db"), SECRET),
+    sendMail: async (m) => { mails.push(m); },
   });
   await new Promise<void>((r) => gw.listen(0, "127.0.0.1", () => r()));
   servers.push(gw);
@@ -89,11 +97,14 @@ test("the Google OAuth callback rides the Access cookie to the right person's en
   assert.equal(r.status, 200);
   assert.equal(await r.text(), "from ana");
   assert.equal(seen.filter((s) => s.name === "ana").at(-1)!.url, cb);
-  assert.equal((await call(cb)).status, 401);
+  assert.equal((await call(cb, {}, { redirect: "manual" })).status, 303);
 });
 
-test("no token gets 401", async () => {
-  assert.equal((await call("/")).status, 401);
+test("not signed in: pages go to /signin and come back, other requests get 401", async () => {
+  const r = await call("/o/12?x=1", {}, { redirect: "manual" });
+  assert.equal(r.status, 303);
+  assert.equal(r.headers.get("location"), "/signin?next=%2Fo%2F12%3Fx%3D1");
+  assert.equal((await call("/a/1/done", {}, { method: "POST", redirect: "manual" })).status, 401);
 });
 
 test("bad tokens get 403", async () => {
@@ -108,12 +119,13 @@ test("bad tokens get 403", async () => {
   for (const t of bad) assert.equal((await call("/", { "cf-access-jwt-assertion": t })).status, 403, t.slice(0, 20));
 });
 
-test("an email that is not in the registry gets the 403 page and no upstream call", async () => {
-  const before = seen.length;
+test("an email that is not in the registry gets the not-in-yet page and no engine call", async () => {
+  const engineCalls = () => seen.filter((s) => s.name !== "router").length;
+  const before = engineCalls();
   const r = await call("/", { "cf-access-jwt-assertion": good("stranger@example.com") });
-  assert.equal(r.status, 403);
-  assert.match(await r.text(), /signed in as stranger@example.com but don't have a dashboard here yet/);
-  assert.equal(seen.length, before);
+  assert.equal(r.status, 200);
+  assert.match(await r.text(), /You&#39;re not in yet/);
+  assert.equal(engineCalls(), before);
 });
 
 test("the Telegram webhook goes to the router with no token", async () => {
@@ -177,10 +189,97 @@ test("early access reaches the router with no sign-in, and never with a gateway 
 });
 
 test("/admin needs a sign-in and carries the signed-in email, never the client's", async () => {
-  assert.equal((await call("/admin", { "x-kindahired-email": "boss@example.com" })).status, 401);
+  assert.equal((await call("/admin", { "x-kindahired-email": "boss@example.com" }, { redirect: "manual" })).status, 303);
   const r = await call("/admin", { "cf-access-jwt-assertion": good("someone@example.com"), "x-kindahired-email": "boss@example.com" });
   assert.equal(await r.text(), "from router");
   const h = seen.filter((s) => s.name === "router" && s.url === "/admin").at(-1)!.headers;
   assert.equal(h["x-kindahired-email"], "someone@example.com");
   assert.equal(h["x-kindahired-gateway"], SECRET);
+});
+
+// ---------- Our own sign-in ----------
+
+const form = (fields: Record<string, string>, origin: string | null = base) => ({
+  method: "POST", redirect: "manual" as const, body: new URLSearchParams(fields).toString(),
+  headers: { "content-type": "application/x-www-form-urlencoded", ...(origin ? { origin } : {}) },
+});
+const lastCode = (to: string) => mails.filter((m) => m.to === to).at(-1)!.subject.slice(0, 6);
+const cookieOf = (r: Response) => (r.headers.get("set-cookie") ?? "").split(";")[0];
+
+async function signIn(email: string, next = "/") {
+  const sent = await fetch(`${base}/signin`, form({ email, next }));
+  assert.equal(sent.status, 200);
+  const r = await fetch(`${base}/signin/code`, form({ email, next, code: lastCode(email) }));
+  assert.equal(r.status, 303);
+  return { cookie: cookieOf(r), location: r.headers.get("location") };
+}
+
+test("sign in with an emailed code reaches your own dashboard", async () => {
+  const page = await (await fetch(`${base}/signin?next=%2Fo%2F12`)).text();
+  assert.match(page, /Email me a code/);
+  const sent = await fetch(`${base}/signin`, form({ email: "Sam@Example.com", next: "/o/12" }));
+  assert.match(await sent.text(), /We sent a 6-digit code to <strong>sam@example.com/);
+  const mail = mails.at(-1)!;
+  assert.equal(mail.to, "sam@example.com");
+  assert.match(mail.subject, /^\d{6} is your kindahired code$/);
+  // A wrong code first.
+  const wrongCode = lastCode("sam@example.com") === "000000" ? "111111" : "000000";
+  const wrong = await fetch(`${base}/signin/code`, form({ email: "sam@example.com", next: "/o/12", code: wrongCode }));
+  assert.equal(wrong.status, 400);
+  assert.match(await wrong.text(), /4 tries left/);
+  const ok = await fetch(`${base}/signin/code`, form({ email: "sam@example.com", next: "/o/12", code: lastCode("sam@example.com") }));
+  assert.equal(ok.status, 303);
+  assert.equal(ok.headers.get("location"), "/o/12");
+  const set = ok.headers.get("set-cookie")!;
+  assert.match(set, /^__Host-kh_session=[\w-]{43}; Path=\/; Secure; HttpOnly; SameSite=Lax/);
+  const r = await call("/o/12", { cookie: cookieOf(ok) });
+  assert.equal(await r.text(), "from sam");
+  // The same code doesn't work twice.
+  assert.equal((await fetch(`${base}/signin/code`, form({ email: "sam@example.com", code: lastCode("sam@example.com") }))).status, 400);
+});
+
+test("five wrong codes end that code", async () => {
+  await fetch(`${base}/signin`, form({ email: "ana@example.com" }));
+  const right = lastCode("ana@example.com");
+  const wrongCode = right === "000000" ? "111111" : "000000";
+  for (let i = 0; i < 4; i++) await fetch(`${base}/signin/code`, form({ email: "ana@example.com", code: wrongCode }));
+  const fifth = await fetch(`${base}/signin/code`, form({ email: "ana@example.com", code: wrongCode }));
+  assert.match(await fifth.text(), /Too many wrong codes/);
+  assert.equal((await fetch(`${base}/signin/code`, form({ email: "ana@example.com", code: right }))).status, 400);
+});
+
+test("sign-in forms from another site, and odd next paths, are refused", async () => {
+  assert.equal((await fetch(`${base}/signin`, form({ email: "sam@example.com" }, "https://evil.example"))).status, 403);
+  assert.equal((await fetch(`${base}/signin`, form({ email: "sam@example.com" }, null))).status, 403);
+  const { location } = await signIn("sam@example.com", "//evil.example/x");
+  assert.equal(location, "/");
+});
+
+test("sign out ends the session", async () => {
+  const { cookie } = await signIn("ana@example.com");
+  assert.equal(await (await call("/x", { cookie })).text(), "from ana");
+  const out = await fetch(`${base}/signout`, { ...form({}), headers: { ...form({}).headers, cookie } });
+  assert.equal(out.status, 303);
+  assert.match(out.headers.get("set-cookie")!, /Max-Age=0/);
+  assert.equal((await call("/x", { cookie }, { redirect: "manual" })).status, 303);
+});
+
+test("someone without a dashboard can sign in and ask for access in one step", async () => {
+  const { cookie } = await signIn("new@example.com");
+  const page = await (await call("/", { cookie })).text();
+  assert.match(page, /You're not in yet/);
+  assert.match(page, /Signed in as new@example.com/);
+  const r = await fetch(`${base}/request-access`, { ...form({ linkedin: "linkedin.com/in/new" }), headers: { ...form({}).headers, cookie } });
+  assert.equal(r.status, 400); // the stand-in router doesn't answer {ok:true}
+  const asked = seen.filter((s) => s.name === "router" && s.url === "/early-access/verified").at(-1)!;
+  assert.equal(asked.headers["x-kindahired-email"], "new@example.com");
+  assert.equal(asked.headers["x-kindahired-gateway"], SECRET);
+  assert.deepEqual(JSON.parse(asked.body), { linkedin: "linkedin.com/in/new" });
+});
+
+test("codes are limited per email", async () => {
+  for (let i = 0; i < 5; i++) assert.equal((await fetch(`${base}/signin`, form({ email: "busy@example.com" }))).status, 200);
+  const sixth = await fetch(`${base}/signin`, form({ email: "busy@example.com" }));
+  assert.equal(sixth.status, 429);
+  assert.match(await sixth.text(), /That&#39;s a lot of codes/);
 });

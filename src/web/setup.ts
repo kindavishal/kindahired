@@ -51,7 +51,7 @@ ${s.done ? badge("Done", "ok") : badge("Not done", "warn")}${linkButton(s.href, 
   return page("Setup · kindahired", `<div class="stack setup">
 <div><h1>Setup</h1><p class="lede">${lede}</p></div>
 <div class="panel">${rows}</div>
-<p><a class="icon-link" href="/setup/export">${icon("download")}Download my data</a></p>
+<div class="btn-row"><a class="icon-link" href="/setup/export">${icon("download")}Download my data</a><span style="flex:1"></span><form method="post" action="/signout"><button class="btn quiet">Sign out</button></form></div>
 </div>`, { tab: "setup" });
 }
 
