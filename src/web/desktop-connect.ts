@@ -69,9 +69,30 @@ function desktopPage(downloads: Downloads | null): string {
 <p>${linkButton("/", "Back to Home")}</p></div>`);
 }
 
-/** Handles /desktop. Returns false for any other path. */
+/**
+ * POST /desktop/pair: the desktop app calls this from its dashboard window right after the person
+ * signs in, and keeps the worker token it gets back. The server only lets same-origin POSTs through,
+ * and the custom header means another site can't even send it without a preflight.
+ */
+function pair(req: http.IncomingMessage, res: http.ServerResponse): void {
+  const token = process.env.JH_WORKER_TOKEN ?? "";
+  const body = (status: number, value: object) => {
+    res.writeHead(status, { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" });
+    res.end(JSON.stringify(value));
+  };
+  if (req.headers["x-kindahired-app"] !== "1") return body(400, { ok: false });
+  if (!token) return body(503, { ok: false });
+  body(200, { ok: true, token });
+}
+
+/** Handles /desktop and /desktop/pair. Returns false for any other path. */
 export function desktopConnectRoute(req: http.IncomingMessage, res: http.ServerResponse, url: URL): boolean {
-  if (url.pathname !== "/desktop" || !hubMode() || req.method !== "GET") return false;
+  if (!hubMode()) return false;
+  if (url.pathname === "/desktop/pair" && req.method === "POST") {
+    pair(req, res);
+    return true;
+  }
+  if (url.pathname !== "/desktop" || req.method !== "GET") return false;
   void latestDownloads().then((d) => {
     res.writeHead(200, { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" });
     res.end(desktopPage(d));

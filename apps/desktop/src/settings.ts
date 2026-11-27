@@ -6,8 +6,6 @@ import path from "node:path";
  * it's kept apart, encrypted with the system keychain (see main.ts).
  */
 export interface Settings {
-  /** The person's hub, as https://<hub domain>/. Empty until set up. */
-  hubUrl: string;
   /** Start the app when the person logs in. */
   openAtLogin: boolean;
   /** The worker was paused from the tray. */
@@ -16,7 +14,7 @@ export interface Settings {
   today: { day: string; done: number };
 }
 
-export const DEFAULT_SETTINGS: Settings = { hubUrl: "", openAtLogin: true, paused: false, today: { day: "", done: 0 } };
+export const DEFAULT_SETTINGS: Settings = { openAtLogin: true, paused: false, today: { day: "", done: 0 } };
 
 export const settingsFile = (dir: string) => path.join(dir, "settings.json");
 
@@ -31,7 +29,6 @@ export function loadSettings(dir: string): Settings {
   const r = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
   const t = (r.today && typeof r.today === "object" ? r.today : {}) as Record<string, unknown>;
   return {
-    hubUrl: typeof r.hubUrl === "string" ? r.hubUrl : "",
     openAtLogin: typeof r.openAtLogin === "boolean" ? r.openAtLogin : DEFAULT_SETTINGS.openAtLogin,
     paused: r.paused === true,
     today: { day: typeof t.day === "string" ? t.day : "", done: Number.isInteger(t.done) ? (t.done as number) : 0 },
@@ -48,7 +45,7 @@ export function saveSettings(dir: string, s: Settings): void {
 }
 
 /**
- * Cleans up a hub address typed by a person: adds https:// when there's no scheme, drops any path,
+ * Cleans up a hub address given with --hub (for testing against another hub): adds https:// when there's no scheme, drops any path,
  * query or hash, and ends with a slash. http is only allowed for this computer (for testing).
  * Returns an error message instead when it can't be a hub address.
  */
@@ -65,6 +62,27 @@ export function normalizeHubUrl(input: string): { url: string } | { error: strin
   if (u.protocol !== "https:" && !(u.protocol === "http:" && local)) return { error: "The hub address must start with https://." };
   if (u.username || u.password) return { error: "The hub address can't include a user name or password." };
   return { url: `${u.protocol}//${u.host}/` };
+}
+
+/** The scheme for links that open a dashboard page in the app, as kindahired://open/<path>. */
+export const LINK_SCHEME = "kindahired";
+
+/**
+ * The hub page a kindahired:// link points at, or null when it isn't one. Only the path and query are
+ * taken from the link; the host is always the hub's, so a link can't send the window anywhere else.
+ */
+export function deepLinkTarget(link: string, hubUrl: string): string | null {
+  let u: URL;
+  try {
+    u = new URL(link);
+  } catch {
+    return null;
+  }
+  if (u.protocol !== `${LINK_SCHEME}:` || u.hostname !== "open") return null;
+  const p = u.pathname || "/";
+  if (!p.startsWith("/") || p.startsWith("//") || p.includes("\\")) return null;
+  const target = new URL(p + u.search, hubUrl);
+  return target.origin === new URL(hubUrl).origin ? target.toString() : null;
 }
 
 /** Today's local date as YYYY-MM-DD. */

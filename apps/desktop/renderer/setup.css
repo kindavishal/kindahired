@@ -19,20 +19,15 @@
   }
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html, body { margin: 0; background: var(--bg); color: var(--ink); }
 body { font: 14px/20px ui-sans-serif, -apple-system, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
 main { padding: 32px 32px 20px; display: flex; flex-direction: column; gap: 24px; }
 h1 { font-size: 24px; line-height: 30px; font-weight: 600; margin: 0 0 8px; letter-spacing: -0.01em; }
 h2 { font-size: 15px; line-height: 22px; font-weight: 600; margin: 0; }
 .lede { margin: 0; color: var(--ink-2); font-size: 15px; line-height: 22px; }
-.lede b { color: var(--ink); font-weight: 500; }
-form, .claude { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
-.field { display: flex; flex-direction: column; gap: 6px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
 label { font-weight: 500; }
-input[type=url], input[type=password] {
-  font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line-strong);
-  border-radius: 6px; padding: 8px 10px; width: 100%;
-}
 input:focus-visible, button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .hint { margin: 0; color: var(--ink-3); font-size: 13px; }
 .check { display: flex; gap: 8px; align-items: flex-start; font-weight: 400; color: var(--ink-2); }
@@ -44,11 +39,9 @@ button:disabled { opacity: 0.5; cursor: default; }
 .secondary { background: var(--surface); color: var(--ink); border-color: var(--line-strong); }
 .secondary:hover:not(:disabled) { background: var(--surface-2); }
 .link { background: none; padding: 0; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
-.results { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
-.results:empty { display: none; }
-.results li, .status { display: flex; gap: 8px; align-items: baseline; margin: 0; }
+.status { display: flex; gap: 8px; align-items: baseline; margin: 0; }
 /* State is shown by shape as well as colour. */
-.results li::before, .status::before { content: "•"; width: 12px; flex: none; color: var(--ink-3); }
+.status::before { content: "•"; width: 12px; flex: none; color: var(--ink-3); }
 .ok::before { content: "✓" !important; color: var(--ok) !important; }
 .bad::before { content: "✕" !important; color: var(--danger) !important; }
 .warn::before { content: "!" !important; color: var(--warn) !important; font-weight: 700; }

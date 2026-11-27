@@ -10,45 +10,32 @@
 <body>
   <main>
     <header>
-      <h1>Connect this computer</h1>
-      <p class="lede">This app runs Claude steps for your job search here, on your own Claude plan. It needs two things from your hub dashboard: <b>the address</b> you open it at, and <b>your worker token</b>.</p>
+      <h1 id="title">Connect Claude</h1>
+      <p class="lede" id="lede">kindahired builds your packs and research with Claude Code, on your own Claude plan.</p>
     </header>
 
-    <form id="hub-form" autocomplete="off">
-      <div class="field">
-        <label for="hub">Hub address</label>
-        <input id="hub" name="hub" type="url" inputmode="url" placeholder="https://jobs.example.com" spellcheck="false" required>
-      </div>
-      <div class="field">
-        <label for="token">Worker token</label>
-        <input id="token" name="token" type="password" spellcheck="false" placeholder="Paste the token from your dashboard">
-        <p class="hint" id="token-hint">Kept in this computer's keychain, never in a plain file.</p>
-      </div>
-      <label class="check">
-        <input id="login" type="checkbox" checked>
-        <span>Open when I log in, so Claude steps don't wait for me</span>
-      </label>
-
-      <ul class="results" id="hub-results" aria-live="polite"></ul>
-
-      <div class="actions">
-        <button type="button" id="check" class="secondary">Check</button>
-        <button type="submit" id="save" class="primary">Save</button>
-      </div>
-    </form>
-
-    <section class="claude" aria-labelledby="claude-title">
+    <section class="card" aria-labelledby="claude-title">
       <h2 id="claude-title">Claude Code</h2>
       <p id="claude-status" class="status" aria-live="polite">Checking…</p>
       <p id="claude-detail" class="hint"></p>
       <div class="actions">
-        <button type="button" id="install" class="secondary" hidden>Get Claude Code</button>
+        <button type="button" id="install" class="primary" hidden>Get Claude Code</button>
         <button type="button" id="claude-again" class="secondary">Check again</button>
       </div>
     </section>
 
+    <section class="card" id="account" hidden>
+      <label class="check">
+        <input id="login" type="checkbox">
+        <span>Open when I log in</span>
+      </label>
+      <div class="actions">
+        <button type="button" id="sign-out" class="secondary">Sign out</button>
+      </div>
+    </section>
+
     <footer>
-      <button type="button" id="dashboard" class="link" hidden>Open dashboard</button>
+      <button type="button" id="dashboard" class="link">Open kindahired</button>
       <span id="version"></span>
     </footer>
   </main>

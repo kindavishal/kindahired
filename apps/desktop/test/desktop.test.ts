@@ -7,8 +7,7 @@ import path from "node:path";
 import { once } from "node:events";
 import { test } from "node:test";
 import { checkClaude, claudeCandidates, findClaude, interpretCheck, widenedPath } from "../src/claude.ts";
-import { checkHub } from "../src/hub-check.ts";
-import { addDone, autostartDesktopEntry, compareVersions, DEFAULT_SETTINGS, doneToday, loadSettings, normalizeHubUrl, saveSettings, settingsFile } from "../src/settings.ts";
+import { addDone, autostartDesktopEntry, compareVersions, deepLinkTarget, DEFAULT_SETTINGS, doneToday, loadSettings, normalizeHubUrl, saveSettings, settingsFile } from "../src/settings.ts";
 
 const tmp = () => mkdtempSync(path.join(os.tmpdir(), "kh-desktop-"));
 
@@ -20,14 +19,14 @@ test("settings: defaults when missing or broken, and a round trip", () => {
   writeFileSync(settingsFile(dir), JSON.stringify({ hubUrl: 7, paused: "yes", today: { day: "2026-11-26", done: 1.5 } }));
   assert.deepEqual(loadSettings(dir), { ...DEFAULT_SETTINGS, today: { day: "2026-11-26", done: 0 } });
 
-  const s = { hubUrl: "https://hub.example.com/", openAtLogin: false, paused: true, today: { day: "2026-11-26", done: 3 } };
+  const s = { openAtLogin: false, paused: true, today: { day: "2026-11-26", done: 3 } };
   saveSettings(dir, s);
   assert.deepEqual(loadSettings(dir), s);
   // Nothing secret goes in the settings file.
   assert.doesNotMatch(readFileSync(settingsFile(dir), "utf8"), /token/i);
 });
 
-test("settings: hub addresses are cleaned up or refused", () => {
+test("settings: a --hub address is cleaned up or refused", () => {
   assert.deepEqual(normalizeHubUrl("jobs.example.com"), { url: "https://jobs.example.com/" });
   assert.deepEqual(normalizeHubUrl("  https://jobs.example.com/dashboard?x=1#y "), { url: "https://jobs.example.com/" });
   assert.deepEqual(normalizeHubUrl("http://localhost:8080"), { url: "http://localhost:8080/" });
@@ -113,31 +112,12 @@ test("the Claude Code check runs the binary without an API key in its environmen
   assert.equal((await checkClaude(null, { cwd: dir, env: {} })).state, "missing");
 });
 
-test("the hub check reports reachability and the token", async () => {
-  const server = createServer((req, res) => {
-    if (req.url === "/healthz") return res.end("ok");
-    if (req.url === "/worker/status") {
-      if (req.headers.authorization !== "Bearer good") { res.writeHead(401); return res.end("{}"); }
-      res.writeHead(200, { "content-type": "application/json" });
-      return res.end(JSON.stringify({ queued: 2, claimed: 0, lastSeen: null }));
-    }
-    res.writeHead(404);
-    res.end();
-  });
-  server.listen(0, "127.0.0.1");
-  await once(server, "listening");
-  const hub = `http://127.0.0.1:${(server.address() as AddressInfo).port}/`;
-  try {
-    const good = await checkHub(hub, "good");
-    assert.equal(good.hub.ok, true);
-    assert.equal(good.token?.ok, true);
-    assert.match(good.token!.message, /2 Claude steps are waiting/);
-    assert.equal((await checkHub(hub, "bad")).token?.ok, false);
-    assert.equal((await checkHub(hub, "")).token?.ok, false);
-  } finally {
-    server.close();
-  }
-  const down = await checkHub(hub, "good", fetch, 2000);
-  assert.equal(down.hub.ok, false);
-  assert.equal(down.token, null);
+test("links: kindahired://open/<path> opens that page on the hub, and nothing else", () => {
+  const hub = "https://hub.example.com/";
+  assert.equal(deepLinkTarget("kindahired://open/r/12/pack?x=1", hub), "https://hub.example.com/r/12/pack?x=1");
+  assert.equal(deepLinkTarget("kindahired://open", hub), "https://hub.example.com/");
+  assert.equal(deepLinkTarget("kindahired://open//evil.example/x", hub), null);
+  assert.equal(deepLinkTarget("kindahired://evil.example/x", hub), null);
+  assert.equal(deepLinkTarget("https://hub.example.com/r/1", hub), null);
+  assert.equal(deepLinkTarget("not a link", hub), null);
 });

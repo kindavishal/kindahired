@@ -1,18 +1,21 @@
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { app, BrowserWindow, dialog, ipcMain, Menu, nativeImage, powerSaveBlocker, safeStorage, shell, Tray, type IpcMainInvokeEvent } from "electron";
+import { app, BrowserWindow, dialog, ipcMain, Menu, nativeImage, powerSaveBlocker, safeStorage, session, shell, Tray, type IpcMainInvokeEvent } from "electron";
 import updaterPkg from "electron-updater";
 import config from "../app.config.json" with { type: "json" };
 import { startWorker, type WorkerStatus } from "../../../src/worker/client.ts";
 import { checkClaude, CLAUDE_INSTALL_URL, findClaude, widenedPath, type ClaudeCheck } from "./claude.ts";
-import { checkHub } from "./hub-check.ts";
-import { addDone, autostartDesktopEntry, compareVersions, doneToday, loadSettings, normalizeHubUrl, saveSettings, type Settings } from "./settings.ts";
+import { addDone, autostartDesktopEntry, compareVersions, deepLinkTarget, doneToday, LINK_SCHEME, loadSettings, normalizeHubUrl, saveSettings, type Settings } from "./settings.ts";
 
 /**
  * The desktop app: a tray (menu bar) icon that runs the worker, which takes Claude Code steps from
  * the person's hub and runs them here, on their own Claude plan. It also opens the hub's dashboard
  * in a window and keeps itself up to date.
+ *
+ * Signing in happens in the dashboard window (the hub's own email-code login). Right after, the app
+ * asks the hub for this person's worker token (POST /desktop/pair) and keeps it in the keychain, so
+ * nobody copies a hub address or a token by hand.
  */
 
 const { autoUpdater } = updaterPkg;
@@ -28,6 +31,20 @@ mkdirSync(DATA, { recursive: true });
 process.env.JH_DATA_DIR = DATA;
 const TOKEN_FILE = path.join(DATA, "worker-token.bin");
 const HUB_PARTITION = "persist:hub";
+
+// The hub is built in. --hub=<address> (or KH_HUB_URL) points a test copy at another one.
+const HUB_URL = (() => {
+  const override = app.commandLine.getSwitchValue("hub") || process.env.KH_HUB_URL || "";
+  if (!override) return config.hubUrl;
+  const n = normalizeHubUrl(override);
+  if ("error" in n) {
+    console.error(`Ignoring --hub: ${n.error}`);
+    return config.hubUrl;
+  }
+  return n.url;
+})();
+const HUB_ORIGIN = new URL(HUB_URL).origin;
+const signedIn = () => existsSync(TOKEN_FILE);
 
 if (!app.requestSingleInstanceLock()) {
   app.quit();
@@ -115,10 +132,10 @@ function restartWorker(): Promise<void> {
 async function restartNow() {
   await stopWorker();
   const token = await readToken();
-  if (!settings.hubUrl || !token || settings.paused || !claudeUsable()) return refreshTray();
+  if (!token || settings.paused || !claudeUsable()) return refreshTray();
   let seen = 0;
   const me: ReturnType<typeof startWorker> = startWorker({
-    hub: settings.hubUrl,
+    hub: HUB_URL,
     token,
     onStatus: (s) => {
       // A job that finishes after its worker was stopped still counts.
@@ -151,8 +168,7 @@ function setBlocker(on: boolean) {
 type Shown = { label: string; live: boolean };
 
 function shownStatus(): Shown {
-  const token = !!settings.hubUrl && existsSync(TOKEN_FILE);
-  if (!token) return { label: "Not set up yet", live: false };
+  if (!signedIn()) return { label: "Not signed in", live: false };
   if (checkingClaude && !claude) return { label: "Checking Claude Code…", live: false };
   if (claude?.state === "missing") return { label: "Claude Code isn't installed", live: false };
   if (claude?.state === "signed-out") return { label: "Claude Code isn't signed in", live: false };
@@ -164,7 +180,7 @@ function shownStatus(): Shown {
     case "working": return { label: `Working on ${s.running} Claude step${s.running === 1 ? "" : "s"}`, live: true };
     case "connecting": return { label: "Connecting to the hub…", live: false };
     case "offline": return { label: "Can't reach the hub", live: false };
-    case "unauthorized": return { label: "The hub refused the token", live: false };
+    case "unauthorized": return { label: "Signed out. Open kindahired to sign in again", live: false };
     case "stopped": return { label: "Stopped", live: false };
   }
 }
@@ -190,14 +206,14 @@ function refreshTray() {
   }
   const done = doneToday(settings);
   tray.setToolTip(`${config.productName}: ${shown.label}`);
-  const configured = !!settings.hubUrl;
+  const configured = signedIn();
   const claudeNeedsHelp = claude?.state === "missing" || claude?.state === "signed-out";
   tray.setContextMenu(Menu.buildFromTemplate([
     { label: shown.label, enabled: false },
     { label: `${done} Claude step${done === 1 ? "" : "s"} done today`, enabled: false },
     ...(workerStatus?.error && !shown.live ? [{ label: workerStatus.error.slice(0, 80), enabled: false }] : []),
     { type: "separator" },
-    { label: "Open dashboard", enabled: configured, click: openDashboard },
+    { label: configured ? `Open ${config.productName}` : "Sign in…", click: () => openDashboard() },
     ...(claudeNeedsHelp ? [
       { label: "Get Claude Code…", click: () => void shell.openExternal(CLAUDE_INSTALL_URL) },
       { label: "Check Claude Code again", enabled: !checkingClaude, click: () => void detectClaude().then(restartWorker) },
@@ -230,8 +246,8 @@ function trackWindow(win: BrowserWindow) {
 function openSetup() {
   if (setupWin && !setupWin.isDestroyed()) return setupWin.focus();
   setupWin = new BrowserWindow({
-    width: 520,
-    height: 720,
+    width: 480,
+    height: 460,
     resizable: false,
     title: `${config.productName} settings`,
     show: false,
@@ -252,35 +268,103 @@ function openSetup() {
   void setupWin.loadFile(path.join(app.getAppPath(), "renderer", "setup.html"));
 }
 
-function openDashboard() {
-  if (!settings.hubUrl) return openSetup();
+function openDashboard(target?: string) {
   if (dashboardWin && !dashboardWin.isDestroyed()) {
+    if (target) void dashboardWin.loadURL(target);
     dashboardWin.show();
     return dashboardWin.focus();
   }
-  const hubOrigin = new URL(settings.hubUrl).origin;
   dashboardWin = new BrowserWindow({
     width: 1280,
     height: 860,
     title: config.productName,
     icon: path.join(app.getAppPath(), "assets", "icon.png"),
-    // A persistent session, so the Cloudflare Access login is remembered between launches.
+    // A persistent session, so the sign-in is remembered between launches.
     webPreferences: { partition: HUB_PARTITION, contextIsolation: true, sandbox: true, nodeIntegration: false },
   });
   // Links to the hub open inside the app; anything else opens in the browser.
   dashboardWin.webContents.setWindowOpenHandler(({ url }) => {
     let origin = "";
     try { origin = new URL(url).origin; } catch { /* not a URL */ }
-    if (origin === hubOrigin) {
+    if (origin === HUB_ORIGIN) {
       return { action: "allow", overrideBrowserWindowOptions: { webPreferences: { partition: HUB_PARTITION, contextIsolation: true, sandbox: true } } };
     }
     if (/^(https?|mailto):/.test(url)) void shell.openExternal(url);
     return { action: "deny" };
   });
-  dashboardWin.on("closed", () => { dashboardWin = null; });
-  trackWindow(dashboardWin);
-  void dashboardWin.loadURL(settings.hubUrl);
+  const win = dashboardWin;
+  win.webContents.on("did-finish-load", () => void pair(win));
+  win.on("closed", () => { if (dashboardWin === win) dashboardWin = null; });
+  trackWindow(win);
+  void win.loadURL(target ?? HUB_URL);
 }
+
+// ---------- Getting the worker token after sign-in ----------
+
+let pairing = false;
+
+/** Once the dashboard has loaded (so the person is signed in), asks the hub for their worker token. */
+async function pair(win: BrowserWindow) {
+  if (pairing || win.isDestroyed()) return;
+  let here: URL;
+  try { here = new URL(win.webContents.getURL()); } catch { return; }
+  // Still on the login pages.
+  if (here.origin !== HUB_ORIGIN || here.pathname.startsWith("/cdn-cgi/")) return;
+  pairing = true;
+  try {
+    // Run in the page, so it goes with the page's sign-in and from the hub's own origin.
+    const answer = (await win.webContents.executeJavaScript(
+      `fetch("/desktop/pair", { method: "POST", headers: { "x-kindahired-app": "1" }, credentials: "same-origin" })
+        .then((r) => (r.ok ? r.json() : null)).catch(() => null)`,
+    )) as { token?: unknown } | null;
+    const token = typeof answer?.token === "string" ? answer.token : "";
+    if (!token || token === (await readToken())) return;
+    try {
+      await writeToken(token);
+    } catch (err) {
+      void dialog.showMessageBox({ type: "warning", message: "Couldn't finish signing in.", detail: (err as Error).message });
+      return;
+    }
+    applyLoginItem();
+    if (!claude) await detectClaude();
+    await restartWorker();
+    if (!claudeUsable()) openSetup();
+  } finally {
+    pairing = false;
+  }
+}
+
+async function signOut() {
+  await stopWorker();
+  rmSync(TOKEN_FILE, { force: true });
+  await session.fromPartition(HUB_PARTITION).clearStorageData();
+  applyLoginItem();
+  setupWin?.close();
+  dashboardWin?.close();
+  refreshTray();
+  openDashboard();
+}
+
+// ---------- kindahired:// links ----------
+
+let pendingLink: string | null = null;
+
+function openLink(link: string) {
+  const target = deepLinkTarget(link, HUB_URL);
+  if (!target) return;
+  if (!app.isReady()) {
+    pendingLink = target;
+    return;
+  }
+  openDashboard(target);
+}
+
+// macOS hands links over with open-url, which can fire before the app is ready.
+app.on("open-url", (e, url) => {
+  e.preventDefault();
+  openLink(url);
+});
+const linkInArgs = (argv: string[]) => argv.find((a) => a.startsWith(`${LINK_SCHEME}://`));
 
 // ---------- The setup window's requests ----------
 
@@ -296,44 +380,23 @@ function claudeForWindow() {
 ipcMain.handle("setup:state", async (e) => {
   fromSetup(e);
   return {
-    hubUrl: settings.hubUrl,
-    hasToken: existsSync(TOKEN_FILE),
+    signedIn: signedIn(),
     openAtLogin: settings.openAtLogin,
     claude: claudeForWindow(),
-    keychain: await safeStorage.isAsyncEncryptionAvailable(),
-    // On Linux without a keyring the "encryption" is only obfuscation.
-    weakKeychain: process.platform === "linux" && safeStorage.getSelectedStorageBackend() === "basic_text",
     version: app.getVersion(),
     productName: config.productName,
   };
 });
 
-ipcMain.handle("setup:check", async (e, input: { hubUrl?: unknown; token?: unknown }) => {
+ipcMain.handle("setup:login-item", (e, on: unknown) => {
   fromSetup(e);
-  const hub = normalizeHubUrl(String(input?.hubUrl ?? ""));
-  if ("error" in hub) return { hub: { ok: false, message: hub.error }, token: null };
-  const token = String(input?.token ?? "").trim() || (await readToken());
-  return checkHub(hub.url, token);
+  updateSettings({ openAtLogin: on !== false });
+  applyLoginItem();
 });
 
-ipcMain.handle("setup:save", async (e, input: { hubUrl?: unknown; token?: unknown; openAtLogin?: unknown }) => {
+ipcMain.handle("setup:sign-out", async (e) => {
   fromSetup(e);
-  const hub = normalizeHubUrl(String(input?.hubUrl ?? ""));
-  if ("error" in hub) return { ok: false, message: hub.error };
-  const token = String(input?.token ?? "").trim();
-  if (!token && !existsSync(TOKEN_FILE)) return { ok: false, message: "Enter your worker token." };
-  try {
-    if (token) await writeToken(token);
-  } catch (err) {
-    return { ok: false, message: (err as Error).message };
-  }
-  const hubChanged = hub.url !== settings.hubUrl;
-  updateSettings({ hubUrl: hub.url, openAtLogin: input?.openAtLogin !== false });
-  applyLoginItem();
-  if (hubChanged && dashboardWin && !dashboardWin.isDestroyed()) dashboardWin.close();
-  if (!claude) await detectClaude();
-  await restartWorker();
-  return { ok: true, message: "Saved." };
+  await signOut();
 });
 
 ipcMain.handle("claude:check", async (e) => {
@@ -354,7 +417,7 @@ function applyLoginItem() {
   // (--user-data-dir) shouldn't touch the real app's login item, so only the installed app does this.
   if (!app.isPackaged || app.commandLine.hasSwitch("user-data-dir")) return;
   // Not before the app is set up: there's nothing for it to do at login until then.
-  const openAtLogin = settings.openAtLogin && !!settings.hubUrl;
+  const openAtLogin = settings.openAtLogin && signedIn();
   if (process.platform === "darwin") {
     app.setLoginItemSettings({ openAtLogin });
     return;
@@ -502,19 +565,31 @@ process.stderr.on("error", () => {});
 // The app lives in the tray, so closing every window doesn't quit it.
 app.on("window-all-closed", () => {});
 
-app.on("second-instance", () => (settings.hubUrl && existsSync(TOKEN_FILE) ? openDashboard() : openSetup()));
-app.on("activate", () => { if (BrowserWindow.getAllWindows().length === 0) openSetup(); });
+app.on("second-instance", (_e, argv) => {
+  const link = linkInArgs(argv);
+  if (link) openLink(link);
+  else openDashboard();
+});
+app.on("activate", () => { if (BrowserWindow.getAllWindows().length === 0) openDashboard(); });
 
 app.whenReady().then(async () => {
   app.dock?.hide();
+  // Only the installed app registers for links: a development run would register bare Electron.
+  if (app.isPackaged) app.setAsDefaultProtocolClient(LINK_SCHEME);
+  // The dashboard can tell it's open in the app rather than in a browser.
+  const hub = session.fromPartition(HUB_PARTITION);
+  hub.setUserAgent(`${hub.getUserAgent()} kindahired-app/${app.getVersion()}`);
   tray = new Tray(trayImage(false));
   lastLive = false;
   refreshTray();
   applyLoginItem();
   setupAutoUpdate();
-  if (!settings.hubUrl || !existsSync(TOKEN_FILE)) openSetup();
+  const firstLink = pendingLink ?? (linkInArgs(process.argv) ? deepLinkTarget(linkInArgs(process.argv)!, HUB_URL) : null);
+  pendingLink = null;
+  // Not signed in yet: the dashboard window is where that happens.
+  if (!signedIn() || firstLink) openDashboard(firstLink ?? undefined);
   await detectClaude();
-  if (!claudeUsable() && !setupWin) openSetup();
+  if (signedIn() && !claudeUsable() && !setupWin) openSetup();
   await restartWorker();
   // Roll the "done today" count over at midnight even when nothing happens.
   setInterval(refreshTray, 60_000);

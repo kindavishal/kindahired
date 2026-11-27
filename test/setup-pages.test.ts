@@ -275,3 +275,19 @@ test("setup routes don't exist outside hub mode", async () => {
   }
   assert.ok(!(await (await get("/")).text()).includes("Finish setup"));
 });
+
+test("desktop pairing: the signed-in app gets its worker token, nothing else does", async () => {
+  process.env.JH_WORKER_TOKEN = "wt-test-token";
+  try {
+    const pairReq = (headers: Record<string, string>) => fetch(base + "/desktop/pair", { method: "POST", redirect: "manual", headers: { ...GW, ...headers } });
+    const ok = await pairReq({ origin: base, "x-kindahired-app": "1" });
+    assert.equal(ok.status, 200);
+    assert.deepEqual(await ok.json(), { ok: true, token: "wt-test-token" });
+    assert.equal((await pairReq({ origin: "https://evil.example", "x-kindahired-app": "1" })).status, 403);
+    assert.equal((await pairReq({ "x-kindahired-app": "1" })).status, 403);
+    assert.equal((await pairReq({ origin: base })).status, 400);
+    assert.equal((await fetch(base + "/desktop/pair", { headers: GW, redirect: "manual" })).status, 404);
+  } finally {
+    delete process.env.JH_WORKER_TOKEN;
+  }
+});
