@@ -8,6 +8,7 @@ import { getOpportunity, updateOpportunity, type Opportunity } from "../db/oppor
 import { completeAction, dueActions, reconcileActions, remindAgain, snoozeAction, stalledRoles, type ActionRow } from "../loops/engine.ts";
 import { BOARD_LABEL, boardUrl, describeCompanyScan, getCompany, knownPeopleAt, listCompanies, removeCompany, setCompanyStatus, type CompanyScan } from "../pipeline/companies.ts";
 import { getBrief, type HiringBrief } from "../pipeline/hiring-brief.ts";
+import { isLinkedInProfile, isXProfile, linkedInSearchUrl, xSearchUrl } from "../pipeline/profiles.ts";
 import { keepsInTouch, loadRelationships, logTouch, setStayInTouch, type Relationship } from "../pipeline/relationships.ts";
 import { DEFAULT_TIMERS, getTimers, resetTimers, setTimers, TIMER_SPECS, type TimerKey } from "../loops/timers.ts";
 import { NOT_A_POSTING } from "../notify/messages.ts";
@@ -539,7 +540,7 @@ function hiringSection(o: Opportunity, pending: boolean): string {
   const link = (url: string | null, label: string) => (url ? `<a href="${esc(url)}" target="_blank" rel="noopener">${label}</a>` : "");
   const people = b.people.map((p) => `<li class="person"><div class="person-head"><span class="who">${esc(p.name)}</span>${badge(PART_LABEL[p.part] ?? p.part, "neutral")}${badge(CONF[p.confidence][0], CONF[p.confidence][1])}</div>
 ${p.title ? `<p class="small muted">${esc(p.title)}</p>` : ""}<p class="small" style="margin-top:6px">${esc(p.evidence)}</p>
-<p class="small" style="margin-top:4px;display:flex;gap:12px;flex-wrap:wrap">${link(p.linkedin_url, "LinkedIn profile")}${link(p.source_url, "Source")}</p></li>`).join("");
+<p class="small" style="margin-top:4px;display:flex;gap:12px;flex-wrap:wrap">${isLinkedInProfile(p.linkedin_url) ? link(p.linkedin_url, "LinkedIn profile") : link(linkedInSearchUrl(p.name, o.company), "Search LinkedIn")}${isXProfile(p.x_url) ? link(p.x_url, "X profile") : link(xSearchUrl(p.name, o.company), "Search X")}${link(p.source_url, "Source")}</p></li>`).join("");
   const list = (title: string, items: string[]) => (items.length ? `<div style="padding:12px 16px;border-top:1px solid var(--line)"><h3 class="small" style="font-weight:600;margin-bottom:6px">${title}</h3><ul class="small" style="margin:0;padding-left:18px;line-height:22px">${items.join("")}</ul></div>` : "");
   return `<section class="block">${head}<div class="panel">
 ${people ? `<ul class="list">${people}</ul>` : emptyState("No one named yet", "The sources didn't name anyone with enough evidence.")}
