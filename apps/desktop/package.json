@@ -3,7 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "description": "Runs your own Claude Code for your job-search hub.",
-  "author": "kindavishal",
+  "author": {
+    "name": "kindavishal",
+    "email": "kindavishal@users.noreply.github.com"
+  },
+  "homepage": "https://kindahired.kindavishal.dev",
   "license": "UNLICENSED",
   "type": "module",
   "main": "dist/main.js",
