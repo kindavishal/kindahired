@@ -1,0 +1,64 @@
+# Builds only the Microsoft Store package (.appx), from any branch, without making a release. Run it
+# from the Actions tab ("Run workflow") to test a Store build or to get a package for Partner
+# Center between releases. Each release also builds one (desktop-release.yml).
+# See docs/windows-store.md.
+name: Windows Store package
+
+on:
+  # Pull requests that touch the desktop app check that the Store package still builds.
+  pull_request:
+    paths:
+      - "apps/desktop/**"
+      - "src/llm/**"
+      - "src/worker/**"
+      - ".github/workflows/windows-store-package.yml"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version for the package (MAJOR.MINOR.PATCH). Empty keeps apps/desktop/package.json's."
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  appx:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: apps/desktop
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: apps/desktop/package-lock.json
+
+      - run: npm ci
+
+      - name: Set the version
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          if [ -n "$VERSION" ]; then
+            [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "Version must be MAJOR.MINOR.PATCH" >&2; exit 1; }
+            npm version "$VERSION" --no-git-tag-version --allow-same-version
+          fi
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: |
+          npm run build
+          npx electron-builder --config electron-builder.config.cjs --win appx --x64 --arm64 --publish never
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: microsoft-store-${{ github.run_number }}
+          path: apps/desktop/release/*.appx
+          if-no-files-found: error

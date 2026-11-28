@@ -3,6 +3,7 @@ dist/
 release/
 # Made by scripts/make-icons.mjs
 build/icon.png
+build/appx/
 assets/
 # The repo ignores *.plist; this one is source.
 !build/entitlements.mac.plist

@@ -2,7 +2,9 @@
 //   build/icon.png               1024 px app icon (electron-builder makes the .icns and Linux sizes)
 //   assets/trayTemplate.png      16 px macOS menu bar icon (a template: black with alpha), and @2x
 //   assets/trayTemplate-off.png  the same, faded, for offline or paused, and @2x
-//   assets/tray.png              24 px Linux tray icon, and tray-off.png
+//   assets/tray.png              24 px Linux and Windows tray icon, and tray-off.png
+//   build/appx/*.png             Microsoft Store tiles (StoreLogo, Square44x44Logo, Square150x150Logo,
+//                                Wide310x150Logo), the icon centred on a transparent tile
 // They're placeholders: replace build/icon.png with a real icon before a public release.
 import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
@@ -10,13 +12,14 @@ import { crc32, deflateSync } from "node:zlib";
 
 const root = path.resolve(import.meta.dirname, "..");
 
-function png(size, pixel) {
-  const raw = Buffer.alloc(size * (size * 4 + 1));
-  for (let y = 0; y < size; y++) {
-    raw[y * (size * 4 + 1)] = 0; // no filter
-    for (let x = 0; x < size; x++) {
-      const [r, g, b, a] = pixel((x + 0.5) / size, (y + 0.5) / size);
-      raw.set([r, g, b, a], y * (size * 4 + 1) + 1 + x * 4);
+function png(size, pixel, height = size) {
+  const width = size;
+  const raw = Buffer.alloc(height * (width * 4 + 1));
+  for (let y = 0; y < height; y++) {
+    raw[y * (width * 4 + 1)] = 0; // no filter
+    for (let x = 0; x < width; x++) {
+      const [r, g, b, a] = pixel(x + 0.5, y + 0.5);
+      raw.set([r, g, b, a], y * (width * 4 + 1) + 1 + x * 4);
     }
   }
   const chunk = (type, data) => {
@@ -28,8 +31,8 @@ function png(size, pixel) {
     return Buffer.concat([len, td, crc]);
   };
   const ihdr = Buffer.alloc(13);
-  ihdr.writeUInt32BE(size, 0);
-  ihdr.writeUInt32BE(size, 4);
+  ihdr.writeUInt32BE(width, 0);
+  ihdr.writeUInt32BE(height, 4);
   ihdr[8] = 8; // bit depth
   ihdr[9] = 6; // RGBA
   return Buffer.concat([
@@ -55,20 +58,36 @@ const segment = (x, y, ax, ay, bx, by) => {
 };
 const tick = (x, y, w) => Math.min(segment(x, y, 0.3, 0.52, 0.44, 0.66), segment(x, y, 0.44, 0.66, 0.72, 0.36)) - w;
 
-function appIcon(size) {
+// The pixel function gets coordinates in 0..1 of a square image.
+const squarePng = (size, pixel) => png(size, (x, y) => pixel(x / size, y / size));
+
+function appIconPixel(size) {
   const edge = 1.5 / size;
-  return png(size, (x, y) => {
+  return (x, y) => {
     const body = smooth(roundedSquare(x, y, 0.09, 0.18), edge);
     const mark = smooth(tick(x, y, 0.055), edge);
     // #171717 square (the dashboard's accent) with a white tick.
     const v = Math.round(23 + (255 - 23) * mark);
     return [v, v, v, Math.round(255 * body)];
-  });
+  };
+}
+
+const appIcon = (size) => squarePng(size, appIconPixel(size));
+
+// A Store tile: the icon, `scale` of the tile's height, centred on a transparent w×h tile.
+function tile(w, h, scale) {
+  const side = Math.round(h * scale);
+  const left = (w - side) / 2, top = (h - side) / 2;
+  const pixel = appIconPixel(side);
+  return png(w, (x, y) => {
+    const u = (x - left) / side, v = (y - top) / side;
+    return u < 0 || u > 1 || v < 0 || v > 1 ? [0, 0, 0, 0] : pixel(u, v);
+  }, h);
 }
 
 function trayIcon(size, { template, faded }) {
   const edge = 1.2 / size;
-  return png(size, (x, y) => {
+  return squarePng(size, (x, y) => {
     const ring = smooth(Math.abs(roundedSquare(x, y, 0.08, 0.22) + 0.06) - 0.06, edge);
     const mark = smooth(tick(x, y, 0.075), edge);
     const a = Math.max(ring, mark) * (faded ? 0.45 : 1);
@@ -87,4 +106,14 @@ for (const faded of [false, true]) {
 }
 // The app icon also ships in the app, for the Linux window icon.
 writeFileSync(path.join(root, "assets", "icon.png"), appIcon(256));
-console.log("Icons written to build/ and assets/.");
+// Microsoft Store tiles (electron-builder's appx target reads build/appx/).
+mkdirSync(path.join(root, "build", "appx"), { recursive: true });
+for (const [name, w, h, scale] of [
+  ["StoreLogo", 50, 50, 1],
+  ["Square44x44Logo", 44, 44, 1],
+  ["Square150x150Logo", 150, 150, 0.66],
+  ["Wide310x150Logo", 310, 150, 0.66],
+]) {
+  writeFileSync(path.join(root, "build", "appx", `${name}.png`), tile(w, h, scale));
+}
+console.log("Icons written to build/, build/appx/ and assets/.");

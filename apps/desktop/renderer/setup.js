@@ -41,6 +41,9 @@ async function load() {
   $("version").textContent = `${s.productName} ${s.version}`;
   $("account").hidden = !s.signedIn;
   $("login").checked = s.openAtLogin;
+  // The Microsoft Store copy opens at login through Windows, which has the switch.
+  $("login-row").hidden = s.loginInWindowsSettings;
+  $("login-windows").hidden = !s.loginInWindowsSettings;
   if (s.signedIn && s.claude.state === "ok") {
     $("title").textContent = "Settings";
     $("lede").hidden = true;

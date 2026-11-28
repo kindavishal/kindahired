@@ -1,0 +1,4 @@
+
+        <desktop:Extension Category="windows.startupTask" Executable="app\kindahired.exe" EntryPoint="Windows.FullTrustApplication">
+          <desktop:StartupTask TaskId="kindahiredStartup" Enabled="true" DisplayName="kindahired" />
+        </desktop:Extension>
