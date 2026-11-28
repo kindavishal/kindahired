@@ -5,7 +5,7 @@
 .home .section { padding-block: calc(var(--sec) / 2); }
 /* Neighbouring sections share one gap; bands carry their own inner padding. */
 .home main > .section:first-of-type { padding-top: var(--sec); }
-.flow { padding-top: var(--sec) !important; }
+.flow-c { padding-top: var(--sec) !important; }
 .story-band { margin-block: calc(var(--sec) / 2); }
 .story-band > .section { padding-block: var(--sec); }
 .faq-c { padding-bottom: var(--sec) !important; }
@@ -520,4 +520,59 @@
   .logos img[alt="LinkedIn"], .logos img[alt="Greenhouse"], .logos img[alt="Indeed"] { height: 21px; }
   .logos img[alt="X"] { height: 20px; }
   .logos img[alt="Wellfound"] { height: 14px; }
+}
+
+/* ---------- Step tabs: one panel. Tabs on top, the visual beneath, its sentence under the visual. ---------- */
+.flow-c .h2 { max-width: 760px; }
+.tp {
+  margin-top: 40px; padding: 8px; border-radius: 28px;
+  background-color: var(--panel); background-image: radial-gradient(circle at 1px 1px, rgb(0 0 0 / .07) 1px, transparent 0); background-size: 20px 20px;
+}
+@media (prefers-color-scheme: dark) { .tp { background-image: radial-gradient(circle at 1px 1px, rgb(255 255 255 / .06) 1px, transparent 0); } }
+.tp-tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.tp-tab {
+  all: unset; box-sizing: border-box; cursor: pointer; display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+  padding: 18px 20px; border-radius: 20px; font-size: 15px; line-height: 21px; font-weight: 600; color: var(--ink-2);
+  transition: background-color 200ms var(--ease), color 200ms var(--ease), box-shadow 200ms var(--ease);
+}
+.tp-tab:hover { color: var(--ink); background: rgb(255 255 255 / .5); }
+.tp-tab.is-on { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-float); }
+.tp-tab:focus-visible { box-shadow: var(--ring); }
+.tp-tab .bar { flex: 0 0 100%; display: block; height: 3px; margin: 0 0 6px; border-radius: 3px; background: var(--line); overflow: hidden; visibility: hidden; }
+.tp-tab.is-on .bar { visibility: visible; }
+.tp-tab .bar i { display: block; height: 100%; background: var(--ink); transform-origin: left; transform: scaleX(0); }
+html:not(.js) .tp-tab.is-on .bar i { transform: none; }
+.tp-tab.play .bar i { animation: fill var(--step-ms, 6500ms) linear forwards; }
+.tp.paused .tp-tab.play .bar i { animation-play-state: paused; }
+.tp-n { width: 24px; height: 24px; border-radius: 999px; background: var(--surface-2); color: var(--ink-2); display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex: none; }
+.tp-tab.is-on .tp-n { background: var(--accent); color: var(--accent-ink); }
+.tp-stage { position: relative; height: 520px; }
+.tp .scene { padding: 32px 32px 104px; }
+.scene-cap { position: absolute; left: 50%; bottom: 32px; transform: translateX(-50%); width: min(600px, calc(100% - 48px)); margin: 0; text-align: center; font-size: 17px; line-height: 26px; color: var(--ink); text-wrap: balance; }
+.tp .joined { bottom: 116px; }
+.tp .scatter { height: calc(100% - 60px); }
+html:not(.js) .tp .scene:not(.is-on) { display: none; }
+@media (max-width: 900px) {
+  .tp-tabs { display: flex; overflow-x: auto; scrollbar-width: none; scroll-snap-type: x mandatory; }
+  .tp-tab { flex: 0 0 auto; max-width: 260px; scroll-snap-align: start; }
+}
+@media (max-width: 720px) {
+  .tp { border-radius: 20px; padding: 6px; }
+  .tp-stage { height: 500px; }
+  .tp .scene { padding: 16px 16px 120px; }
+  .scene-cap { font-size: 15px; line-height: 23px; bottom: 20px; }
+  .tp .joined { bottom: 132px; }
+}
+.tp-tab { display: grid; grid-template-columns: 24px minmax(0, 1fr); column-gap: 12px; align-items: center; align-content: start; }
+.tp-tab .bar { grid-column: 1 / -1; margin-bottom: 14px; }
+.tp .scene.is-on .m1 { top: 0; }
+.tp .scene.is-on .m2 { top: 64px; }
+.tp .scene.is-on .m3 { top: 128px; }
+.tp .scene.is-on .m4 { top: 192px; }
+@media (max-width: 720px) {
+  .tp-stage { height: 580px; }
+  .tp .scene.is-on .m2 { top: 58px; }
+  .tp .scene.is-on .m3 { top: 116px; }
+  .tp .scene.is-on .m4 { top: 174px; }
+  .tp .joined { bottom: 150px; }
 }

@@ -177,32 +177,17 @@
   </section>
 
   <!-- Problem to solution -->
-  <section id="familiar" class="wrap section flow">
-    <div class="flow-left">
-      <h2 class="h2 reveal"><span class="ln">I had leads in four places.</span> <span class="ln">Now they're in one.</span></h2>
-      <ol class="steps reveal" id="steps">
-        <li class="step-c is-on">
-          <button type="button" aria-expanded="true"><span class="bar" aria-hidden="true"><i></i></span><strong>Stop hunting across your inbox and DMs</strong></button>
-          <p>The recruiter wrote on email, the hiring manager is on LinkedIn, the referral came up in an X DM. kindahired links all of it to the role.</p>
-        </li>
-        <li class="step-c">
-          <button type="button" aria-expanded="false"><span class="bar" aria-hidden="true"><i></i></span><strong>Start with the research done</strong></button>
-          <p>Who's likely hiring, how well you fit, and a resume and cover note made only from your own experience.</p>
-        </li>
-        <li class="step-c">
-          <button type="button" aria-expanded="false"><span class="bar" aria-hidden="true"><i></i></span><strong>Follow up before it goes quiet</strong></button>
-          <p>A follow-up that's due or a reply you owe reaches you in Telegram, on the day it matters.</p>
-        </li>
-        <li class="step-c">
-          <button type="button" aria-expanded="false"><span class="bar" aria-hidden="true"><i></i></span><strong>Ask the friend who works there</strong></button>
-          <p>Before you apply cold, you see who you know at the company, with a note to them ready.</p>
-        </li>
-      </ol>
-    </div>
-
-    <div class="flow-right">
-      <div class="scene-box reveal" aria-hidden="true">
-        <div class="scene is-on">
+  <section id="familiar" class="wrap section flow-c">
+    <h2 class="h2 reveal"><span class="ln">I had leads in four places.</span> <span class="ln">Now they're in one.</span></h2>
+    <div class="tp reveal" data-tabs>
+      <div class="tp-tabs" role="tablist" aria-label="What changes, step by step">
+        <button class="tp-tab is-on" role="tab" id="tp-0" aria-controls="tp-panel-0" aria-selected="true" type="button"><span class="bar" aria-hidden="true"><i></i></span><span class="tp-n">1</span>Stop hunting across your inbox and DMs</button>
+        <button class="tp-tab" role="tab" id="tp-1" aria-controls="tp-panel-1" aria-selected="false" type="button"><span class="bar" aria-hidden="true"><i></i></span><span class="tp-n">2</span>Start with the research done</button>
+        <button class="tp-tab" role="tab" id="tp-2" aria-controls="tp-panel-2" aria-selected="false" type="button"><span class="bar" aria-hidden="true"><i></i></span><span class="tp-n">3</span>Follow up before it goes quiet</button>
+        <button class="tp-tab" role="tab" id="tp-3" aria-controls="tp-panel-3" aria-selected="false" type="button"><span class="bar" aria-hidden="true"><i></i></span><span class="tp-n">4</span>Ask the friend who works there</button>
+      </div>
+      <div class="tp-stage">
+        <div class="scene is-on" role="tabpanel" id="tp-panel-0" aria-labelledby="tp-0">
           <div class="scatter">
             <div class="msg m1"><span class="src"><svg width="15" height="15"><use href="#lg-gmail"/></svg></span><span><b>Sam, recruiter</b>Quick chat this week?</span></div>
             <div class="msg m2"><span class="src"><svg width="15" height="15"><use href="#lg-linkedin"/></svg></span><span><b>Mira Okafor</b>Loved your talk on meetups.</span></div>
@@ -210,8 +195,9 @@
             <div class="msg m4"><span class="src"><svg width="15" height="15"><use href="#lg-greenhouse"/></svg></span><span><b>Northwind careers</b>New role posted</span></div>
           </div>
           <div class="joined"><span class="co-tile co-n">N</span><span><b>Northwind Labs</b>4 messages, 3 people, 1 open role</span><svg width="16" height="16" stroke="currentColor" class="ok"><use href="#check"/></svg></div>
+          <p class="scene-cap">The recruiter wrote on email, the hiring manager is on LinkedIn, the referral came up in an X DM. kindahired links all of it to the role.</p>
         </div>
-        <div class="scene">
+        <div class="scene" role="tabpanel" id="tp-panel-1" aria-labelledby="tp-1">
           <div class="mini-card fitcard">
             <div class="fit-top"><span class="co-tile co-n">N</span><span><b>Developer Community Lead</b><span class="muted">How well you fit</span></span></div>
             <div class="meter"><span>Skills</span><i style="--w:88%"></i><em>Strong</em></div>
@@ -223,8 +209,9 @@
               <li><svg width="14" height="14" stroke="currentColor"><use href="#check"/></svg>Who to message first</li>
             </ul>
           </div>
+          <p class="scene-cap">Who's likely hiring, how well you fit, and a resume and cover note made only from your own experience.</p>
         </div>
-        <div class="scene">
+        <div class="scene" role="tabpanel" id="tp-panel-2" aria-labelledby="tp-2">
           <div class="chat">
             <div class="chat-head"><svg class="ping-icon" width="32" height="32"><use href="#app"/></svg><span><b>kindahired</b><span class="muted">in Telegram</span></span><svg class="chat-tg" width="18" height="18"><use href="#lg-telegram"/></svg></div>
             <div class="bubble b1">Morning. Two things today.</div>
@@ -232,8 +219,9 @@
             <div class="bubble b3">Follow up with Sam. You talked 9 days ago, and nothing since.</div>
             <div class="chat-btns b4"><span>Open the email</span><span>Remind me tomorrow</span></div>
           </div>
+          <p class="scene-cap">A follow-up that's due or a reply you owe reaches you in Telegram, on the day it matters.</p>
         </div>
-        <div class="scene">
+        <div class="scene" role="tabpanel" id="tp-panel-3" aria-labelledby="tp-3">
           <div class="net">
             <svg class="net-lines" viewBox="0 0 400 240" preserveAspectRatio="none"><path d="M70 120 C 140 120, 140 60, 200 60"/><path d="M230 60 C 290 60, 290 120, 330 120"/></svg>
             <div class="node n-you"><span class="av av-you">You</span></div>
@@ -241,6 +229,7 @@
             <div class="node n-mira"><span class="av av-p">MO</span><small>Mira Okafor<br><span class="muted">Head of DevRel</span></small></div>
             <div class="net-note"><b>Jonas works at Northwind.</b> Ask him for a referral before you apply. A note is ready.</div>
           </div>
+          <p class="scene-cap">Before you apply cold, you see who you know at the company, with a note to them ready.</p>
         </div>
       </div>
     </div>
@@ -478,6 +467,7 @@
   </section>
 </main>
 <script src="get.js" defer></script>
+<script src="site.js" defer></script>
 <script src="home.js" defer></script>
 </body>
 </html>

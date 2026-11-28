@@ -1,34 +1,7 @@
-// Homepage motion and the live demo. The page reads fine without this file.
+// Homepage only: headline tokens, the live demo and the story switch.
+// Shared behaviour (header, reveal, step tabs, FAQ) lives in site.js, which loads first.
 (() => {
-  const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const $ = (s, el = document) => el.querySelector(s);
-  const $$ = (s, el = document) => [...el.querySelectorAll(s)];
-
-  // ---------- Header: lifts off the page once you scroll ----------
-  const header = $(".site-header");
-  header.classList.add("watch");
-  const onScroll = () => header.classList.toggle("is-scrolled", scrollY > 8);
-  addEventListener("scroll", onScroll, { passive: true });
-  onScroll();
-
-  // ---------- Reveal on scroll ----------
-  const seen = new IntersectionObserver((entries) => {
-    for (const e of entries) {
-      if (!e.isIntersecting) continue;
-      e.target.classList.add("in");
-      seen.unobserve(e.target);
-    }
-  }, { rootMargin: "0px 0px -6% 0px" });
-  $$(".reveal, .tile, .draw-mark").forEach((el) => seen.observe(el));
-
-  // Run fn every ms while el is on screen.
-  const whileVisible = (el, ms, fn) => {
-    let t = null;
-    new IntersectionObserver(([e]) => {
-      clearInterval(t);
-      if (e.isIntersecting && !still) t = setInterval(fn, ms);
-    }).observe(el);
-  };
+  const { still, $, all: $$, whileVisible } = window.kh;
 
   // ---------- Headline tokens ----------
   const faces = $$("[data-cycle] .tok-face");
@@ -143,52 +116,6 @@
   whileVisible(stage, 6500, () => { if (!touched) show((current + 1) % roles.length); });
   if (!still) stage.addEventListener("pointerenter", () => { touched = true; }, { once: true });
 
-  // ---------- Steps with a scene for each ----------
-  const steps = $$(".step-c");
-  const scenes = $$(".scene");
-  const list = $("#steps");
-  const STEP_MS = 6000;
-  list.style.setProperty("--step-ms", `${STEP_MS}ms`);
-  let step = 0, timer = null, visible = false;
-  const pick = (n) => {
-    step = n;
-    steps.forEach((s, i) => {
-      s.classList.toggle("is-on", i === n);
-      s.classList.remove("play");
-      $("button", s).setAttribute("aria-expanded", String(i === n));
-    });
-    scenes.forEach((s, i) => s.classList.toggle("is-on", i === n));
-    schedule();
-  };
-  const schedule = () => {
-    clearTimeout(timer);
-    if (!visible || still) return;
-    const s = steps[step];
-    void s.offsetWidth; // restart the bar
-    s.classList.add("play");
-    timer = setTimeout(() => pick((step + 1) % steps.length), STEP_MS);
-  };
-  steps.forEach((s, i) => $("button", s).addEventListener("click", () => pick(i)));
-  new IntersectionObserver(([e]) => {
-    visible = e.isIntersecting;
-    if (visible) schedule(); else { clearTimeout(timer); steps[step].classList.remove("play"); }
-  }, { threshold: 0.4 }).observe($(".flow"));
-  // Pausing on hover keeps the bar and the timer in step.
-  let left = 0;
-  list.addEventListener("pointerenter", () => {
-    if (!timer || still) return;
-    list.classList.add("paused");
-    clearTimeout(timer);
-    const anim = steps[step].querySelector(".bar i").getAnimations()[0];
-    left = anim ? STEP_MS - (anim.currentTime ?? 0) : STEP_MS;
-  });
-  list.addEventListener("pointerleave", () => {
-    if (!list.classList.contains("paused")) return;
-    list.classList.remove("paused");
-    if (!visible) return;
-    timer = setTimeout(() => pick((step + 1) % steps.length), Math.max(200, left));
-  });
-
   // ---------- Story: how it went, and how it goes with kindahired ----------
   const segs = $$(".seg button");
   const tline = $(".tline");
@@ -201,19 +128,4 @@
   segs.forEach((b, i) => b.addEventListener("click", () => { segTouched = true; mode(i); }));
   whileVisible($(".story-visual"), 4500, () => { if (!segTouched) mode(tline.dataset.mode === "0" ? 1 : 0); });
 
-  // ---------- FAQ: open and close smoothly ----------
-  if (!still) $$(".faq-c details").forEach((d) => {
-    const summary = $("summary", d), ans = $(".ans", d);
-    summary.addEventListener("click", (e) => {
-      e.preventDefault();
-      if (d.open) {
-        const a = ans.animate([{ height: `${ans.offsetHeight}px`, opacity: 1 }, { height: "0px", opacity: 0 }], { duration: 260, easing: "cubic-bezier(.2,.8,.2,1)" });
-        d.classList.add("closing");
-        a.onfinish = () => { d.open = false; d.classList.remove("closing"); };
-      } else {
-        d.open = true;
-        ans.animate([{ height: "0px", opacity: 0 }, { height: `${ans.offsetHeight}px`, opacity: 1 }], { duration: 320, easing: "cubic-bezier(.16,1,.3,1)" });
-      }
-    });
-  });
 })();
