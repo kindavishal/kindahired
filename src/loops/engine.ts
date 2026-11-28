@@ -163,7 +163,7 @@ export function computeActions(state: LoopState, now = new Date(), t: Timers = D
         detail: [
           o.pack_status === "failed"
             ? `The pack didn't finish${o.pack_error ? ` (${oneLine(o.pack_error, 100)})` : ""}. Build it again or drop the role.`
-            : "This wasn't picked up automatically (no company name, or an old alert). Build the pack if it's worth a look, or drop it.",
+            : "This wasn't picked up automatically (no company name, or an old alert). Prepare your application if it's worth a look, or drop it.",
           `If nothing is decided, it's skipped on ${fmtDay(expires)}.`,
         ].join("\n"),
         due_at: o.created_at, urgent: false,

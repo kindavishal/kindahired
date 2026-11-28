@@ -16,10 +16,10 @@ import { esc, page } from "./ui.ts";
 type Spec = { key: string; label: string; hint: string; kind: "text" | "secret" | "quick" | "number" };
 export const KEY_SPECS: Spec[] = [
   { key: "MY_EMAILS", label: "Your email addresses", kind: "text", hint: "Comma-separated. Emails from these addresses count as sent by you." },
-  { key: "JH_TIMEZONE", label: "Time zone", kind: "text", hint: "An IANA name such as Asia/Kolkata or Europe/London. Reminders and the digest follow it." },
-  { key: "GEMINI_API_KEY", label: "Gemini API key", kind: "secret", hint: "For quick steps: screening alerts and reading postings. Free from Google AI Studio." },
-  { key: "ANTHROPIC_API_KEY", label: "Anthropic API key", kind: "secret", hint: "Needed only to run quick steps on Haiku." },
-  { key: "JH_QUICK", label: "Quick steps run on", kind: "quick", hint: "Haiku needs an Anthropic API key." },
+  { key: "JH_TIMEZONE", label: "Time zone", kind: "text", hint: "A time zone name such as Asia/Kolkata or Europe/London. Reminders and the morning summary follow it." },
+  { key: "GEMINI_API_KEY", label: "Gemini API key", kind: "secret", hint: "Reads new job alerts and job posts quickly. Free from Google AI Studio." },
+  { key: "ANTHROPIC_API_KEY", label: "Anthropic API key", kind: "secret", hint: "Needed only if Haiku does the quick reading." },
+  { key: "JH_QUICK", label: "Quick reading runs on", kind: "quick", hint: "Haiku needs an Anthropic API key." },
   { key: "FIRECRAWL_API_KEY", label: "Firecrawl API key", kind: "secret", hint: "Optional. Reads careers pages that block a plain browser." },
   { key: "X_BEARER_TOKEN", label: "X bearer token", kind: "secret", hint: "Optional. Finds roles posted on X." },
   { key: "X_MONTHLY_BUDGET_USD", label: "X monthly budget (USD)", kind: "number", hint: "Optional. The X search stops for the month at this spend." },
@@ -127,7 +127,7 @@ export function keyChanges(form: URLSearchParams, current: Map<string, string>):
     else next.delete(s.key);
   }
   if (next.get("JH_QUICK") === "haiku" && !next.get("ANTHROPIC_API_KEY")) {
-    errors.push("Quick steps can run on Haiku only with an Anthropic API key. Add the key, or pick Gemini.");
+    errors.push("Haiku can do the quick reading only with an Anthropic API key. Add the key, or pick Gemini.");
   }
   if (errors.length) return { changes: {}, errors };
   for (const s of KEY_SPECS) {
@@ -171,8 +171,8 @@ ${v ? `<label class="choice"><input type="checkbox" name="${s.key}__remove" valu
 }
 
 function keysPage(values: Map<string, string>, o: { errors?: string[]; flash?: string | null } = {}): string {
-  return page("AI keys · kindahired", `<div class="stack setup">${backToSetup}
-<div><h1>AI keys and settings</h1><p class="lede">Your keys are kept only in your own settings. This page never shows a saved key again, only its last four characters.</p>
+  return page("AI key · kindahired", `<div class="stack setup">${backToSetup}
+<div><h1>AI key and settings</h1><p class="lede">Your keys are kept only in your own settings. This page never shows a saved key again, only its last four characters.</p>
 <p class="hint">Leave a key field empty to keep the key you have.</p></div>
 ${errorBox(o.errors ?? [])}
 <form method="post" action="/setup/keys" class="stack" autocomplete="off">

@@ -493,7 +493,7 @@ export function dueCompanies(now = new Date()): Company[] {
 
 export function describeCompanyScan(r: CompanyScan): string {
   if (!r.postings) return "no open roles";
-  return `${r.postings} open, ${r.newPostings} new, ${r.matches} match${r.matches === 1 ? "" : "es"}` + (r.deferred ? ` (${r.deferred} more next scan)` : "");
+  return `${r.postings} open, ${r.newPostings} new, ${r.matches} match${r.matches === 1 ? "" : "es"}` + (r.deferred ? ` (${r.deferred} more next check)` : "");
 }
 
 /** People I already know at a company, from any role there: for a warmer first touch. */

@@ -29,7 +29,7 @@ async function requestLink(): Promise<string> {
 function connectPage(): string {
   if (linked()) {
     return page("Telegram · kindahired", `<div class="stack"><h1>Telegram is connected</h1>
-<p class="lede">Alerts and your daily digest arrive in Telegram. The bot starts answering within a minute.</p>
+<p class="lede">Alerts and your morning summary arrive in Telegram. The bot starts answering within a minute.</p>
 <p>${linkButton("/setup", "Back to Setup", "primary")}</p></div>`);
   }
   const waiting = pending && linking;

@@ -53,6 +53,8 @@ export interface WorkerStatus {
   state: "connecting" | "online" | "working" | "offline" | "unauthorized" | "stopped";
   running: number;
   done: number;
+  /** What the running jobs are doing, as the hub describes them ("Writing your resume for Toast"). */
+  doing: string[];
   error?: string;
 }
 
@@ -70,14 +72,14 @@ export interface WorkerOptions {
   claimWaitMs?: number;
 }
 
-interface Job { id: number; args: unknown; prompt: string; timeoutMs: number }
+interface Job { id: number; args: unknown; prompt: string; timeoutMs: number; title?: unknown }
 
 export function startWorker(opts: WorkerOptions): { stop: () => Promise<void>; status: () => WorkerStatus } {
   const base = new URL(opts.hub.endsWith("/") ? opts.hub : opts.hub + "/");
   const spawner = opts.spawn ?? spawnClaude;
   const backoffMs = opts.backoffMs ?? 30_000;
   const stopping = new AbortController();
-  let status: WorkerStatus = { state: "connecting", running: 0, done: 0 };
+  let status: WorkerStatus = { state: "connecting", running: 0, done: 0, doing: [] };
   const report = (patch: Partial<WorkerStatus>) => {
     status = { ...status, ...patch };
     if (status.state !== "offline" && status.state !== "unauthorized") delete status.error;
@@ -145,10 +147,14 @@ export function startWorker(opts: WorkerOptions): { stop: () => Promise<void>; s
         continue;
       }
       if (!job) { if (status.state !== "online" && status.state !== "working") idle(); continue; }
-      report({ running: status.running + 1, state: "working" });
+      // An older hub sends no title.
+      const title = typeof job.title === "string" && job.title.trim() ? job.title.trim().slice(0, 80) : "Preparing something for you";
+      report({ running: status.running + 1, state: "working", doing: [...status.doing, title] });
       const outcome = await run(job);
       await complete(outcome);
-      report({ running: status.running - 1, done: status.done + 1 });
+      const doing = [...status.doing];
+      doing.splice(doing.indexOf(title), 1);
+      report({ running: status.running - 1, done: status.done + 1, doing });
       idle();
     }
   }

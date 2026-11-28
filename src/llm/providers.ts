@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { logEvent } from "../db/index.ts";
+import { describeStep } from "../worker/describe.ts";
 import { enqueueClaude } from "../worker/queue.ts";
 import { spawnClaude, type ClaudeResult } from "./claude-code.ts";
 
@@ -50,20 +51,20 @@ function jsonSchemaOf(schema: z.ZodType) {
 
 // With JH_CLAUDE_VIA=worker (on the hub) the call goes to the person's desktop worker, which runs
 // the same arguments there.
-function runClaudeCode(args: string[], prompt: string, timeoutMs: number, model = process.env.JH_CLAUDE_MODEL): Promise<ClaudeResult> {
+function runClaudeCode(label: string, args: string[], prompt: string, timeoutMs: number, model = process.env.JH_CLAUDE_MODEL): Promise<ClaudeResult> {
   const full = [
     "-p", "--output-format", "json", "--no-session-persistence", "--strict-mcp-config", "--setting-sources", "",
     ...(model ? ["--model", model] : []),
     ...args,
   ];
-  return process.env.JH_CLAUDE_VIA === "worker" ? enqueueClaude(full, prompt, timeoutMs) : spawnClaude(full, prompt, timeoutMs);
+  return process.env.JH_CLAUDE_VIA === "worker" ? enqueueClaude(full, prompt, timeoutMs, describeStep(label)) : spawnClaude(full, prompt, timeoutMs);
 }
 
 /** The model for quick steps through Claude Code: Haiku unless JH_CLAUDE_QUICK_MODEL says otherwise. */
 export const claudeQuickModel = () => process.env.JH_CLAUDE_QUICK_MODEL || "haiku";
 
 export async function claudeStructured<S extends z.ZodType>(label: string, schema: S, opts: StructuredOpts, quick = false): Promise<z.infer<S>> {
-  const res = await runClaudeCode([
+  const res = await runClaudeCode(label, [
     "--system-prompt", opts.system,
     "--tools", "",
     "--effort", opts.effort ?? "medium",
@@ -76,7 +77,7 @@ export async function claudeStructured<S extends z.ZodType>(label: string, schem
 }
 
 export async function claudeResearch(label: string, opts: ResearchOpts, quick = false):Promise<string> {
-  const res = await runClaudeCode([
+  const res = await runClaudeCode(label, [
     "--system-prompt", researchSystem(opts, "When you're done, reply with your findings as plain text."),
     "--tools", "WebSearch,WebFetch",
     "--allowedTools", "WebSearch", "WebFetch",

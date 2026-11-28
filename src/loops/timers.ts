@@ -6,7 +6,7 @@ import { kvGet, kvSet } from "../db/index.ts";
  */
 export const TIMER_SPECS = {
   replyOwedHours: { label: "Reply to a message within", unit: "hours", default: 12, min: 1, max: 168, group: "Replies" },
-  packStaleHours: { label: "A ready pack goes stale after", unit: "hours", default: 48, min: 6, max: 720, group: "Before applying" },
+  packStaleHours: { label: "A prepared application goes stale after", unit: "hours", default: 48, min: 6, max: 720, group: "Before applying" },
   deadlineWarnDays: { label: "Warn before a closing date", unit: "days", default: 5, min: 1, max: 30, group: "Before applying" },
   parkedDays: { label: "Skip a role no one decided on after", unit: "days", default: 14, min: 3, max: 90, group: "Before applying" },
   firstTouchHours: { label: "After applying, reach a person within", unit: "hours", default: 24, min: 1, max: 168, group: "After applying" },

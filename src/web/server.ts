@@ -437,7 +437,7 @@ ${r.ic.length ? `<div class="callout"><p><strong>What to do:</strong> ${r.ic.len
 <article class="card"><div class="card-head"><h2 class="card-title lg">${g.total && g.passed / g.total < 0.5 ? "Most job alerts are not a match" : "How your job alerts turn into interviews"}</h2>
 <p class="card-desc">${g.total ? `${pct(g.passed, g.total)}% of Gmail alerts pass the first check.` : "No Gmail alerts yet."}${g.interviews ? ` ${plural(g.interviews, "interview")} came from them.` : ""}</p></div>
 <ul class="funnel">${funnel.map(([label, n], i) => `<li class="funnel-row"><span class="funnel-label">${label}</span><span><span class="funnel-bar${i === 0 ? " first" : i === 3 ? " last" : ""}" style="width:${g.total ? Math.max(3, Math.round((n / g.total) * 100)) : 3}%"></span></span><span class="funnel-val">${n}</span></li>`).join("")}</ul>
-<div class="card-actions"><a class="btn" href="/sources">Review watched pages and alerts</a></div>
+<div class="card-actions"><a class="btn" href="/sources">Review job pages and alerts</a></div>
 ${g.lowMatch ? `<p class="card-note">${plural(g.lowMatch, "alert was", "alerts were")} marked a low match at the first check.</p>` : ""}</article>
 </div></div>`, { tab: "insights", flash: q.get("flash"), meta: "Updated with every sync" });
 }
@@ -447,7 +447,7 @@ ${g.lowMatch ? `<p class="card-note">${plural(g.lowMatch, "alert was", "alerts w
 function progressPage(q: URLSearchParams) {
   const c = stageCounts();
   const open = ACTIVE.reduce((s, k) => s + (c[k] ?? 0), 0);
-  const notes: Record<string, string> = { found: "Not checked by you yet", decide: "Partial match", ready: "Pack is ready", applied: "Waiting for a reply", interviewing: "In interviews", offer: "Decide on these" };
+  const notes: Record<string, string> = { found: "Not checked by you yet", decide: "Partial match", ready: "Application is ready", applied: "Waiting for a reply", interviewing: "In interviews", offer: "Decide on these" };
   const max = Math.max(1, ...ACTIVE.map((k) => c[k] ?? 0));
   const p = weeklyPace();
   const peak = Math.max(1, ...p.weeks.map((w) => w.n));
@@ -519,7 +519,7 @@ function list(q: URLSearchParams) {
     const packing = o.pack_status === "queued" || o.pack_status === "building";
     return `<tr data-row data-text="${esc(`${o.role} ${o.company} ${sourceLabel(o.source)}`.toLowerCase())}">
 <td class="c-role"><a class="cell-title" href="/o/${o.id}?in=${encodeURIComponent(from)}">${esc(o.role)}</a><span class="cell-sub">${esc(o.company)}</span></td>
-<td data-label="Status"><div class="btn-row" style="gap:6px">${statusBadge(o.status)}${packing ? badge("Pack building", "accent") : ""}</div></td>
+<td data-label="Status"><div class="btn-row" style="gap:6px">${statusBadge(o.status)}${packing ? badge("Preparing", "accent") : ""}</div></td>
 <td data-label="Fit">${fitBadge(o.fit_verdict)}</td>
 <td data-label="Closes" class="c-meta ${closes?.tone ? `tone-${closes.tone}` : ""}">${closes ? esc(closes.text) : ""}</td>
 <td data-label="Source" class="c-meta muted">${esc(sourceLabel(o.source))}</td>
@@ -547,9 +547,9 @@ const CONF: Record<string, [string, string]> = { high: ["Confirmed", "ok"], medi
 /** The note on a role whose pack is queued or building: honest about whether the app is there to build it. */
 function packingNote(): string {
   switch (waitingFor()) {
-    case "install": return `<div class="callout accent" role="status"><p>The pack is built by the kindahired app on your computer, with your own Claude plan. Install it and the pack starts on its own.</p>${linkButton(APP_PAGE, `${icon("download")}Download the app`, "primary")}</div>`;
-    case "open": return `<div class="callout accent" role="status">The pack starts when the kindahired app is open on your computer.</div>`;
-    case "running": return `<div class="callout accent" role="status">The pack is being built. It arrives in Telegram and on this page, usually within a few minutes.</div>`;
+    case "install": return `<div class="callout accent" role="status"><p>Your application is prepared by the kindahired app on your computer, with your own Claude plan. Install it and it starts on its own.</p>${linkButton(APP_PAGE, `${icon("download")}Download the app`, "primary")}</div>`;
+    case "open": return `<div class="callout accent" role="status">Your application starts when the kindahired app is open on your computer.</div>`;
+    case "running": return `<div class="callout accent" role="status">Your application is being prepared. It arrives in Telegram and on this page, usually within a few minutes.</div>`;
   }
 }
 
@@ -633,8 +633,8 @@ function detail(id: number, q: URLSearchParams) {
     hasResume ? linkButton(`/resume/${o.id}/edit`, "Edit resume", "quiet") : "",
     isOpen ? postButton(`/o/${o.id}/applied`, "Mark applied", { variant: o.apply_url ? "default" : "primary" }) : "",
     packing ? "" : o.pack_status === "ready"
-      ? claudeButton(`/o/${o.id}/repack`, `${icon("refresh")}Rebuild pack`, `/o/${o.id}`, { variant: "quiet", confirm: "Rebuild the pack? The fit read, resume and drafts are written again." })
-      : isOpen ? claudeButton(`/o/${o.id}/build`, "Build pack", `/o/${o.id}`) : "",
+      ? claudeButton(`/o/${o.id}/repack`, `${icon("refresh")}Prepare again`, `/o/${o.id}`, { variant: "quiet", confirm: "Prepare this application again? The fit read, resume and drafts are written again." })
+      : isOpen ? claudeButton(`/o/${o.id}/build`, "Prepare my application", `/o/${o.id}`) : "",
     `<span class="spacer"></span>`,
     isClosed ? "" : postButton(`/o/${o.id}/drop`, "Drop role", { variant: "danger", confirm: `Drop ${o.role} at ${o.company}? Its reminders close too.` }),
   ].join("");
@@ -646,7 +646,7 @@ function detail(id: number, q: URLSearchParams) {
     ...(closes ? [["Closing date", `<span class="${closes.tone ? `tone-${closes.tone}` : ""}">${esc(closes.text)}</span>`] as [string, string]] : []),
     ...(o.date_applied ? [["Applied", day(o.date_applied)] as [string, string]] : []),
     ...(o.who_can_apply ? [["Who can apply", esc(o.who_can_apply)] as [string, string]] : []),
-    ...(o.hard_gate ? [["Hard gate", esc(o.hard_gate)] as [string, string]] : []),
+    ...(o.hard_gate ? [["Could rule you out", esc(o.hard_gate)] as [string, string]] : []),
     ["Source", o.source_url ? `<a href="${esc(o.source_url)}" target="_blank" rel="noopener">${esc(sourceLabel(o.source))}</a>` : esc(sourceLabel(o.source))],
     ["Added", day(o.created_at)],
   ];
@@ -709,8 +709,8 @@ ${r.reply ? `<div class="callout" style="margin-top:14px"><b>Their reply:</b> ${
 ${roleNav(o, q.get("in"))}
 <header class="role-head"><h1>${esc(o.role)}</h1><p class="company">${esc(o.company)}</p>
 <div class="badges">${statusBadge(o.status)}${fitBadge(o.fit_verdict)}${closes?.tone ? badge(closes.text, closes.tone) : ""}</div></header>
-<div class="toolbar">${toolbar}</div>${!packing && (isOpen || o.pack_status === "ready") ? claudeHint("Packs are built") : ""}
-<div class="split flip"><div class="stack">${main || emptyState("No pack yet", "Build the pack to get the fit read, resume and drafts.")}</div>
+<div class="toolbar">${toolbar}</div>${!packing && (isOpen || o.pack_status === "ready") ? claudeHint("Applications are prepared") : ""}
+<div class="split flip"><div class="stack">${main || emptyState("Not prepared yet", "Prepare your application to get the fit read, resume and drafts.")}</div>
 <aside><div class="panel"><dl class="facts">${facts.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("")}</dl></div></aside></div>`,
     { tab: "roles", flash: q.get("flash") });
 }
@@ -801,7 +801,7 @@ save.addEventListener('click',async()=>{
 // ---------- Watched pages ----------
 
 const ago = (iso: string | null) => {
-  if (!iso) return "not scanned yet";
+  if (!iso) return "not checked yet";
   const h = (Date.now() - new Date(iso).getTime()) / 3600_000;
   return h < 1 ? `${Math.max(1, Math.round(h * 60))} min ago` : h < 48 ? `${Math.round(h)} h ago` : `${Math.round(h / 24)} days ago`;
 };
@@ -818,20 +818,20 @@ function sourcesPage(q: URLSearchParams) {
     const last = src.last_result ? describeResult(JSON.parse(src.last_result) as ScanResult) : "";
     return `<li class="item"><div class="item-main"><div class="person-head"><span class="item-title">${esc(src.label)}</span>${src.status === "paused" ? badge("Paused", "muted") : ""}${src.last_error ? badge("Failing", "danger") : ""}</div>
 <p class="small" style="margin-top:2px;overflow-wrap:anywhere"><a href="${esc(src.url)}" target="_blank" rel="noopener">${esc(src.url)}</a></p>
-<div class="item-meta"><span>Every ${src.interval_hours} h</span><span>Last scan ${ago(src.last_scanned_at)}${last ? `: ${esc(last)}` : ""}</span>
+<div class="item-meta"><span>Every ${src.interval_hours} h</span><span>Last checked ${ago(src.last_scanned_at)}${last ? `: ${esc(last)}` : ""}</span>
 ${found.n ? `<a href="/list?source=${encodeURIComponent(`watch:${src.label}`)}">${plural(found.n, "role")} found${found.fits ? `, ${found.fits} worth applying to` : ""}</a>` : "<span>No matching roles yet</span>"}</div>
 ${src.last_error ? `<p class="small tone-danger" style="margin-top:6px">${esc(src.last_error)}</p>` : ""}</div>
-<div class="item-actions">${postButton(`/s/${src.id}/scan`, "Scan now")}${src.status === "paused" ? postButton(`/s/${src.id}/resume`, "Resume", { variant: "quiet" }) : postButton(`/s/${src.id}/pause`, "Pause", { variant: "quiet" })}${postButton(`/s/${src.id}/remove`, "Remove", { variant: "danger", confirm: `Stop watching ${src.label}? Roles already found there stay.` })}</div></li>`;
+<div class="item-actions">${postButton(`/s/${src.id}/scan`, "Check now")}${src.status === "paused" ? postButton(`/s/${src.id}/resume`, "Resume", { variant: "quiet" }) : postButton(`/s/${src.id}/pause`, "Pause", { variant: "quiet" })}${postButton(`/s/${src.id}/remove`, "Remove", { variant: "danger", confirm: `Stop watching ${src.label}? Roles already found there stay.` })}</div></li>`;
   });
-  return page("Watched pages · kindahired", `
-<div class="page-head"><div><h1>Watched pages</h1><p style="max-width:68ch">Job boards, careers pages and curated feeds, checked on a timer. New postings that fit your targets arrive in Telegram as one list; the rest are left out.</p></div></div>
+  return page("Job pages to check · kindahired", `
+<div class="page-head"><div><h1>Job pages to check</h1><p style="max-width:68ch">Job boards, careers pages and curated feeds, checked on a timer. New postings that fit your targets arrive in Telegram as one list; the rest are left out.</p></div></div>
 ${note ? `<div class="callout note" role="status">${esc(note)}</div>` : ""}
-<section class="stack" style="margin-bottom:32px"><div><div class="section-head"><h2>Watch a page</h2></div>
+<section class="stack" style="margin-bottom:32px"><div><div class="section-head"><h2>Add a job page</h2></div>
 <form class="panel add-source" method="post" action="/sources">
 <label class="sr" for="src-url">Page link</label><input id="src-url" type="url" name="url" placeholder="Job board or careers page link" value="${esc(prefill)}" required${prefill ? "" : " autofocus"}>
 <label class="sr" for="src-label">Name</label><input id="src-label" type="text" name="label" placeholder="Name (optional)">
 <label class="sr" for="src-int">How often</label><select id="src-int" name="interval">${INTERVALS.map((h) => `<option value="${h}" ${h === 6 ? "selected" : ""}>Every ${h} hours</option>`).join("")}</select>
-<button class="btn primary">Watch page</button></form>
+<button class="btn primary">Add page</button></form>
 <p class="hint" style="margin-top:10px">If a board has filters or a "newest" sort, set them first and watch that link. To add the page you're on: drag <a class="bookmarklet" href="javascript:void(window.open('http://127.0.0.1:${env.port}/sources?url='+encodeURIComponent(location.href)))">${icon("bookmark")}Watch page</a> to your bookmarks bar.</p></div></section>
 <section><div class="section-head"><h2>Watching</h2><span class="count num">${sources.length}</span></div>
 <div class="panel">${rows.length ? `<ul class="list">${rows.join("")}</ul>` : emptyState("No pages watched yet", "Add one above, or send <code>/watch &lt;link&gt;</code> to the Telegram bot.")}</div></section>`,
@@ -1040,7 +1040,7 @@ function back(referer: string | undefined, flash: string) {
 }
 
 const ACTION_MSG: Record<string, string> = { done: "Marked as done.", drop: "Reminder removed.", snooze: "We will remind you tomorrow.", undo: "Back on your list." };
-const OPP_MSG: Record<string, string> = { research: "Researching who's hiring. Reload in a few minutes.", remind: "The reminder is back on your list.", applied: "Marked as applied. Follow-up reminders start now.", drop: "Role dropped.", repack: "Rebuilding the pack. It arrives in a few minutes.", build: "Building the pack. It arrives in a few minutes." };
+const OPP_MSG: Record<string, string> = { research: "Researching who's hiring. Reload in a few minutes.", remind: "The reminder is back on your list.", applied: "Marked as applied. Follow-up reminders start now.", drop: "Role dropped.", repack: "Preparing your application again. It arrives in a few minutes.", build: "Preparing your application. It arrives in a few minutes." };
 const OUTREACH_MSG: Record<string, string> = { note_sent: "Marked note sent.", dm_sent: "Marked DM sent.", replied: "Marked as replied.", skipped: "Skipped.", conversation: "Marked as in conversation." };
 
 let warnedNoSecret = false;
@@ -1159,8 +1159,8 @@ export function startServer(port = env.port, hooks?: Hooks) {
         if (!src) note = "That page isn't watched any more.";
         else if (sm[2] === "scan") {
           void hooks?.scanNow(id, { force: true }).catch(() => {});
-          note = `Scanning ${src.label} now. Refresh in a minute for the result; matches arrive in Telegram.`;
-        } else if (sm[2] === "pause") { setSourceStatus(id, "paused"); note = `Paused ${src.label}. It won't be scanned until you resume it.`; }
+          note = `Checking ${src.label} now. Refresh in a minute for the result; matches arrive in Telegram.`;
+        } else if (sm[2] === "pause") { setSourceStatus(id, "paused"); note = `Paused ${src.label}. It won't be checked until you resume it.`; }
         else if (sm[2] === "resume") { setSourceStatus(id, "active"); note = `Resumed ${src.label}.`; }
         else if (sm[2] === "remove") { removeSource(id); note = `Stopped watching ${src.label}. Roles found there stay.`; }
         return redirect(`/sources${note ? `?note=${encodeURIComponent(note)}` : ""}`);
@@ -1236,9 +1236,9 @@ export function startServer(port = env.port, hooks?: Hooks) {
           }
           const wait = waitingFor();
           return htmlOut(message("Saved", esc(result),
-            `<p class="muted">${wait === "install" ? "The pack (fit read, resume, cover note and people to contact) is built by the kindahired app on your computer, with your own Claude plan. Install it and the pack starts on its own."
-              : wait === "open" ? "The pack (fit read, resume, cover note and people to contact) starts when the kindahired app is open on your computer. It appears under Roles."
-              : "The pack (fit read, resume, cover note and people to contact) arrives in Telegram when it's ready, usually within a few minutes. It also appears under Roles."}</p>
+            `<p class="muted">${wait === "install" ? "Your application (fit read, resume, cover note and people to contact) is prepared by the kindahired app on your computer, with your own Claude plan. Install it and it starts on its own."
+              : wait === "open" ? "Your application (fit read, resume, cover note and people to contact) starts when the kindahired app is open on your computer. It appears under Roles."
+              : "Your application (fit read, resume, cover note and people to contact) arrives in Telegram when it's ready, usually within a few minutes. It also appears under Roles."}</p>
 <div class="btn-row">${wait === "install" ? linkButton(APP_PAGE, `${icon("download")}Download the app`, "primary") + linkButton("/", "Back to Home", "quiet") : linkButton("/", "Back to Home", "primary")}${backLink ? linkButton(backLink, "Back to the job", "quiet") : ""}</div>`));
         }
         else if (link) run("INSERT INTO inbox_items (source, external_id, url, status) VALUES ('web', $u, $u, 'new') ON CONFLICT DO NOTHING", { u: link });
@@ -1249,7 +1249,7 @@ export function startServer(port = env.port, hooks?: Hooks) {
           `<p class="muted">Paste a posting from LinkedIn, X or a careers page.</p>
 <form method="post" action="/add" class="vstack section-stack"><div><label for="add-url" class="small muted">Job link</label>
 <input id="add-url" type="url" name="url" required autofocus class="full" placeholder="https://"></div>
-<div class="btn-row"><button class="btn primary">Make a pack</button>${linkButton("/", "Cancel", "quiet")}</div></form>`));
+<div class="btn-row"><button class="btn primary">Prepare my application</button>${linkButton("/", "Cancel", "quiet")}</div></form>`));
       }
       if (req.method === "GET" && url.pathname === "/add") {
         const link = url.searchParams.get("url") ?? "";
@@ -1258,7 +1258,7 @@ export function startServer(port = env.port, hooks?: Hooks) {
 <form method="post" action="/add" class="stack" style="--gap:12px"><input type="hidden" name="url" value="${esc(link)}"><input type="hidden" name="back" value="${esc(link)}">
 <div><label for="save-note" class="small muted" style="display:block;margin-bottom:6px">Note (optional)</label>
 <input id="save-note" type="text" name="note" placeholder="e.g. founder posted this on X" style="width:100%" autofocus></div>
-<div class="btn-row" style="margin-top:16px"><button class="btn primary">Save and build the pack</button>${linkButton(link || "/", "Cancel", "quiet")}</div></form>`));
+<div class="btn-row" style="margin-top:16px"><button class="btn primary">Save and prepare my application</button>${linkButton(link || "/", "Cancel", "quiet")}</div></form>`));
       }
       if (url.pathname === "/") return htmlOut(home(url.searchParams));
       if (url.pathname === "/tasks") return htmlOut(tasksPage(url.searchParams));

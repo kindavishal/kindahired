@@ -76,7 +76,7 @@ ${o.flash ? `<p class="flash" role="status">${esc(o.flash)}</p>` : ""}
     ? `<table><thead><tr><th>Who</th><th>When</th><th></th></tr></thead><tbody>${pending.map(reqRow).join("")}</tbody></table>`
     : `<p class="empty">No requests waiting.</p>`}</div></section>
 <section><h2>People · ${o.people.length}</h2><div class="panel">${o.people.length
-    ? `<table><thead><tr><th>Who</th><th>App</th><th>Claude steps waiting</th><th>Telegram</th></tr></thead><tbody>${o.people.map(personRow).join("")}</tbody></table>`
+    ? `<table><thead><tr><th>Who</th><th>App</th><th>Jobs waiting</th><th>Telegram</th></tr></thead><tbody>${o.people.map(personRow).join("")}</tbody></table>`
     : `<p class="empty">Nobody yet.</p>`}</div></section>
 ${decided.length ? `<section><h2>Decided</h2><div class="panel"><table><thead><tr><th>Who</th><th>When</th><th></th></tr></thead><tbody>${decided.map(reqRow).join("")}</tbody></table></div></section>` : ""}
 </main></body></html>`;

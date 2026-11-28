@@ -6,7 +6,7 @@ import updaterPkg from "electron-updater";
 import config from "../app.config.json" with { type: "json" };
 import { startWorker, type WorkerStatus } from "../../../src/worker/client.ts";
 import { checkClaude, CLAUDE_INSTALL_URL, findClaude, widenedPath, type ClaudeCheck } from "./claude.ts";
-import { addDone, autostartDesktopEntry, compareVersions, deepLinkTarget, distribution, doneToday, LINK_SCHEME, loadSettings, normalizeHubUrl, saveSettings, type Settings } from "./settings.ts";
+import { addDone, autostartDesktopEntry, compareVersions, deepLinkTarget, distribution, LINK_SCHEME, loadSettings, normalizeHubUrl, saveSettings, type Settings } from "./settings.ts";
 
 /**
  * The desktop app: a tray (menu bar) icon that runs the worker, which takes Claude Code steps from
@@ -174,17 +174,24 @@ function shownStatus(): Shown {
   if (checkingClaude && !claude) return { label: "Checking Claude Code…", live: false };
   if (claude?.state === "missing") return { label: "Claude Code isn't installed", live: false };
   if (claude?.state === "signed-out") return { label: "Claude Code isn't signed in", live: false };
-  if (settings.paused) return { label: "Paused", live: false };
+  if (settings.paused) return { label: "Paused. Nothing is prepared until you resume", live: false };
   const s = workerStatus;
   if (!s) return { label: "Starting…", live: false };
   switch (s.state) {
-    case "online": return { label: "Online, waiting for work", live: true };
-    case "working": return { label: `Working on ${s.running} Claude step${s.running === 1 ? "" : "s"}`, live: true };
-    case "connecting": return { label: "Connecting to the hub…", live: false };
-    case "offline": return { label: "Can't reach the hub", live: false };
+    case "online": return { label: "Ready to prepare your applications", live: true };
+    case "working": return { label: `${doingNow(s) ?? "Preparing something for you"}…`, live: true };
+    case "connecting": return { label: "Connecting…", live: false };
+    case "offline": return { label: "Can't connect. Check your internet", live: false };
     case "unauthorized": return { label: "Signed out. Open kindahired to sign in again", live: false };
     case "stopped": return { label: "Stopped", live: false };
   }
+}
+
+/** What the app is doing right now, in words ("Writing your resume for Toast"), or null when idle. */
+function doingNow(s: WorkerStatus | null): string | null {
+  const doing = s?.doing ?? [];
+  if (!doing.length) return null;
+  return doing.length === 1 ? doing[0] : `${doing[0]}, and ${doing.length - 1} more`;
 }
 
 function trayImage(live: boolean) {
@@ -206,14 +213,11 @@ function refreshTray() {
     tray.setImage(trayImage(shown.live));
     lastLive = shown.live;
   }
-  const done = doneToday(settings);
   tray.setToolTip(`${config.productName}: ${shown.label}`);
   const configured = signedIn();
   const claudeNeedsHelp = claude?.state === "missing" || claude?.state === "signed-out";
   tray.setContextMenu(Menu.buildFromTemplate([
     { label: shown.label, enabled: false },
-    { label: `${done} Claude step${done === 1 ? "" : "s"} done today`, enabled: false },
-    ...(workerStatus?.error && !shown.live ? [{ label: workerStatus.error.slice(0, 80), enabled: false }] : []),
     { type: "separator" },
     { label: configured ? `Open ${config.productName}` : "Sign in…", click: () => openDashboard() },
     ...(claudeNeedsHelp ? [
@@ -221,7 +225,7 @@ function refreshTray() {
       { label: "Check Claude Code again", enabled: !checkingClaude, click: () => void detectClaude().then(restartWorker) },
     ] : []),
     {
-      label: settings.paused ? "Resume worker" : "Pause worker",
+      label: settings.paused ? "Resume preparing applications" : "Pause preparing applications",
       enabled: configured,
       click: () => { updateSettings({ paused: !settings.paused }); void restartWorker(); },
     },
@@ -509,7 +513,7 @@ function setupAutoUpdate() {
       // Restarting mid-job would lose that job's work, so only offer it.
       const { response } = await dialog.showMessageBox({
         message: `Version ${info.version} is ready.`,
-        detail: workerStatus?.running ? "A Claude step is running now. Restart after it finishes, or it'll install when you quit." : "Restart now to use it, or it'll install the next time you quit.",
+        detail: workerStatus?.running ? `${doingNow(workerStatus) ?? "Something is being prepared"} right now. Restart after it finishes, or the update installs when you quit.` : "Restart now to use it, or it'll install the next time you quit.",
         buttons: ["Restart now", "Later"],
         defaultId: workerStatus?.running ? 1 : 0,
         cancelId: 1,
@@ -534,8 +538,8 @@ async function installUpdate() {
 async function quit() {
   if (workerStatus?.running) {
     const { response } = await dialog.showMessageBox({
-      message: "A Claude step is running.",
-      detail: "If you quit now, the hub gives it to this computer again later.",
+      message: `${doingNow(workerStatus) ?? "Something is being prepared"} isn't finished.`,
+      detail: "If you quit now, it starts over the next time kindahired is open.",
       buttons: ["Quit anyway", "Cancel"],
       defaultId: 1,
       cancelId: 1,

@@ -40,7 +40,7 @@ export async function warnAccountOnce(err: unknown) {
   if (last && Date.now() - new Date(last).getTime() < 12 * 3600_000) return;
   kvSet(key, new Date().toISOString());
   if (offline) {
-    await send("Paused: your computer is offline, so Claude steps are waiting. Nothing is lost; they resume when it's back online.", undefined, { silent: true }).catch(() => {});
+    await send("Paused: your computer is offline, so nothing can be prepared right now. Nothing is lost; it picks up again when your computer is back online with kindahired open.", undefined, { silent: true }).catch(() => {});
     return;
   }
   const text = String(err);
@@ -499,7 +499,7 @@ export async function watchPage(url: string, opts: { label?: string; intervalHou
   const { source, isNew } = added;
   if (!isNew) return { text: `Already watching ${source.label}, every ${source.interval_hours} hours.`, id: source.id };
   void scanNow(source.id, { report: true }).catch(() => {});
-  return { text: `Watching ${source.label}. It's checked every ${source.interval_hours} hours; the first scan is running now.`, id: source.id };
+  return { text: `Watching ${source.label}. It's checked every ${source.interval_hours} hours; the first check is running now.`, id: source.id };
 }
 
 /** X: bookmarks, watched threads and accounts, then searches. Tells me once a month if the budget runs out. */

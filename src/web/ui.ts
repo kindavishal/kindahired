@@ -154,7 +154,7 @@ export const setShellPort = (p: number) => { shellPort = p; };
 
 const TAB_TITLE: Record<Tab, string> = {
   home: "Home", tasks: "All tasks", interviews: "Interviews", insights: "What is working", progress: "Progress", roles: "Roles", people: "People",
-  companies: "Companies", sources: "Watched pages", timers: "Reminder timings", setup: "Setup", "": "",
+  companies: "Companies", sources: "Job pages to check", timers: "Reminder timings", setup: "Setup", "": "",
 };
 
 type PageOpts = { tab?: Tab; port?: number; flash?: string | null; wide?: boolean; meta?: string };
@@ -174,7 +174,7 @@ ${link("companies", "/companies", "building", "Companies")}
 </nav>
 <p class="nav-label">Settings</p>
 <nav class="nav" aria-label="Settings">
-${link("sources", "/sources", "eye", "Watched pages")}
+${link("sources", "/sources", "eye", "Job pages to check")}
 ${link("timers", "/timers", "timer", "Reminder timings")}
 ${process.env.JH_HUB === "1" ? link("setup", "/setup", "check", "Setup") : ""}
 </nav>`;

@@ -56,7 +56,7 @@ function appPage(downloads: Downloads | null): string {
     ? `<div class="callout accent" role="status"><p>Your app is connected.</p>${inApp() ? "" : linkButton(openInAppUrl("/"), `Open in the app${icon("external")}`)}</div>`
     : "";
   return page("Get the app · kindahired", `<div class="stack"><div><h1>Get the kindahired app</h1>
-<p class="lede">Packs and research are made by the app on your computer, with your own Claude plan.</p></div>${status}
+<p class="lede">Your applications and research are prepared by the app on your computer, with your own Claude plan.</p></div>${status}
 <ol class="steps">
 <li><p>Download the app and install it.</p>${downloadButtons(downloads)}</li>
 <li><p>Install <a href="https://claude.com/claude-code" target="_blank" rel="noopener">Claude Code</a> and sign in to your Claude account.</p><p class="muted small">On Windows, install the Windows version of Claude Code (it may ask for Git for Windows too). A copy inside WSL won't work with the app.</p></li>

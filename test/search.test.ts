@@ -24,7 +24,7 @@ test("a job board link offers to watch the company first; a posting offers a pac
   assert.equal(board[0].label, "Add factory as a target company");
   assert.equal(board[0].post?.action, "/companies");
   const posting = searchAll("https://job-boards.greenhouse.io/arizeai/jobs/6128123004");
-  assert.equal(posting[0].label, "Make a pack for this posting");
+  assert.equal(posting[0].label, "Prepare an application for this posting");
   assert.equal(posting[0].post?.action, "/add");
 });
 
