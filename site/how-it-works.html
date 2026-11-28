@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>How kindahired works</title>
 <meta name="description" content="What kindahired reads, what it prepares, how it keeps you on time, where your data goes, and how to set it up.">
-<meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">
 <meta property="og:title" content="kindahired">
 <meta property="og:description" content="Your next job is already in your network. kindahired helps you act on it, fast.">
@@ -17,220 +17,362 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="home.css">
+<link rel="stylesheet" href="pages.css">
+<script>document.documentElement.classList.add("js")</script>
 </head>
-<body>
+<body class="home page-how">
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="mark" viewBox="0 0 24 24"><path d="M20.5 9.5A9 9 0 1 1 15 3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M7.5 12.5l3.5 3.5L19.5 6" fill="none" style="stroke: var(--mark-tick)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="lg-gmail" viewBox="0 0 192 192"><path fill="url(#gm-a)" d="M146 44h38v110c0 6.627-5.373 12-12 12h-20a6 6 0 0 1-6-6z"/><path fill="#fc413d" d="M46 44H8v110c0 6.627 5.373 12 12 12h20a6 6 0 0 0 6-6z"/><path fill="url(#gm-b)" d="M39.226 30.456c-8.033-6.752-20.018-5.714-26.77 2.319-6.752 8.032-5.714 20.017 2.319 26.77l76.078 63.949a8 8 0 0 0 10.295 0l76.078-63.95c8.032-6.752 9.07-18.737 2.318-26.77-6.752-8.032-18.737-9.07-26.769-2.318L96 78.18z"/><defs><linearGradient id="gm-a" x1="165" x2="165" y1="44" y2="166" gradientUnits="userSpaceOnUse"><stop stop-color="#60d673"/><stop offset=".17" stop-color="#42c868"/><stop offset=".39" stop-color="#0ebc5f"/><stop offset=".62" stop-color="#00a9bb"/><stop offset=".86" stop-color="#3c90ff"/><stop offset="1" stop-color="#3186ff"/></linearGradient><linearGradient id="gm-b" x1="8" x2="184" y1="46.13" y2="46.13" gradientUnits="userSpaceOnUse"><stop offset=".08" stop-color="#ff63a0"/><stop offset=".3" stop-color="#fc413d"/><stop offset=".5" stop-color="#fc413d"/><stop offset=".65" stop-color="#fc413d"/><stop offset=".72" stop-color="#fc5c30"/><stop offset=".86" stop-color="#feb10c"/><stop offset=".91" stop-color="#fec700"/><stop offset=".96" stop-color="#ffdb0f"/></linearGradient></defs></symbol>
+  <symbol id="lg-x" viewBox="0 0 24 24"><path fill="currentColor" d="M14.234 10.162 22.977 0h-2.072l-7.591 8.824L7.251 0H.258l9.168 13.343L.258 24H2.33l8.016-9.318L16.749 24h6.993zm-2.837 3.299-.929-1.329L3.076 1.56h3.182l5.965 8.532.929 1.329 7.754 11.09h-3.182z"/></symbol>
+  <symbol id="lg-greenhouse" viewBox="-7 0 27.03 27.3"><path fill="#031C17" d="M11.3803 8.11067C11.3803 9.42865 10.8227 10.5946 9.91022 11.507C8.89639 12.5208 7.42633 12.7743 7.42633 13.6361C7.42633 14.802 9.30192 14.4471 11.1015 16.2467C12.2927 17.4379 13.0278 19.0094 13.0278 20.8343C13.0278 24.4334 10.1383 27.2975 6.51388 27.2975C2.88943 27.2975 0 24.4334 0 20.8368C0 19.0094 0.735029 17.4379 1.92628 16.2467C3.72584 14.4471 5.60143 14.802 5.60143 13.6361C5.60143 12.7743 4.13137 12.5208 3.11754 11.507C2.20509 10.5946 1.64748 9.42865 1.64748 8.05998C1.64748 5.42401 3.80188 3.29496 6.43784 3.29496C6.94476 3.29496 7.40098 3.371 7.78117 3.371C8.46551 3.371 8.82035 3.06685 8.82035 2.58528C8.82035 2.30647 8.69362 1.95163 8.69362 1.57144C8.69362 0.709683 9.42865 0 10.3158 0C11.2029 0 11.9125 0.735029 11.9125 1.62213C11.9125 2.55993 11.1775 2.99081 10.6199 3.19358C10.1637 3.34565 9.80884 3.54842 9.80884 4.00464C9.80884 4.8664 11.3803 5.70281 11.3803 8.11067ZM10.8734 20.8368C10.8734 18.3276 9.02312 16.2999 6.51388 16.2999C4.00464 16.2999 2.1544 18.3276 2.1544 20.8368C2.1544 23.3207 4.00464 25.3737 6.51388 25.3737C9.02312 25.3737 10.8734 23.3182 10.8734 20.8368ZM9.37796 8.05998C9.37796 6.46319 8.08532 5.1452 6.51388 5.1452C4.94244 5.1452 3.6498 6.46319 3.6498 8.05998C3.6498 9.65676 4.94244 10.9747 6.51388 10.9747C8.08532 10.9747 9.37796 9.65676 9.37796 8.05998Z"/></symbol>
+  <symbol id="lg-wellfound" viewBox="0 0 24 24"><path fill="currentColor" d="M23.998 8.128c.063-1.379-1.612-2.376-2.795-1.664-1.23.598-1.322 2.52-.156 3.234 1.2.862 2.995-.09 2.951-1.57zm0 7.748c.063-1.38-1.612-2.377-2.795-1.665-1.23.598-1.322 2.52-.156 3.234 1.2.863 2.995-.09 2.951-1.57zm-20.5 1.762L0 6.364h3.257l2.066 8.106 2.245-8.106h3.267l2.244 8.106 2.065-8.106h3.257l-3.54 11.274H11.39c-.73-2.713-1.46-5.426-2.188-8.14l-2.233 8.14H3.5z"/></symbol>
+  <symbol id="lg-indeed" viewBox="0 0 24 24"><path fill="#003A9B" d="M11.566 21.5633v-8.762c.2553.0231.5009.0346.758.0346 1.2225 0 2.3739-.3206 3.3506-.8928v9.6182c0 .8219-.1957 1.4287-.5757 1.8338-.378.4033-.8808.6049-1.491.6049-.6007 0-1.0766-.2016-1.468-.6183-.3781-.4032-.5739-1.01-.5739-1.8184zM11.589.5659c2.5447-.8929 5.4424-.8449 7.6186.987.405.3687.8673.8334 1.0515 1.3806.2207.6913-.7695-.073-.9057-.167-.71-.4532-1.4182-.8334-2.2127-1.0946C12.8614.3873 8.8122 2.709 6.2945 6.315c-1.0516 1.5939-1.7367 3.2721-2.299 5.1174-.0614.2017-.1094.4647-.2207.6413-.1113.2036-.048-.5453-.048-.5702.0845-.7623.2438-1.4997.4414-2.237C5.3292 5.3375 7.897 2.0655 11.5891.5658zm4.9281 7.0587c0 1.6686-1.353 3.0224-3.0205 3.0224-1.6677 0-3.0186-1.3538-3.0186-3.0224 0-1.6687 1.351-3.0224 3.0186-3.0224 1.6676 0 3.0205 1.3518 3.0205 3.0224Z"/></symbol>
+  <symbol id="lg-telegram" viewBox="0 0 24 24"><path fill="#26A5E4" d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></symbol>
+  <symbol id="lg-claude" viewBox="0 0 24 24"><path fill="#D97757" d="m4.7144 15.9555 4.7174-2.6471.079-.2307-.079-.1275h-.2307l-.7893-.0486-2.6956-.0729-2.3375-.0971-2.2646-.1214-.5707-.1215-.5343-.7042.0546-.3522.4797-.3218.686.0608 1.5179.1032 2.2767.1578 1.6514.0972 2.4468.255h.3886l.0546-.1579-.1336-.0971-.1032-.0972L6.973 9.8356l-2.55-1.6879-1.3356-.9714-.7225-.4918-.3643-.4614-.1578-1.0078.6557-.7225.8803.0607.2246.0607.8925.686 1.9064 1.4754 2.4893 1.8336.3643.3035.1457-.1032.0182-.0728-.164-.2733-1.3539-2.4467-1.445-2.4893-.6435-1.032-.17-.6194c-.0607-.255-.1032-.4674-.1032-.7285L6.287.1335 6.6997 0l.9957.1336.419.3642.6192 1.4147 1.0018 2.2282 1.5543 3.0296.4553.8985.2429.8318.091.255h.1579v-.1457l.1275-1.706.2368-2.0947.2307-2.6957.0789-.7589.3764-.9107.7468-.4918.5828.2793.4797.686-.0668.4433-.2853 1.8517-.5586 2.9021-.3643 1.9429h.2125l.2429-.2429.9835-1.3053 1.6514-2.0643.7286-.8196.85-.9046.5464-.4311h1.0321l.759 1.1293-.34 1.1657-1.0625 1.3478-.8804 1.1414-1.2628 1.7-.7893 1.36.0729.1093.1882-.0183 2.8535-.607 1.5421-.2794 1.8396-.3157.8318.3886.091.3946-.3278.8075-1.967.4857-2.3072.4614-3.4364.8136-.0425.0304.0486.0607 1.5482.1457.6618.0364h1.621l3.0175.2247.7892.522.4736.6376-.079.4857-1.2142.6193-1.6393-.3886-3.825-.9107-1.3113-.3279h-.1822v.1093l1.0929 1.0686 2.0035 1.8092 2.5075 2.3314.1275.5768-.3218.4554-.34-.0486-2.2039-1.6575-.85-.7468-1.9246-1.621h-.1275v.17l.4432.6496 2.3436 3.5214.1214 1.0807-.17.3521-.6071.2125-.6679-.1214-1.3721-1.9246L14.38 17.959l-1.1414-1.9428-.1397.079-.674 7.2552-.3156.3703-.7286.2793-.6071-.4614-.3218-.7468.3218-1.4753.3886-1.9246.3157-1.53.2853-1.9004.17-.6314-.0121-.0425-.1397.0182-1.4328 1.9672-2.1796 2.9446-1.7243 1.8456-.4128.164-.7164-.3704.0667-.6618.4008-.5889 2.386-3.0357 1.4389-1.882.929-1.0868-.0062-.1579h-.0546l-6.3385 4.1164-1.1293.1457-.4857-.4554.0608-.7467.2307-.2429 1.9064-1.3114Z"/></symbol>
+  <symbol id="lg-linkedin" viewBox="0 0 27 27"><path fill="#0A66C2" fill-rule="evenodd" d="M1.91 0h22.363a1.91 1.91 0 011.909 1.91v22.363a1.91 1.91 0 01-1.91 1.909H1.91A1.91 1.91 0 010 24.272V1.91A1.91 1.91 0 011.91 0zm1.908 22.364h3.818V9.818H3.818zM8.182 5.727a2.455 2.455 0 10-4.91 0 2.455 2.455 0 004.91 0zm2.182 4.091v12.546h3.818v-6.077c0-2.037.75-3.332 2.553-3.332 1.3 0 1.81 1.201 1.81 3.332v6.077h3.819v-6.93c0-3.74-.895-5.78-4.667-5.78-1.967 0-3.277.921-3.788 1.946V9.818z"/></symbol>
+  <symbol id="app" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#0a0a0a"/><g transform="translate(7 7) scale(.75)" fill="none" stroke-width="2.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 9.5A9 9 0 1 1 15 3.5" stroke="#fafafa"/><path d="M7.5 12.5l3.5 3.5L19.5 6" stroke="#4ade80"/></g></symbol>
   <symbol id="check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="M21 3 3 10.5l7 2.5 2.5 7L21 3Z M10 13l4.5-4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11 12 4l8 7v9h-5v-6H9v6H4v-9Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+  <symbol id="i-roles" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+  <symbol id="i-people" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16 4.5a3.5 3.5 0 0 1 0 7M21 20c0-2.6-1.6-4.8-4-5.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-board" viewBox="0 0 24 24"><path d="M3 21h18M5 21V8l7-5 7 5v13M10 21v-6h4v6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-chev-r" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-github" viewBox="0 0 24 24"><path fill="currentColor" d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 0-.8.4-1.3.7-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.2.5-2.3 1.3-3.1-.2-.4-.6-1.6 0-3.2 0 0 1-.3 3.4 1.2a11.5 11.5 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.6 1.6.2 2.8.1 3.2.8.8 1.3 1.9 1.3 3.1 0 4.6-2.8 5.6-5.5 5.9.5.4.9 1.1.9 2.3v3.3c0 .3.1.7.8.6A12 12 0 0 0 12 .3"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M14 3v6h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+  <symbol id="i-form" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 9h8M8 13h8M8 17h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7.5V12l3 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+  <symbol id="i-cpu" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9 9h6v6H9zM9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-filter" viewBox="0 0 24 24"><path d="M3 5h18l-7 8v6l-4 2v-8z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
 </svg>
 
 <header class="site-header">
   <nav class="wrap nav" aria-label="Main">
-    <a class="logo" href="index.html" aria-label="kindahired home"><svg class="mark" width="26" height="26" aria-hidden="true"><use href="#mark"/></svg><span><span class="kinda">kinda</span><span class="hired">hired</span></span></a>
+    <a class="logo" href="index.html" aria-label="kindahired home"><svg class="mark" width="24" height="24" aria-hidden="true"><use href="#mark"/></svg><span><span class="kinda">kinda</span><span class="hired">hired</span></span></a>
     <div class="nav-links">
-      <a href="#how">Step by step</a>
-      <a href="#today">Your day</a>
-      <a href="#privacy">Your data</a>
-      <a href="#setup">Setup</a>
+      <a href="index.html#story">Why I built this</a>
+      <a href="index.html#changes">What changes</a>
+      <a href="how-it-works.html" aria-current="page">How it works</a>
+      <a href="index.html#faq">FAQ</a>
     </div>
-    <a class="btn btn-outline" href="https://app-kindahired.kindavishal.dev/">Sign in</a>
-    <a class="btn btn-primary" href="index.html#get">Get early access</a>
+    <div class="nav-cta">
+      <a class="btn btn-ghost nav-signin" href="https://app-kindahired.kindavishal.dev/">Sign in</a>
+      <a class="btn btn-primary" href="index.html#get">Get early access</a>
+    </div>
   </nav>
 </header>
 
 <main id="top">
-  <section class="wrap hero">
-    <div class="hero-copy">
-      <h1>How kindahired works</h1>
-      <p class="lede">It reads the places your job search happens, works out what matters, gets your application ready and tells you the next move. Here's the longer version, for the curious.</p>
-      <div class="row">
-        <a class="btn btn-primary btn-lg" href="index.html#get">Get early access</a>
-        <a class="btn btn-outline btn-lg" href="#setup">Setup steps<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-      </div>
+  <!-- Hero -->
+  <section class="wrap hero-c hero-page">
+    <h1 class="display display-page rise" style="--d:1">How kindahired works</h1>
+    <p class="hero-lede rise" style="--d:2">It reads the places your job search happens, works out what matters, gets your application ready and tells you the next move.</p>
+    <div class="hero-cta rise" style="--d:3">
+      <a class="btn btn-primary btn-xl" href="index.html#get">Get early access</a>
+      <a class="btn btn-outline btn-xl" href="#setup">Setup steps<svg width="16" height="16" aria-hidden="true"><use href="#i-arrow"/></svg></a>
     </div>
-
-    <figure class="hero-visual" aria-label="A sample prepared application for one role" style="margin:0">
-      <div class="ping">
-        <span class="ping-icon" aria-hidden="true"><svg width="20" height="20"><use href="#mark"/></svg></span>
-        <span class="ping-body"><span class="ping-top"><strong>kindahired</strong><span class="faint">7:02 am</span></span><span>Application ready: Developer Community Lead at Northwind Labs. Strong fit, closes Friday.</span></span>
-      </div>
-      <div class="card pack">
-        <div class="pack-head">
-          <div class="co">
-            <span class="co-tile" aria-hidden="true">N</span>
-            <span class="co-name"><span class="title">Developer Community Lead</span><span class="small muted">Northwind Labs · Remote, APAC · ₹38–45 L</span></span>
-          </div>
-          <span class="pill-ok"><svg width="12" height="12" stroke="currentColor" aria-hidden="true"><use href="#check"/></svg>Strong fit</span>
-        </div>
-        <div class="fit">
-          <div><span class="k k-ok">Fits</span><span>4 years running a developer forum. Launched two ambassador programs.</span></div>
-          <div><span class="k k-warn">Stretch</span><span>Wants people management. You've led volunteers, not reports.</span></div>
-          <div><span class="k k-gate">Could rule you out</span><span>Region, time zone and language all clear.</span></div>
-        </div>
-        <div class="pack-row">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>
-          <span class="grow">Resume · Northwind, Community Lead.pdf</span>
-          <span class="xs faint">14 of 14 lines sourced</span>
-        </div>
-        <div class="pack-row">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>
-          <span class="grow">Cover note and 6 form answers</span>
-          <span class="chip chip-warn">1 question for you</span>
-        </div>
-        <div class="people">
-          <span class="xs faint">People to contact</span>
-          <div class="person"><span class="avatar av-pink" aria-hidden="true">MO</span><span class="person-name"><strong style="font-weight:500">Mira Okafor</strong><span class="xs faint">Head of DevRel · likely hiring manager</span></span><button class="btn btn-outline btn-sm" type="button">Copy note</button></div>
-          <div class="person"><span class="avatar av-green" aria-hidden="true">JT</span><span class="person-name"><strong style="font-weight:500">Jonas Tan</strong><span class="xs faint">Recruiter · posted the opening last week</span></span><button class="btn btn-outline btn-sm" type="button">Copy note</button></div>
-        </div>
-        <div class="pack-foot">
-          <button class="btn btn-primary" type="button">Open application</button>
-          <button class="btn btn-outline" type="button">Mark applied</button>
-          <span class="closes">Closes Fri 12 Dec</span>
-        </div>
-      </div>
-    </figure>
   </section>
 
-  <section class="band" aria-label="Where roles come from">
-    <ul class="wrap sources">
-      <li>Reads</li>
-      <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>Job-alert email</li>
-      <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/></svg>LinkedIn saves</li>
-      <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>Posts on X</li>
-      <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18M5 21V8l7-5 7 5v13M10 21v-6h4v6"/></svg>Company job boards</li>
-      <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>Any link you share</li>
+  <!-- A prepared application, framed -->
+  <section class="wrap stage-wrap" aria-label="A prepared application for one role">
+    <div class="stage reveal">
+      <div class="ping ping-float">
+        <svg class="ping-icon" width="32" height="32" aria-hidden="true"><use href="#app"/></svg>
+        <span class="ping-body"><span class="ping-top"><strong>kindahired</strong><span class="faint">7:02 am</span></span><span>Application ready: Developer Community Lead at Northwind Labs. Strong fit, closes Friday.</span></span>
+      </div>
+      <div class="window">
+        <div class="win-bar">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="win-url"><svg width="12" height="12" aria-hidden="true"><use href="#i-lock"/></svg>kindahired · Northwind Labs</span>
+          <span class="win-spacer"></span>
+        </div>
+        <div class="pack-c">
+          <div class="pack-head">
+            <div class="co">
+              <span class="co-tile co-n" aria-hidden="true">N</span>
+              <span class="co-name"><span class="title">Developer Community Lead</span><span class="small muted">Northwind Labs · Remote, APAC · ₹38–45 L</span></span>
+            </div>
+            <span class="pill-ok"><svg width="12" height="12" stroke="currentColor" aria-hidden="true"><use href="#check"/></svg>Strong fit</span>
+          </div>
+          <div class="fit">
+            <div><span class="k k-ok">Fits</span><span>4 years running a developer forum. Launched two ambassador programs.</span></div>
+            <div><span class="k k-warn">Stretch</span><span>Wants people management. You've led volunteers, not reports.</span></div>
+            <div><span class="k k-gate">Could rule you out</span><span>Region, time zone and language all clear.</span></div>
+          </div>
+          <div class="pack-grid">
+            <div class="pack-files">
+              <div class="pack-row"><svg width="18" height="18" aria-hidden="true"><use href="#i-doc"/></svg><span class="grow">Resume · Northwind, Community Lead.pdf</span><span class="xs faint">14 of 14 lines sourced</span></div>
+              <div class="pack-row"><svg width="18" height="18" aria-hidden="true"><use href="#i-form"/></svg><span class="grow">Cover note and 6 form answers</span><span class="chip chip-warn">1 question for you</span></div>
+            </div>
+            <div class="people">
+              <span class="xs faint">People to contact</span>
+              <div class="person"><span class="avatar av-pink" aria-hidden="true">MO</span><span class="person-name"><strong>Mira Okafor</strong><span class="xs faint">Head of DevRel · likely hiring manager</span></span><button class="btn btn-outline btn-sm" type="button">Copy note</button></div>
+              <div class="person"><span class="avatar av-green" aria-hidden="true">JT</span><span class="person-name"><strong>Jonas Tan</strong><span class="xs faint">Recruiter · posted the opening last week</span></span><button class="btn btn-outline btn-sm" type="button">Copy note</button></div>
+            </div>
+          </div>
+          <div class="pack-foot">
+            <button class="btn btn-primary" type="button">Open application</button>
+            <button class="btn btn-outline" type="button">Mark applied</button>
+            <span class="closes">Closes Fri 12 Dec</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Platforms strip -->
+  <section class="platforms" aria-labelledby="platforms-h">
+    <h2 class="visually-hidden" id="platforms-h">Platforms it reads</h2>
+    <ul class="wrap logos reveal">
+      <li><img src="logos/gmail.png" alt="Gmail" width="114" height="32"></li>
+      <li><img src="logos/linkedin.svg" alt="LinkedIn" width="112" height="28"></li>
+      <li><img src="logos/x.svg" alt="X" width="26" height="26"></li>
+      <li><img src="logos/greenhouse.svg" alt="Greenhouse" width="125" height="28"></li>
+      <li><img src="logos/wellfound.svg" alt="Wellfound" width="138" height="18"></li>
+      <li><img src="logos/indeed.svg" alt="Indeed" width="104" height="28"></li>
     </ul>
   </section>
 
-  <section id="how" class="wrap section">
-    <div class="how-head">
-      <div>
-        <h2 class="h2">Step by step, from a posting to an offer</h2>
+  <!-- Step by step -->
+  <section id="how" class="wrap section flow-c">
+    <div class="how-head-c">
+      <h2 class="h2 reveal">Step by step, from a posting to an offer</h2>
+      <div class="how-side reveal">
         <p class="lede">AI makes the calls that need judgement. Plain code keeps the dates, status and reminders, so the parts that must be right every time are the same every time.</p>
       </div>
-      <div class="legend"><span><span class="chip chip-ai">AI</span>Judgement</span><span><span class="chip chip-code">Code</span>Bookkeeping</span></div>
     </div>
-    <div class="stages">
-      <div class="stage">
-        <h3 class="stage-name" style="margin:0">Find</h3>
-        <article class="card step"><div class="step-top"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span class="chip chip-code">Code</span></div><span class="step-title">Spots new roles early</span><p>Watches the job boards of companies you name. A new role reaches you within hours of going live.</p></article>
-        <article class="card step"><div class="step-top"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h18l-7 8v6l-4 2v-8z"/></svg><span class="chip chip-ai">AI</span></div><span class="step-title">Checks what could rule you out</span><p>Region locks, time zone, language, years asked. Skipped roles keep the reason, so you can overrule it.</p></article>
+    <div class="tp reveal" data-tabs>
+      <div class="tp-tabs" role="tablist" aria-label="From a posting to an offer">
+        <button class="tp-tab is-on" role="tab" id="tp-0" aria-controls="tp-panel-0" aria-selected="true" type="button"><span class="bar" aria-hidden="true"><i></i></span><span class="tp-n">1</span>Find new roles early</button>
+        <button class="tp-tab" role="tab" id="tp-1" aria-controls="tp-panel-1" aria-selected="false" type="button"><span class="bar" aria-hidden="true"><i></i></span><span class="tp-n">2</span>Prepare the application</button>
+        <button class="tp-tab" role="tab" id="tp-2" aria-controls="tp-panel-2" aria-selected="false" type="button"><span class="bar" aria-hidden="true"><i></i></span><span class="tp-n">3</span>Reach the hiring team</button>
+        <button class="tp-tab" role="tab" id="tp-3" aria-controls="tp-panel-3" aria-selected="false" type="button"><span class="bar" aria-hidden="true"><i></i></span><span class="tp-n">4</span>Land the interview</button>
       </div>
-      <div class="stage">
-        <h3 class="stage-name" style="margin:0">Prepare</h3>
-        <article class="card step"><div class="step-top"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M5 8l-3 6a4 4 0 0 0 6 0zM19 8l-3 6a4 4 0 0 0 6 0zM5 8h14"/></svg><span class="chip chip-ai">AI</span></div><span class="step-title">Reads the fit, honestly</span><p>What fits, what's a stretch, and whether to apply at all. Never inflated.</p></article>
-        <article class="card step"><div class="step-top"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg><span class="chip chip-ai">AI</span></div><span class="step-title">Prepares your application</span><p>Resume PDF, cover note and form answers, using only facts you've written down. Gaps become questions.</p></article>
-      </div>
-      <div class="stage">
-        <h3 class="stage-name" style="margin:0">Reach</h3>
-        <article class="card step"><div class="step-top"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3.5 6"/></svg><span class="chip chip-ai">AI</span></div><span class="step-title">Finds who's hiring</span><p>The likely hiring manager and recruiter, with the evidence for each, and a note drafted for both.</p></article>
-        <article class="card step"><div class="step-top"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/></svg><span class="chip chip-code">Code</span></div><span class="step-title">Keeps every loop open</span><p>Replies you owe, follow-ups due, notes not sent. Each closes itself once the sync sees it done.</p></article>
-      </div>
-      <div class="stage">
-        <h3 class="stage-name" style="margin:0">Land</h3>
-        <article class="card step"><div class="step-top"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg><span class="chip chip-ai">AI</span></div><span class="step-title">Preps the interview</span><p>One page with who you're meeting, every message about the role, your prepared application and a short checklist.</p></article>
-        <article class="card step"><div class="step-top"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span class="chip chip-code">Code</span></div><span class="step-title">Shows what's working</span><p>Which sources lead to replies, with the counts, and a note when the sample is small.</p></article>
+      <div class="tp-stage">
+        <div class="scene is-on" role="tabpanel" id="tp-panel-0" aria-labelledby="tp-0">
+          <div class="mini-card list-card">
+            <div class="lc-head"><b>New roles</b></div>
+            <div class="lc-row"><span class="src"><svg width="15" height="15"><use href="#lg-greenhouse"/></svg></span><span><b>Community Lead · Northwind Labs</b><small>Found 2 hours after it went live</small></span></div>
+            <div class="lc-row"><span class="src"><svg width="15" height="15"><use href="#lg-wellfound"/></svg></span><span><b>DevRel Engineer · Parcel</b><small>Found this morning</small></span></div>
+            <div class="lc-head lc-sub"><b>Set aside</b></div>
+            <div class="lc-row lc-dim"><span class="src"><svg width="15" height="15"><use href="#lg-linkedin"/></svg></span><span><b>Developer Advocate · Kestrel</b><small>Asks for fluent German</small></span><span class="lc-act">Overrule</span></div>
+          </div>
+          <p class="scene-cap">It watches the job boards of companies you name, so a new role reaches you within hours. Roles that could rule you out are set aside with the reason, and you can overrule it.</p>
+        </div>
+        <div class="scene" role="tabpanel" id="tp-panel-1" aria-labelledby="tp-1">
+          <div class="mini-card list-card">
+            <div class="lc-head"><b>Developer Community Lead</b></div>
+            <div class="verdicts">
+              <div><span class="k k-ok">Fits</span>4 years running a developer forum</div>
+              <div><span class="k k-warn">Stretch</span>Wants people management</div>
+              <div><span class="k k-gate">Could rule you out</span>Nothing found</div>
+            </div>
+            <div class="lc-row"><span class="src"><svg width="16" height="16"><use href="#i-doc"/></svg></span><span><b>Resume PDF</b><small>14 of 14 lines from your own notes</small></span><svg class="ok-tick" width="16" height="16" stroke="currentColor"><use href="#check"/></svg></div>
+            <div class="lc-row"><span class="src"><svg width="16" height="16"><use href="#i-form"/></svg></span><span><b>Cover note and form answers</b><small>One gap became a question for you</small></span><span class="chip chip-warn">1 question</span></div>
+          </div>
+          <p class="scene-cap">An honest fit read, then your resume, cover note and form answers, using only facts you've written down. Gaps become questions, never guesses.</p>
+        </div>
+        <div class="scene" role="tabpanel" id="tp-panel-2" aria-labelledby="tp-2">
+          <div class="mini-card list-card">
+            <div class="lc-head"><b>People to contact</b></div>
+            <div class="lc-row"><span class="av av-p av-sm">MO</span><span><b>Mira Okafor · likely hiring manager</b><small>Posted about the role on X last week</small></span><span class="lc-act">Copy note</span></div>
+            <div class="lc-row"><span class="av av-g av-sm">JT</span><span><b>Jonas Tan · recruiter</b><small>Shared the opening on LinkedIn</small></span><span class="lc-act">Copy note</span></div>
+            <div class="lc-head lc-sub"><b>Open loops</b></div>
+            <div class="lc-row lc-done"><span class="src src-ok"><svg width="14" height="14" stroke="currentColor"><use href="#check"/></svg></span><span><b>Reply to Priya at Fernhill</b><small>Closed when the sync saw your reply</small></span></div>
+            <div class="lc-row"><span class="src"><svg width="16" height="16"><use href="#i-clock"/></svg></span><span><b>Follow up with Tessellate</b><small>Due tomorrow</small></span></div>
+          </div>
+          <p class="scene-cap">It finds the likely hiring manager and recruiter, with the evidence, and drafts a note to each. Replies you owe and follow-ups due stay open until they're done.</p>
+        </div>
+        <div class="scene" role="tabpanel" id="tp-panel-3" aria-labelledby="tp-3">
+          <div class="land">
+            <div class="mini-card list-card">
+              <div class="lc-head"><b>Interview prep · Quarry</b></div>
+              <div class="lc-row"><span class="av av-p av-sm">SI</span><span><b>Sana Iyer, Head of Community</b><small>Thu, 3:00 pm · in 2 days</small></span></div>
+              <ul class="checks">
+                <li><svg width="14" height="14" stroke="currentColor"><use href="#check"/></svg>Every message about the role</li>
+                <li><svg width="14" height="14" stroke="currentColor"><use href="#check"/></svg>Your application, as sent</li>
+                <li><svg width="14" height="14" stroke="currentColor"><use href="#check"/></svg>Three questions to ask Sana</li>
+              </ul>
+            </div>
+            <div class="mini-card list-card">
+              <div class="lc-head"><b>What's working</b></div>
+              <div class="bars">
+                <div><span>Referrals</span><i style="--w:67%"></i><em>4 of 6</em></div>
+                <div><span>Direct notes</span><i style="--w:33%"></i><em>3 of 9</em></div>
+                <div><span>Cold applications</span><i style="--w:7%"></i><em>1 of 14</em></div>
+              </div>
+              <small class="muted">Replies so far. Small sample.</small>
+            </div>
+          </div>
+          <p class="scene-cap">One page for each interview, with who you're meeting and everything about the role. And which sources actually lead to replies, with the counts.</p>
+        </div>
       </div>
     </div>
   </section>
 
-  <section id="today" class="band">
-    <div class="wrap section split">
-      <div class="split-copy">
-        <h2 class="h2">Open it and know what to do now</h2>
-        <p class="lede">One queue, in order. Interviews first, then people waiting on you, then roles closing soon. The top task says why it's on top, and its button does the task.</p>
-        <p class="lede">Push anything to tomorrow, after 3 days or next Monday. Nothing slips away without a decision.</p>
+  <!-- Your day -->
+  <section id="today" class="story-band">
+    <div class="wrap section day-c">
+      <div class="day-copy">
+        <h2 class="h2 reveal">Open it and know what to do now</h2>
+        <p class="lede reveal">One queue, in order. Interviews first, then people waiting on you, then roles closing soon. The top task says why it's on top, and its button does the task.</p>
+        <p class="lede reveal">Push anything to tomorrow, after 3 days or next Monday. Nothing slips away without a decision.</p>
       </div>
-      <div class="split-side today" aria-label="A sample morning queue">
-        <span class="greet">Good morning. 3 conversations are waiting for your reply.</span>
-        <div class="interview">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>
-          <span><strong>Interview with Quarry · Thu, 3:00 pm</strong><span class="small muted">In 2 days · Meeting Sana Iyer, Head of Community</span></span>
-          <button class="btn btn-outline btn-sm" type="button">Open interview prep</button>
+      <div class="window day-window reveal" aria-label="A sample morning queue">
+        <div class="win-bar">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="win-url"><svg width="12" height="12" aria-hidden="true"><use href="#i-lock"/></svg>kindahired · Home</span>
+          <span class="win-spacer"></span>
         </div>
-        <div class="task">
-          <div class="row" style="gap:8px"><span class="chip chip-danger">Reply owed · 14 hours</span><span class="xs faint">On top because a recruiter asked you a question</span></div>
-          <span class="task-title">Reply to Priya Menon at Fernhill</span>
-          <span class="small muted">"Could you share your notice period and a good time for a first call?" A draft reply is ready.</span>
-          <div class="row" style="gap:8px"><button class="btn btn-primary btn-sm" type="button">Open the thread</button><button class="btn btn-outline btn-sm" type="button">Later</button></div>
+        <div class="today">
+          <span class="greet">Good morning. 3 conversations are waiting for your reply.</span>
+          <div class="interview">
+            <svg width="20" height="20" stroke="currentColor" aria-hidden="true"><use href="#check"/></svg>
+            <span><strong>Interview with Quarry · Thu, 3:00 pm</strong><span class="small muted">In 2 days · Meeting Sana Iyer, Head of Community</span></span>
+            <button class="btn btn-outline btn-sm" type="button">Open interview prep</button>
+          </div>
+          <div class="task">
+            <div class="row" style="gap:8px"><span class="chip chip-danger">Reply owed · 14 hours</span><span class="xs faint">On top because a recruiter asked you a question</span></div>
+            <span class="task-title">Reply to Priya Menon at Fernhill</span>
+            <span class="small muted">"Could you share your notice period and a good time for a first call?" A draft reply is ready.</span>
+            <div class="row" style="gap:8px"><button class="btn btn-primary btn-sm" type="button">Open the thread</button><button class="btn btn-outline btn-sm" type="button">Later</button></div>
+          </div>
+          <ul class="list">
+            <li><span class="dot dot-warn" aria-hidden="true"></span><span class="name">Apply to Lumen Cloud · DevRel Engineer</span><span class="when warn">Closes Friday</span></li>
+            <li><span class="dot dot-wait" aria-hidden="true"></span><span class="name">Follow up with Tessellate</span><span class="when">Applied 6 days ago</span></li>
+            <li><span class="dot dot-info" aria-hidden="true"></span><span class="name">Send connection note to Daniel Ortiz</span><span class="when">Drafted yesterday</span></li>
+          </ul>
         </div>
-        <ul class="list">
-          <li><span class="dot dot-warn" aria-hidden="true"></span><span class="name">Apply to Lumen Cloud · DevRel Engineer</span><span class="when warn">Closes Friday</span></li>
-          <li><span class="dot dot-wait" aria-hidden="true"></span><span class="name">Follow up with Tessellate</span><span class="when">Applied 6 days ago</span></li>
-          <li><span class="dot dot-info" aria-hidden="true"></span><span class="name">Send connection note to Daniel Ortiz</span><span class="when">Drafted yesterday</span></li>
-        </ul>
       </div>
     </div>
   </section>
 
+  <!-- Trust -->
   <section class="wrap section">
-    <h2 class="h2" style="max-width:640px">Built to be trusted with your search</h2>
-    <div class="pillars">
-      <div class="pillar"><h3>It prepares. You act.</h3><p>It never applies, sends a message or follows up for you. Every send is your tap.</p></div>
-      <div class="pillar"><h3>No invented facts</h3><p>Every resume line traces back to your portfolio or your notes. When it isn't sure, it leaves the line out and asks you.</p></div>
-      <div class="pillar"><h3>Honest over flattering</h3><p>Some fit reads say "don't apply". That saves you an evening and a cold rejection.</p></div>
+    <h2 class="h2 h2-wide reveal">Built to be trusted with your search</h2>
+    <div class="bento bento-3">
+      <article class="tile reveal">
+        <div class="tile-demo" aria-hidden="true">
+          <div class="switches switches-solo">
+            <span class="sw"><span>Apply for me</span><i></i></span>
+            <span class="sw"><span>Send for me</span><i></i></span>
+            <span class="sw"><span>Follow up for me</span><i></i></span>
+          </div>
+        </div>
+        <h3>It prepares. You act.</h3>
+        <p>It never applies, sends a message or follows up for you. Every send is your tap.</p>
+      </article>
+      <article class="tile reveal" style="--d:1">
+        <div class="tile-demo" aria-hidden="true">
+          <div class="sourced">
+            <p class="line">Ran a 4,000-member developer forum for four years.</p>
+            <div class="source-pop"><svg width="14" height="14" aria-hidden="true"><use href="#i-doc"/></svg><span><b>From your portfolio</b>Community, 2021–2025</span></div>
+          </div>
+        </div>
+        <h3>No invented facts</h3>
+        <p>Every resume line traces back to your portfolio or your notes. When it isn't sure, it leaves the line out and asks you.</p>
+      </article>
+      <article class="tile reveal" style="--d:2">
+        <div class="tile-demo" aria-hidden="true">
+          <div class="verdict">
+            <span class="chip chip-danger">Don't apply</span>
+            <p>Needs 5+ years managing a team. You've led volunteers, not reports.</p>
+          </div>
+        </div>
+        <h3>Honest over flattering</h3>
+        <p>Some fit reads say "don't apply". That saves you an evening and a cold rejection.</p>
+      </article>
     </div>
   </section>
 
-  <section id="privacy" class="band">
-    <div class="wrap section split" style="align-items:flex-start">
-      <div class="split-copy">
-        <h2 class="h2">Where your data goes</h2>
-        <p class="lede">Your data and your tracker are kept in a private space of your own, apart from everyone else's. Applications and research are prepared on your computer, with your own Claude plan. No ads, no analytics, nothing sold. <a href="privacy.html">Privacy policy</a></p>
+  <!-- Data -->
+  <section id="privacy" class="wrap section data-c">
+    <div class="data-copy">
+      <h2 class="h2 reveal">Where your data goes</h2>
+      <p class="lede reveal">Your data and your tracker are kept in a private space of your own, apart from everyone else's. Applications and research are prepared on your computer, with your own Claude plan. No ads, no analytics, nothing sold.</p>
+      <div class="row reveal"><a class="btn btn-outline" href="privacy.html">Read the privacy policy<svg width="14" height="14" aria-hidden="true"><use href="#i-chev-r"/></svg></a></div>
+    </div>
+    <ul class="flows reveal" aria-label="What kindahired reads, where it goes and why">
+      <li><span class="fl-ic"><svg width="18" height="18" aria-hidden="true"><use href="#i-eye"/></svg></span><span class="fl-what"><b>Gmail and Calendar</b><small>Spot alerts, replies and interviews</small></span><span class="fl-where">Read-only</span></li>
+      <li><span class="fl-ic"><svg width="18" height="18" aria-hidden="true"><use href="#i-cpu"/></svg></span><span class="fl-what"><b>Postings and your facts</b><small>Fit reads and drafts</small></span><span class="fl-where">Your own AI plan</span></li>
+      <li><span class="fl-ic"><svg width="18" height="18" aria-hidden="true"><use href="#i-filter"/></svg></span><span class="fl-what"><b>Job-alert emails</b><small>A fast first pass, only if you add a key</small></span><span class="fl-where">Optional screener</span></li>
+      <li class="fl-none"><span class="fl-ic"><svg width="18" height="18" aria-hidden="true"><use href="#i-lock"/></svg></span><span class="fl-what"><b>DMs not about work</b><small>Never opened, never stored</small></span><span class="fl-where">Nowhere</span></li>
+    </ul>
+  </section>
+
+  <!-- Setup -->
+  <section id="setup" class="wrap section">
+    <h2 class="h2 reveal">Setup</h2>
+    <p class="lede setup-lede reveal">Once you have early access, this takes a few minutes. Running it yourself instead? Follow the <a href="https://github.com/kindavishal/kindahired#run-your-own-copy">setup guide on GitHub</a>.</p>
+    <ol class="bento bento-3 setup-c">
+      <li class="tile reveal">
+        <div class="tile-demo" aria-hidden="true">
+          <div class="dl"><span class="dl-glyph"><svg width="34" height="34"><use href="#app"/></svg></span><span class="dl-bar"><i></i></span></div>
+        </div>
+        <h3><span class="tp-n">1</span>Download the app</h3>
+        <p>For Mac, Windows and Linux. <a href="https://github.com/kindavishal/kindahired/releases/latest">Download</a></p>
+      </li>
+      <li class="tile reveal" style="--d:1">
+        <div class="tile-demo" aria-hidden="true">
+          <div class="term term-lg"><span class="faint">$</span> claude<br><span class="t-ok">✓ Signed in</span><span class="caret"></span></div>
+        </div>
+        <h3><span class="tp-n">2</span>Install Claude Code</h3>
+        <p>And sign in to your Claude account. Your applications are prepared on your own plan. <a href="https://claude.com/claude-code" target="_blank" rel="noopener">Get Claude Code</a></p>
+      </li>
+      <li class="tile reveal" style="--d:2">
+        <div class="tile-demo" aria-hidden="true">
+          <div class="code-in"><span>4</span><span>8</span><span>2</span><span>1</span><span>9</span><span class="cur"></span></div>
+        </div>
+        <h3><span class="tp-n">3</span>Sign in to kindahired</h3>
+        <p>With the email you were invited on. A one-time code does the rest.</p>
+      </li>
+    </ol>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="wrap section faq-c">
+    <div class="faq-side reveal">
+      <h2 class="h2">More questions</h2>
+    </div>
+    <div class="faq-list reveal">
+      <details open><summary>What if the fit read is wrong?<svg width="18" height="18" aria-hidden="true"><use href="#i-chev"/></svg></summary><div class="ans"><p>Every verdict shows its reasons. Prepare the application anyway, or change the rules it follows under How you work in Setup.</p></div></details>
+      <details><summary>Which roles does it work for?<svg width="18" height="18" aria-hidden="true"><use href="#i-chev"/></svg></summary><div class="ans"><p>It started with community and DevRel roles. Your profile lists the role families you want, and screening follows it.</p></div></details>
+      <details><summary>Why an app?<svg width="18" height="18" aria-hidden="true"><use href="#i-chev"/></svg></summary><div class="ans"><p>Applications and research are prepared by Claude Code on your own computer, on your own Claude plan. The app connects it. Everything else reaches you in Telegram.</p></div></details>
+    </div>
+  </section>
+
+  <section class="closing-c">
+    <div class="wrap closing-in">
+      <svg class="draw-mark" width="56" height="56" viewBox="0 0 24 24" aria-hidden="true"><path class="r" d="M20.5 9.5A9 9 0 1 1 15 3.5"/><path class="t" d="M7.5 12.5l3.5 3.5L19.5 6"/></svg>
+      <h2 class="display-sm reveal">Your next job might be one message away.</h2>
+      <p class="reveal">Don't let it sit in your inbox.</p>
+      <div class="row reveal" style="justify-content:center">
+        <a class="btn btn-light btn-xl" href="index.html#get">Get early access</a>
+        <a class="btn btn-dark-outline btn-xl" href="index.html#run-it">Run it yourself</a>
       </div>
-      <div class="split-side table-box">
-        <table>
-          <thead><tr><th scope="col">What</th><th scope="col">Where it goes</th><th scope="col">Why</th></tr></thead>
-          <tbody>
-            <tr><td>Gmail and Calendar</td><td>Read-only access</td><td>Spot alerts, replies and interviews</td></tr>
-            <tr><td>Postings and your facts</td><td>Your own AI plan</td><td>Fit reads and drafts</td></tr>
-            <tr><td>Job-alert emails</td><td>Optional quick screener</td><td>Fast first pass, only if you add a key</td></tr>
-            <tr><td>DMs not about work</td><td>Nowhere</td><td>Never opened, never stored</td></tr>
-          </tbody>
-        </table>
+    </div>
+    <footer class="wrap footer-c">
+      <div class="f-top">
+        <div class="f-brand">
+          <a class="logo" href="#top"><svg class="mark" width="22" height="22" aria-hidden="true"><use href="#mark"/></svg><span><span class="kinda">kinda</span><span class="hired">hired</span></span></a>
+          <p>Your next job is already in your network. Free and open source.</p>
+          <a class="f-gh" href="https://github.com/kindavishal/kindahired"><svg width="16" height="16" aria-hidden="true"><use href="#i-github"/></svg>Star on GitHub</a>
+        </div>
+        <nav aria-label="Product"><b>Product</b><a href="how-it-works.html">How it works</a><a href="index.html#get">Early access</a><a href="index.html#run-it">Run it yourself</a></nav>
+        <nav aria-label="Open source"><b>Open source</b><a href="https://github.com/kindavishal/kindahired">Code</a><a href="https://github.com/kindavishal/kindahired#run-your-own-copy">Setup guide</a><a href="https://github.com/kindavishal/kindahired/releases/latest">Releases</a></nav>
+        <nav aria-label="Trust"><b>Trust</b><a href="how-it-works.html#privacy">Where your data goes</a><a href="privacy.html">Privacy policy</a></nav>
       </div>
-    </div>
-  </section>
-
-  <section id="setup" class="wrap section" style="padding-bottom:0">
-    <h2 class="h2">Setup</h2>
-    <p class="muted get-lede">Once you have early access, this takes a few minutes. Running it yourself instead? Follow the <a href="https://github.com/kindavishal/kindahired#run-your-own-copy">setup guide on GitHub</a>.</p>
-    <div class="card get-card" style="margin-top:40px">
-      <ol class="setup setup-tight">
-        <li><span><strong>Download the app</strong><span class="muted">For Mac, Windows and Linux.</span></span></li>
-        <li><span><strong>Install Claude Code</strong><span class="muted">And sign in to your Claude account. Your applications are prepared on your own plan.</span></span></li>
-        <li><span><strong>Sign in to kindahired</strong><span class="muted">With the email you were invited on.</span></span></li>
-      </ol>
-      <div class="row">
-        <a class="btn btn-outline btn-lg" href="https://github.com/kindavishal/kindahired/releases/latest">Download the app</a>
-        <a class="btn btn-ghost btn-lg" href="https://claude.com/claude-code" target="_blank" rel="noopener">Get Claude Code</a>
-      </div>
-    </div>
-  </section>
-
-  <section id="faq" class="wrap section faq">
-    <h2 class="h2">More questions</h2>
-    <div class="card faq-list">
-      <details open><summary>What if the fit read is wrong?<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><p>Every verdict shows its reasons. Prepare the application anyway, or change the rules it follows under How you work in Setup.</p></details>
-      <details><summary>Which roles does it work for?<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><p>It started with community and DevRel roles. Your profile lists the role families you want, and screening follows it.</p></details>
-      <details><summary>Why an app?<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><p>Applications and research are prepared by Claude Code on your own computer, on your own Claude plan. The app connects it. Everything else reaches you in Telegram.</p></details>
-    </div>
-  </section>
-
-  <section class="closing">
-    <div class="wrap">
-      <svg width="48" height="48" aria-hidden="true"><use href="#mark"/></svg>
-      <h2>Your next job is already in your network.</h2>
-      <p>It's free. Get early access, or run it yourself.</p>
-      <a class="btn btn-light btn-lg" href="index.html#get">Get early access</a>
-    </div>
+      <div class="f-bottom"><span>© 2026 kindahired</span><a href="#top">Back to top</a></div>
+    </footer>
   </section>
 </main>
-
-<footer class="wrap footer">
-  <a class="logo" href="index.html" style="font-size:15px"><svg class="mark" width="20" height="20" aria-hidden="true" style="color:var(--ink)"><use href="#mark"/></svg><span><span class="kinda">kinda</span><span class="hired" style="color:var(--ink)">hired</span></span></a>
-  <nav aria-label="Footer"><a href="index.html">Home</a><a href="privacy.html">Privacy policy</a><a href="https://github.com/kindavishal/kindahired">GitHub</a></nav>
-  <span>© 2026 kindahired</span>
-</footer>
+<script src="site.js" defer></script>
 </body>
 </html>
