@@ -65,5 +65,26 @@ module.exports = {
     artifactName: "${productName}-Setup-${version}.${ext}",
     shortcutName: app.productName,
   },
+  // The Microsoft Store package: built with `--win appx`, uploaded to Partner Center by hand, and
+  // signed by the Store. The identity comes from Partner Center (Product identity page) via
+  // app.config.json; until it's filled in, the package is only good for a local test install.
+  // See docs/windows-store.md.
+  appx: {
+    ...(app.windowsStore.identityName && { identityName: app.windowsStore.identityName }),
+    ...(app.windowsStore.publisher && { publisher: app.windowsStore.publisher }),
+    publisherDisplayName: app.windowsStore.publisherDisplayName || "kindavishal",
+    displayName: app.productName,
+    applicationId: app.productName,
+    backgroundColor: "transparent",
+    languages: ["en-US"],
+    // Electron needs Windows 10 1809 or later; tested on Windows 11 24H2.
+    minVersion: "10.0.17763.0",
+    maxVersionTested: "10.0.26100.0",
+    // electron-builder's own startup entry hard-codes another app's task id, so ours is in
+    // build/appx-extensions.xml. The kindahired:// protocol comes from `protocols` above.
+    addAutoLaunchExtension: false,
+    customExtensionsPath: "build/appx-extensions.xml",
+    artifactName: "${productName}-${version}-store-${arch}.${ext}",
+  },
   deb: { depends: ["libnotify4", "libxtst6", "libnss3", "libsecret-1-0"] },
 };

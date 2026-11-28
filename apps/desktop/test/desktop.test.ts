@@ -8,7 +8,7 @@ import { once } from "node:events";
 import { test } from "node:test";
 import { checkClaude, claudeCandidates, findClaude, interpretCheck, missingMessage, widenedPath } from "../src/claude.ts";
 import { launchFor } from "../../../src/llm/cli-spawn.ts";
-import { addDone, autostartDesktopEntry, compareVersions, deepLinkTarget, DEFAULT_SETTINGS, doneToday, loadSettings, normalizeHubUrl, saveSettings, settingsFile } from "../src/settings.ts";
+import { addDone, autostartDesktopEntry, compareVersions, deepLinkTarget, DEFAULT_SETTINGS, distribution, doneToday, loadSettings, normalizeHubUrl, saveSettings, settingsFile } from "../src/settings.ts";
 
 const tmp = () => mkdtempSync(path.join(os.tmpdir(), "kh-desktop-"));
 
@@ -142,6 +142,14 @@ test("the Claude Code check runs the binary without an API key in its environmen
   const r = await checkClaude(fake, { cwd: path.join(dir, "agent"), env: { ...process.env, ANTHROPIC_API_KEY: "sk-test" } });
   assert.deepEqual(r, { state: "ok", bin: fake });
   assert.equal((await checkClaude(null, { cwd: dir, env: {} })).state, "missing");
+});
+
+test("a Microsoft Store copy leaves updates, login and links to Windows; others handle their own", () => {
+  assert.deepEqual(distribution({ platform: "win32", windowsStore: true }), { updates: "store", loginItem: "windows-settings", registerLinks: false });
+  assert.deepEqual(distribution({ platform: "win32", windowsStore: false }), { updates: "self", loginItem: "electron", registerLinks: true });
+  assert.deepEqual(distribution({ platform: "darwin" }), { updates: "self", loginItem: "electron", registerLinks: true });
+  assert.deepEqual(distribution({ platform: "linux", appImage: "/home/sam/kindahired.AppImage" }), { updates: "self", loginItem: "autostart-file", registerLinks: true });
+  assert.deepEqual(distribution({ platform: "linux" }), { updates: "notice", loginItem: "autostart-file", registerLinks: true });
 });
 
 test("links: kindahired://open/<path> opens that page on the hub, and nothing else", () => {

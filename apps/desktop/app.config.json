@@ -6,5 +6,10 @@
     "owner": "kindavishal",
     "repo": "kindahired"
   },
-  "linuxMaintainer": "kindavishal <kindavishal@users.noreply.github.com>"
+  "linuxMaintainer": "kindavishal <kindavishal@users.noreply.github.com>",
+  "windowsStore": {
+    "identityName": "",
+    "publisher": "",
+    "publisherDisplayName": ""
+  }
 }

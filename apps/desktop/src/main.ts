@@ -6,7 +6,7 @@ import updaterPkg from "electron-updater";
 import config from "../app.config.json" with { type: "json" };
 import { startWorker, type WorkerStatus } from "../../../src/worker/client.ts";
 import { checkClaude, CLAUDE_INSTALL_URL, findClaude, widenedPath, type ClaudeCheck } from "./claude.ts";
-import { addDone, autostartDesktopEntry, compareVersions, deepLinkTarget, doneToday, LINK_SCHEME, loadSettings, normalizeHubUrl, saveSettings, type Settings } from "./settings.ts";
+import { addDone, autostartDesktopEntry, compareVersions, deepLinkTarget, distribution, doneToday, LINK_SCHEME, loadSettings, normalizeHubUrl, saveSettings, type Settings } from "./settings.ts";
 
 /**
  * The desktop app: a tray (menu bar) icon that runs the worker, which takes Claude Code steps from
@@ -23,6 +23,8 @@ const { autoUpdater } = updaterPkg;
 // ---------- Folders and environment, before anything else reads them ----------
 
 app.setName(config.productName);
+// How this copy was installed: who handles updates, opening at login and kindahired:// links.
+const dist = distribution({ platform: process.platform, windowsStore: process.windowsStore === true, appImage: process.env.APPIMAGE });
 // --user-data-dir=<folder> runs a separate copy (handy for development).
 if (!app.commandLine.hasSwitch("user-data-dir")) app.setPath("userData", path.join(app.getPath("appData"), config.productName));
 const DATA = app.getPath("userData");
@@ -225,9 +227,9 @@ function refreshTray() {
     },
     { label: "Settings…", click: openSetup },
     { type: "separator" },
-    updateReady
+    ...(dist.updates === "store" ? [] : [updateReady
       ? { label: "Restart to update", click: () => void installUpdate() }
-      : { label: "Check for updates", click: () => void checkForUpdates(true) },
+      : { label: "Check for updates", click: () => void checkForUpdates(true) }]),
     { label: `Version ${app.getVersion()}`, enabled: false },
     { type: "separator" },
     { label: `Quit ${config.productName}`, click: () => void quit() },
@@ -382,6 +384,7 @@ ipcMain.handle("setup:state", async (e) => {
   return {
     signedIn: signedIn(),
     openAtLogin: settings.openAtLogin,
+    loginInWindowsSettings: dist.loginItem === "windows-settings",
     claude: claudeForWindow(),
     version: app.getVersion(),
     productName: config.productName,
@@ -418,11 +421,13 @@ function applyLoginItem() {
   if (!app.isPackaged || app.commandLine.hasSwitch("user-data-dir")) return;
   // Not before the app is set up: there's nothing for it to do at login until then.
   const openAtLogin = settings.openAtLogin && signedIn();
-  if (process.platform === "darwin" || process.platform === "win32") {
+  // A Store copy opens at login through its package's startup task, switched in Windows Settings.
+  if (dist.loginItem === "windows-settings") return;
+  if (dist.loginItem === "electron") {
     app.setLoginItemSettings({ openAtLogin });
     return;
   }
-  if (process.platform === "linux") {
+  if (dist.loginItem === "autostart-file") {
     const dir = path.join(process.env.XDG_CONFIG_HOME || path.join(os.homedir(), ".config"), "autostart");
     const file = path.join(dir, `${config.productName}.desktop`);
     try {
@@ -443,7 +448,7 @@ function applyLoginItem() {
 
 const RELEASES_PAGE = `https://github.com/${config.github.owner}/${config.github.repo}/releases`;
 // The .deb can't replace itself, so it only says when there's a newer version.
-const noticeOnly = process.platform === "linux" && !process.env.APPIMAGE;
+const noticeOnly = dist.updates === "notice";
 let noticeShownFor = "";
 
 async function checkForUpdates(manual: boolean) {
@@ -492,7 +497,8 @@ async function checkReleaseNotice(manual: boolean) {
 }
 
 function setupAutoUpdate() {
-  if (!app.isPackaged) return;
+  // The Microsoft Store updates its own copies.
+  if (!app.isPackaged || dist.updates === "store") return;
   if (!noticeOnly) {
     autoUpdater.autoDownload = true;
     autoUpdater.autoInstallOnAppQuit = true;
@@ -578,7 +584,8 @@ if (process.platform === "win32") app.setAppUserModelId(config.appId);
 app.whenReady().then(async () => {
   app.dock?.hide();
   // Only the installed app registers for links: a development run would register bare Electron.
-  if (app.isPackaged) app.setAsDefaultProtocolClient(LINK_SCHEME);
+  // A Store copy gets kindahired:// from its package instead.
+  if (app.isPackaged && dist.registerLinks) app.setAsDefaultProtocolClient(LINK_SCHEME);
   // The dashboard can tell it's open in the app rather than in a browser.
   const hub = session.fromPartition(HUB_PARTITION);
   hub.setUserAgent(`${hub.getUserAgent()} kindahired-app/${app.getVersion()}`);

@@ -133,3 +133,20 @@ export function autostartDesktopEntry(name: string, exec: string): string {
     "",
   ].join("\n");
 }
+
+/**
+ * How this copy of the app was installed, and so who handles updates, opening at login and
+ * kindahired:// links. A Microsoft Store copy is updated by the Store, opens at login through the
+ * startup task in its package (switched in Windows Settings), and gets its links from the package.
+ */
+export interface Distribution {
+  updates: "self" | "notice" | "store";
+  loginItem: "electron" | "autostart-file" | "windows-settings";
+  registerLinks: boolean;
+}
+
+export function distribution(opts: { platform: NodeJS.Platform; windowsStore?: boolean; appImage?: string }): Distribution {
+  if (opts.platform === "win32" && opts.windowsStore) return { updates: "store", loginItem: "windows-settings", registerLinks: false };
+  if (opts.platform === "linux") return { updates: opts.appImage ? "self" : "notice", loginItem: "autostart-file", registerLinks: true };
+  return { updates: "self", loginItem: "electron", registerLinks: true };
+}

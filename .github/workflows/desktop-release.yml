@@ -113,6 +113,21 @@ jobs:
           npm run build
           npx electron-builder --config electron-builder.config.cjs ${{ matrix.platform }} --publish never
 
+      # The Microsoft Store package isn't a release file: it's unsigned until the Store signs it, so
+      # it can't be installed from a download. It's kept with the run, to upload to Partner Center.
+      # See docs/windows-store.md.
+      - name: Build the Microsoft Store package
+        if: runner.os == 'Windows'
+        run: npx electron-builder --config electron-builder.config.cjs --win appx --x64 --arm64 --publish never
+
+      - name: Keep the Microsoft Store package with the run
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: microsoft-store-${{ github.ref_name }}
+          path: apps/desktop/release/*.appx
+          if-no-files-found: error
+
       - name: Upload to the release
         env:
           OWN_TOKEN: ${{ github.token }}
