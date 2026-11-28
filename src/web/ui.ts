@@ -250,7 +250,11 @@ color-scheme:light}
 --shadow-sm:0 1px 3px 0 rgb(0 0 0 / .5);--ring:0 0 0 3px rgb(115 115 115 / .6);color-scheme:dark}}
 *,*::before,*::after{box-sizing:border-box}
 [hidden]{display:none!important}
-html{-webkit-text-size-adjust:100%;scrollbar-color:var(--line-strong) transparent}
+/* No visible scroll bars anywhere: on macOS with a mouse (and on Windows) a bar takes width from the
+   page the moment it appears, so the layout jumps sideways. Scrolling itself is unchanged. */
+html,*{scrollbar-width:none}
+::-webkit-scrollbar{display:none;width:0;height:0}
+html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--bg);color:var(--ink);font:400 var(--t-base)/20px var(--sans);-webkit-font-smoothing:antialiased;caret-color:var(--ink)}
 ::selection{background:var(--selected);color:var(--ink)}
 a{color:var(--ink);text-decoration:none;text-underline-offset:4px}a:hover{text-decoration:underline}
@@ -272,7 +276,7 @@ p{margin:0}
 
 /* shell */
 .app{display:flex;align-items:flex-start;min-height:100vh}
-.sidebar{flex:0 0 var(--sidebar-w);position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:var(--s2);padding:var(--s2)}
+.sidebar{flex:0 0 var(--sidebar-w);position:sticky;top:0;height:100vh;overflow-y:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:var(--s2);padding:var(--s2)}
 .brand{display:flex;align-items:center;gap:var(--s2);height:var(--s10);padding:0 var(--s2);font-size:16px;font-weight:600;color:var(--ink)}
 .brand:hover{text-decoration:none}
 .nav{display:flex;flex-direction:column;gap:2px}
@@ -793,8 +797,7 @@ fieldset.form-row{border:0;border-top:1px solid var(--line);margin:0}
 .cmd-item-text{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cmd-item-body{display:flex;flex-direction:column;flex:1 1 auto;min-width:0}
 .cmd-item-sub{display:block;font-size:var(--t-xs);line-height:16px;color:var(--ink-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.cmd-list{max-height:min(440px,60vh);overflow-y:auto;scrollbar-width:none}
-.cmd-list::-webkit-scrollbar{display:none}
+.cmd-list{max-height:min(440px,60vh);overflow-y:auto}
 .cmd-empty{padding:var(--s6) var(--s4);text-align:center;color:var(--ink-3)}
 .cmd-foot{display:flex;flex-wrap:wrap;gap:var(--s1) var(--s4);margin:0;padding:var(--s2) var(--s3);border-top:1px solid var(--line);font-size:var(--t-xs);color:var(--ink-3)}
 .cmd-results{list-style:none;margin:0;padding:var(--s1)}
