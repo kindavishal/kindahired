@@ -138,7 +138,7 @@ export function searchPageBody(q: string, hits: Hit[], icon: (n: string) => stri
       : `<li><a class="cmd-item" href="${esc(h.href ?? "/")}">${inner}</a></li>`;
   };
   return `<div class="vstack page-stack-sm search-page">
-<div><h1>Search</h1><p class="lede">Find roles, companies, people and tasks, or paste a link to a posting, a job board or a careers page.</p></div>
+<h1>Search</h1>
 <form method="get" action="/search" class="search-page-form"><label class="sr" for="sp-q">Search or paste a link</label><input id="sp-q" type="search" name="q" value="${esc(q)}" placeholder="Search or paste a link" autofocus class="full"><button class="btn primary">Search</button></form>
 ${hits.length ? groups.map((g) => `<section class="panel"><p class="cmd-group">${esc(g)}</p><ul class="cmd-results">${hits.filter((h) => h.group === g).map(item).join("")}</ul></section>`).join("")
     : `<div class="panel"><div class="empty"><p class="empty-title">Nothing matches “${esc(q)}”.</p><p>Try part of a name or company, or paste a link.</p></div></div>`}

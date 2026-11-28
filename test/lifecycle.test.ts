@@ -32,7 +32,7 @@ test("an application walks the ladder: follow up, follow up again on another cha
   completeAction(two.id, "done", at("2026-11-16"));
 
   const three = ladderStep("2026-11-23", o.id)!;
-  assert.match(three.title, /^Close warmly/);
+  assert.match(three.title, /^Send a last note/);
   assert.equal(three.urgent, 1);
 });
 
@@ -59,7 +59,7 @@ test("months of silence: one check-in, then the warm close", () => {
   const a = ladderStep("2026-11-01", o.id)!;
   assert.match(a.title, /^Likely closed: DevRel at Acme \(\d+ days\)/);
   completeAction(a.id, "done", at("2026-11-01"));
-  assert.match(ladderStep("2026-11-08", o.id)!.title, /^Close warmly/);
+  assert.match(ladderStep("2026-11-08", o.id)!.title, /^Send a last note/);
 });
 
 test("offers, failed packs and unscreened roles all get a next step", () => {

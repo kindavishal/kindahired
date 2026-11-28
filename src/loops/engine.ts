@@ -274,7 +274,7 @@ function relationshipActions(state: LoopState, now: Date, t: Timers): DesiredAct
       const kind = role.status === "rejected" ? "rejected" : "withdrew";
       out.push({
         rule_key: `loop:close:${role.id}:${r.contact_id}`, kind: "send_note", opportunity_id: role.id, thread_id: null, outreach_id: null,
-        title: `Close warmly: ${r.name} (${role.role} at ${role.company.replace(/\s*\(.*$/, "")})`,
+        title: `Send a thank-you: ${r.name} (${role.role} at ${role.company.replace(/\s*\(.*$/, "")})`,
         detail: [
           kind === "rejected" ? "They said no. A short thank-you keeps the door open for the next role there." : "You stepped back from this role. Tell them yourself rather than go quiet.",
           `Send it ${where(r)}:`, "", closureNote(kind, r, role, { met: r.met, me }),
@@ -293,7 +293,7 @@ function relationshipActions(state: LoopState, now: Date, t: Timers): DesiredAct
     const history = r.roles.map((x) => `${x.role} (${x.status})`).join(", ");
     out.push({
       rule_key: `loop:touch:${r.contact_id}:${r.last_touch_at}`, kind: "follow_up", opportunity_id: null, thread_id: null, outreach_id: null,
-      title: `Stay in touch: ${r.name}${r.company ? ` (${r.company})` : ""}`,
+      title: `Check in: ${r.name}${r.company ? ` (${r.company})` : ""}`,
       detail: [
         `${r.warmth === "close" ? "You've met or talked a lot" : "You've written to each other"}. Last in touch ${fmtDay(r.last_touch_at)}${history ? `, about ${history}` : ""}.`,
         touchIdea(r, open.map((o) => o.role)),
@@ -465,14 +465,14 @@ function ladder(o: OppRow, state: LoopState, now: Date, t: Timers): DesiredActio
   let title: string;
   let move: string;
   if (step >= 2) {
-    title = `Close warmly: ${label}`;
+    title = `Send a last note: ${label}`;
     move = `No answer after two follow-ups. Send a short closing note${to}: thank them, say you'd be glad to hear about future roles, and close the role. A warm close keeps the door open.`;
   } else if (closedPosting) {
     title = `Posting taken down: ${label}`;
-    move = `The posting is gone, so the role is likely filled. Ask${to} whether it's still open${n ? "" : " and where things stand"}; if it's filled, close warmly.`;
+    move = `The posting is gone, so the role is likely filled. Ask${to} whether it's still open${n ? "" : " and where things stand"}; if it's filled, thank them and close the role.`;
   } else if (n === 0 && longQuiet) {
     title = `Likely closed: ${label} (${quietDays} days)`;
-    move = `After ${quietDays} days of silence the role has most likely closed or gone to someone else. Send one short check-in${to} asking whether it's still open. If there's no answer, close it warmly.`;
+    move = `After ${quietDays} days of silence the role has most likely closed or gone to someone else. Send one short check-in${to} asking whether it's still open. If there's no answer, send a last note and close it.`;
   } else if (step === 1) {
     title = `Follow up again: ${label}`;
     move = `One follow-up with no answer. Try ${channels.length ? `a different channel than ${channels.join(" and ")}` : "a different channel"} or a different person on the team${to ? `, or write${to} once more` : ""}.`;
@@ -488,7 +488,7 @@ function ladder(o: OppRow, state: LoopState, now: Date, t: Timers): DesiredActio
     ...base, rule_key: `loop:ladder:${o.id}:${theirs}:${n}`, kind: "follow_up", opportunity_id: o.id,
     title,
     detail: [
-      `Stage: ${o.status}${o.date_applied ? `, applied ${fmtDay(o.date_applied)}` : ""}. Step ${Math.min(step + 1, 3)} of 3 (follow up, follow up again, close warmly).`,
+      `Stage: ${o.status}${o.date_applied ? `, applied ${fmtDay(o.date_applied)}` : ""}. Step ${Math.min(step + 1, 3)} of 3 (follow up, follow up again, send a last note).`,
       lastLine, sentLine, theyLast, channels.length ? `Channels used: ${channels.join(", ")}.` : null, `Next: ${move}`,
     ].filter(Boolean).join("\n"),
     due_at: due, urgent: step >= 2 && new Date(due) <= now,

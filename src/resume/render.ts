@@ -78,7 +78,7 @@ ${r.skills.map((s, i) => `<p><b>${ed(`skill.${i}.label`, s.label, "label")}:</b>
 const EDIT_CSS = `
   html { background: #ecebe7; }
   body { background: #fff; max-width: 210mm; min-height: 297mm; margin: 0 auto; padding: 18mm; }
-  [data-f] { border-radius: 2px; outline: none; transition: background-color .12s; }
+  [data-f] { border-radius: 2px; outline: none; cursor: text; box-shadow: inset 0 -1px 0 #d9d6cf; transition: background-color .12s; }
   [data-f]:hover { background: #f3f1ec; }
   [data-f]:focus { background: #e8eefc; box-shadow: 0 0 0 2px #e8eefc; }
   [data-f]:empty::before { content: attr(data-hint); color: #9a978f; font-style: italic; }

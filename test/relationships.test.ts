@@ -41,7 +41,7 @@ test("a no gets a warm closing note per person; done, it becomes a stay-in-touch
   const now = at("2026-11-20");
   reconcileActions(now);
   const close = dueActions(now).find((a) => a.rule_key.startsWith("loop:close:"))!;
-  assert.equal(close.title, "Close warmly: Eric Stutzman (Developer Advocate at Temporal)");
+  assert.equal(close.title, "Send a thank-you: Eric Stutzman (Developer Advocate at Temporal)");
   assert.match(close.detail!, /by email \(eric@temporal\.io\)/);
   assert.match(close.detail!, /Hi Eric,/);
   assert.match(close.detail!, /being clear about why/);
@@ -52,7 +52,7 @@ test("a no gets a warm closing note per person; done, it becomes a stay-in-touch
   const later = at("2027-01-20");
   reconcileActions(later);
   const touch = dueActions(later).find((a) => a.rule_key.startsWith("loop:touch:"))!;
-  assert.match(touch.title, /^Stay in touch: Eric Stutzman \(Temporal\)/);
+  assert.match(touch.title, /^Check in: Eric Stutzman \(Temporal\)/);
   assert.equal(touch.due_at.slice(0, 10), "2027-01-19");
 });
 

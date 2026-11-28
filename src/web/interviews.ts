@@ -164,8 +164,8 @@ export function interviewsPage(now = new Date()) {
   };
   return page("Interviews · kindahired", `
 <div class="vstack page-stack-sm interview-page">
-<div><h1>Interviews</h1><p class="lede">Every interview on your calendar, with a prep page for each: who you are meeting, your conversation so far, the role and your notes.</p></div>
-<section class="card"><h2 class="card-title">Coming up</h2>${up.length ? `<ul class="mini-list">${up.map(row).join("")}</ul>` : `<p class="card-sub">Nothing booked. Interviews appear here as soon as they are on your Google Calendar.</p>`}</section>
+<h1>Interviews</h1>
+<section class="card"><h2 class="card-title">Coming up</h2>${up.length ? `<ul class="mini-list">${up.map(row).join("")}</ul>` : `<p class="card-sub">Nothing on your Google Calendar.</p>`}</section>
 ${past.length ? `<section class="card"><h2 class="card-title">Earlier</h2><ul class="mini-list">${past.map(row).join("")}</ul></section>` : ""}
 </div>`, { tab: "interviews" });
 }
