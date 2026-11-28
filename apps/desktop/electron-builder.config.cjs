@@ -77,6 +77,9 @@ module.exports = {
     applicationId: app.productName,
     backgroundColor: "transparent",
     languages: ["en-US"],
+    // Electron needs Windows 10 1809 or later; tested on Windows 11 24H2.
+    minVersion: "10.0.17763.0",
+    maxVersionTested: "10.0.26100.0",
     // electron-builder's own startup entry hard-codes another app's task id, so ours is in
     // build/appx-extensions.xml. The kindahired:// protocol comes from `protocols` above.
     addAutoLaunchExtension: false,
