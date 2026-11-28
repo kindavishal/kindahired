@@ -15,11 +15,12 @@
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cal+Sans&family=Geist:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="app" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#0a0a0a"/><g transform="translate(7 7) scale(.75)" fill="none" stroke-width="2.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 9.5A9 9 0 1 1 15 3.5" stroke="#fafafa"/><path d="M7.5 12.5l3.5 3.5L19.5 6" stroke="#4ade80"/></g></symbol>
   <symbol id="mark" viewBox="0 0 24 24"><path d="M20.5 9.5A9 9 0 1 1 15 3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M7.5 12.5l3.5 3.5L19.5 6" fill="none" style="stroke: var(--mark-tick)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
 </svg>
@@ -33,8 +34,7 @@
       <a href="#privacy">Your data</a>
       <a href="#setup">Setup</a>
     </div>
-    <a class="btn btn-outline" href="https://app-kindahired.kindavishal.dev/">Sign in</a>
-    <a class="btn btn-primary" href="index.html#get">Get early access</a>
+    <div class="nav-cta"><a class="btn btn-ghost nav-signin" href="https://app-kindahired.kindavishal.dev/">Sign in</a><a class="btn btn-primary" href="index.html#get">Get early access</a></div>
   </nav>
 </header>
 
@@ -51,7 +51,7 @@
 
     <figure class="hero-visual" aria-label="A sample prepared application for one role" style="margin:0">
       <div class="ping">
-        <span class="ping-icon" aria-hidden="true"><svg width="20" height="20"><use href="#mark"/></svg></span>
+        <svg class="ping-icon" width="32" height="32" aria-hidden="true"><use href="#app"/></svg>
         <span class="ping-body"><span class="ping-top"><strong>kindahired</strong><span class="faint">7:02 am</span></span><span>Application ready: Developer Community Lead at Northwind Labs. Strong fit, closes Friday.</span></span>
       </div>
       <div class="card pack">

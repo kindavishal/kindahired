@@ -18,8 +18,8 @@
       e.target.classList.add("in");
       seen.unobserve(e.target);
     }
-  }, { rootMargin: "0px 0px -12% 0px" });
-  $$(".reveal, .tile, .graph, .draw-mark").forEach((el) => seen.observe(el));
+  }, { rootMargin: "0px 0px -6% 0px" });
+  $$(".reveal, .tile, .draw-mark").forEach((el) => seen.observe(el));
 
   // Run fn every ms while el is on screen.
   const whileVisible = (el, ms, fn) => {
@@ -50,10 +50,10 @@
   });
 
   // ---------- Product demo ----------
-  const I = (id, label, cls) => `<span class="src ${cls}" aria-label="${label}"><svg width="16" height="16"><use href="#${id}"/></svg></span>`;
+  const L = (id, label, size = 16) => `<span class="src" aria-label="${label}"><svg width="${size}" height="${size}"><use href="#${id}"/></svg></span>`;
   const src = {
-    mail: I("i-mail", "Email", "src-mail"), in: I("i-in", "LinkedIn", "src-in"),
-    x: I("i-x", "X", "src-x"), cal: I("i-cal", "Calendar", "src-cal"), board: I("i-board", "Job board", "src-x"),
+    mail: L("lg-gmail", "Email"), in: L("lg-linkedin", "LinkedIn"), x: L("lg-x", "X", 14),
+    board: L("lg-greenhouse", "Job board"), wf: L("lg-wellfound", "Wellfound"),
   };
   const roles = [
     null, // the first role is already in the page
@@ -61,7 +61,7 @@
       tile: ["L", "co-l"], title: "Product Marketing Manager", meta: "Lumen Health · you applied last week", fit: "Good fit",
       items: [
         ["mail", "<strong>Priya Shah</strong>, the recruiter, asked when you're free to talk", "3 days ago"],
-        ["cal", "You're free Thursday at 4 pm and Friday morning", "This week"],
+        ["mail", "Priya followed up: the team would like to meet this week", "Yesterday"],
         ["in", "Priya's team lead looked at your profile", "Yesterday"],
       ],
       next: "You owe Priya a reply. It's been 3 days. A reply with two times that work for you is ready.",
@@ -72,6 +72,7 @@
       tile: ["P", "co-p"], title: "Community Manager", meta: "Parcel · closes Friday", fit: "Strong fit",
       items: [
         ["board", "Posted on Parcel's careers page", "Today"],
+        ["wf", "Also listed on Wellfound, with the salary range", "Today"],
         ["in", "<strong>Ana Ruiz</strong>, from your old team, works there now", "Since 2024"],
         ["x", "Parcel's founder posted about growing the community team", "3 days ago"],
       ],
@@ -187,6 +188,18 @@
     if (!visible) return;
     timer = setTimeout(() => pick((step + 1) % steps.length), Math.max(200, left));
   });
+
+  // ---------- Story: how it went, and how it goes with kindahired ----------
+  const segs = $$(".seg button");
+  const tline = $(".tline");
+  let segTouched = false;
+  const mode = (m) => {
+    segs.forEach((b, i) => { b.classList.toggle("is-on", i === m); b.setAttribute("aria-selected", String(i === m)); });
+    tline.dataset.mode = String(m);
+    $$("li", tline).forEach((li) => { li.style.animation = "none"; void li.offsetWidth; li.style.animation = ""; });
+  };
+  segs.forEach((b, i) => b.addEventListener("click", () => { segTouched = true; mode(i); }));
+  whileVisible($(".story-visual"), 4500, () => { if (!segTouched) mode(tline.dataset.mode === "0" ? 1 : 0); });
 
   // ---------- FAQ: open and close smoothly ----------
   if (!still) $$(".faq-c details").forEach((d) => {
