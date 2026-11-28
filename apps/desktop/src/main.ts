@@ -85,7 +85,7 @@ async function readToken(): Promise<string> {
 }
 
 async function writeToken(token: string) {
-  if (!(await safeStorage.isAsyncEncryptionAvailable())) throw new Error("This computer has no keychain the app can use to keep the token safe.");
+  if (!(await safeStorage.isAsyncEncryptionAvailable())) throw new Error("This computer has no safe place to keep your sign-in, so kindahired can't stay signed in.");
   writeFileSync(TOKEN_FILE, await safeStorage.encryptStringAsync(token), { mode: 0o600 });
 }
 

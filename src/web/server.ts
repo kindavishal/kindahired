@@ -437,7 +437,7 @@ ${r.ic.length ? `<div class="callout"><p><strong>What to do:</strong> ${r.ic.len
 <ul class="funnel">${funnel.map(([label, n], i) => `<li class="funnel-row"><span class="funnel-label">${label}</span><span><span class="funnel-bar${i === 0 ? " first" : i === 3 ? " last" : ""}" style="width:${g.total ? Math.max(3, Math.round((n / g.total) * 100)) : 3}%"></span></span><span class="funnel-val">${n}</span></li>`).join("")}</ul>
 <div class="card-actions"><a class="btn" href="/sources">Review job pages and alerts</a></div>
 ${g.lowMatch ? `<p class="card-note">${plural(g.lowMatch, "alert was", "alerts were")} marked a low match at the first check.</p>` : ""}</article>
-</div></div>`, { tab: "insights", flash: q.get("flash"), meta: "Updated with every sync" });
+</div></div>`, { tab: "insights", flash: q.get("flash"), meta: "Updated as new mail and messages come in" });
 }
 
 // ---------- Progress ----------
@@ -567,7 +567,7 @@ ${p.title ? `<p class="small muted">${esc(p.title)}</p>` : ""}<p class="small" s
 <p class="small" style="margin-top:4px;display:flex;gap:12px;flex-wrap:wrap">${isLinkedInProfile(p.linkedin_url) ? link(p.linkedin_url, "LinkedIn profile") : link(linkedInSearchUrl(p.name, o.company), "Search LinkedIn")}${isXProfile(p.x_url) ? link(p.x_url, "X profile") : link(xSearchUrl(p.name, o.company), "Search X")}${link(p.source_url, "Source")}</p></li>`).join("");
   const list = (title: string, items: string[]) => (items.length ? `<div style="padding:12px 16px;border-top:1px solid var(--line)"><h3 class="small" style="font-weight:600;margin-bottom:6px">${title}</h3><ul class="small" style="margin:0;padding-left:18px;line-height:22px">${items.join("")}</ul></div>` : "");
   return `<section class="block">${head}<div class="panel">
-${people ? `<ul class="list">${people}</ul>` : emptyState("No one named yet", "The sources didn't name anyone with enough evidence.")}
+${people ? `<ul class="list">${people}</ul>` : emptyState("No one named yet", "kindahired couldn't find anyone it's sure about.")}
 ${b.team ? `<div style="padding:12px 16px;border-top:1px solid var(--line)"><h3 class="small" style="font-weight:600;margin-bottom:4px">Team</h3><p class="small">${esc(b.team)}</p></div>` : ""}
 ${list("You already know", b.known.map((k) => `<li>${esc(k.name)} (${esc(k.how)})</li>`))}
 ${list("Signals", b.signals.map((x) => `<li>${esc(x.what)}${x.date ? ` <span class="muted">· ${esc(x.date)}</span>` : ""}${x.source_url ? ` ${link(x.source_url, "link")}` : ""}</li>`))}
@@ -686,7 +686,7 @@ ${r.reply ? `<div class="callout" style="margin-top:14px"><b>Their reply:</b> ${
     : emptyState("No next step", `You dropped this role's reminders. ${postButton(`/o/${o.id}/remind`, "Remind me", { variant: "primary" })}`)}</div></section>` : "";
 
   const main = [
-    o.pack_error ? `<div class="callout danger" role="alert"><b>The pack didn't finish.</b> ${esc(o.pack_error)}</div>` : "",
+    o.pack_error ? `<div class="callout danger" role="alert"><b>Your application couldn't be prepared.</b> ${esc(o.pack_error)}</div>` : "",
     packing ? packingNote() : "",
     upNext,
     meetingsHtml,
@@ -696,7 +696,7 @@ ${r.reply ? `<div class="callout" style="margin-top:14px"><b>Their reply:</b> ${
     copyBlock("Cover note", o.cover_note),
     copyBlock("Form answers", o.form_answers),
     `<section class="block" id="people"><div class="section-head"><h2>People to contact</h2><span class="count num">${people.length}</span></div>
-<div class="panel">${people.length ? `<ul class="list">${peopleHtml}</ul>` : emptyState("No outreach drafted", o.pack_status === "ready" ? "This pack didn't find anyone worth contacting." : "People and their messages are drafted with the pack.")}</div></section>`,
+<div class="panel">${people.length ? `<ul class="list">${peopleHtml}</ul>` : emptyState("No one to contact yet", o.pack_status === "ready" ? "kindahired didn't find anyone worth contacting for this role." : "People to contact come with your prepared application.")}</div></section>`,
     threads.length ? `<section class="block"><div class="section-head"><h2>Conversations</h2><span class="count num">${threads.length}</span></div><div class="panel"><ul class="list">${threads.map((t) => `<li class="item"><div class="item-main"><span class="item-title">${esc(t.subject)}</span>
 <p class="item-detail clamp">${esc(t.last_snippet)}</p><div class="item-meta"><span>${t.channel === "linkedin" ? "LinkedIn" : t.channel === "x" ? "X" : "Email"}</span><span>${t.last_from === "me" ? "You wrote last" : "They wrote last"}</span><span>${day(t.last_message_at)}</span></div></div></li>`).join("")}</ul></div></section>` : "",
     fold("Job description", o.jd_text),
@@ -735,7 +735,7 @@ function resumeEditor(id: number, q: URLSearchParams) {
 <header class="role-head"><h1>Edit resume</h1><p class="company">${name}</p></header>`;
   const rebuild = postButton(`/resume/${o.id}/rebuild`, `${icon("refresh")}Rewrite resume`, {
     variant: resume ? "quiet" : "primary",
-    confirm: resume ? "Write this resume again from your evidence? Your edits here are replaced." : "",
+    confirm: resume ? "Write this resume again from your experience? Your edits here are replaced." : "",
   });
   if (rewriting.has(o.id)) {
     return page("Edit resume", `${head}<div class="callout accent" role="status">The resume is being written again. This takes a few minutes; reload the page to edit it.</div>`, { tab: "roles", flash: q.get("flash") });

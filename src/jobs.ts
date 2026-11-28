@@ -47,7 +47,7 @@ export async function warnAccountOnce(err: unknown) {
   const reason = err instanceof PlanUnavailableError
     ? (/limit/i.test(text) ? "your Claude plan hit its usage limit for now" : `Claude Code isn't available (${text.slice(0, 120)})`)
     : /credit balance/i.test(text) ? "the Anthropic account is out of credit" : "the Anthropic API key was rejected";
-  await send(`Paused: ${reason}. Nothing is lost; queued work resumes once it's fixed.`, undefined, { silent: true }).catch(() => {});
+  await send(`Paused: ${reason}. Nothing is lost. Everything picks up again once it's fixed.`, undefined, { silent: true }).catch(() => {});
 }
 
 /**
@@ -228,7 +228,7 @@ export async function linkedinTick() {
     if (err instanceof LinkedInUnavailable) {
       const warned = kvGet("linkedin.warnedAt");
       if (!warned || Date.now() - new Date(warned).getTime() > 24 * 3600_000) {
-        await send(`LinkedIn sync paused: ${err.message}`, undefined, { silent: true }).catch(() => {});
+        await send(`Stopped reading LinkedIn for now: ${process.env.JH_HUB === "1" ? err.message.replace(/\s*Run:.*$/, "") : err.message}`, undefined, { silent: true }).catch(() => {});
         kvSet("linkedin.warnedAt", new Date().toISOString());
       }
       return null;
@@ -257,7 +257,7 @@ export async function calendarTick() {
   if (!calendarReady()) {
     const warned = kvGet("calendar.warnedAt");
     if (telegramReady() && (!warned || Date.now() - new Date(warned).getTime() > 7 * 86400_000)) {
-      await send("Interviews on your calendar aren't tracked yet. Run <code>npm run jh -- auth:google</code> once to allow read-only Calendar access.", undefined, { silent: true }).catch(() => {});
+      await send(process.env.JH_HUB === "1" ? "Interviews on your calendar aren't coming in yet. Connect Google again from Setup on your dashboard and allow Calendar." : "Interviews on your calendar aren't coming in yet. Run <code>npm run jh -- auth:google</code> once to allow read-only Calendar access.", undefined, { silent: true }).catch(() => {});
       kvSet("calendar.warnedAt", new Date().toISOString());
     }
     return null;
@@ -518,7 +518,7 @@ export async function xTick() {
     // The daily pace pauses quietly; only the month's cap (or an empty balance) is worth a message.
     if (!kvGet(key) && spentThisMonth() >= monthlyBudget() - 0.05) {
       kvSet(key, "1");
-      if (telegramReady()) await send(`X paused for the rest of the month: ${html(r.stopped)}. Raise X_MONTHLY_BUDGET_USD in .env to keep going.`, undefined, { silent: true }).catch(() => {});
+      if (telegramReady()) await send(`X paused for the rest of the month: ${html(r.stopped)}. ${process.env.JH_HUB === "1" ? "Raise the X monthly budget in Setup" : "Raise X_MONTHLY_BUDGET_USD in .env"} to keep going.`, undefined, { silent: true }).catch(() => {});
     }
   }
   if (r.newOpportunityIds.length) kick();

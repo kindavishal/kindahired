@@ -159,11 +159,11 @@ export function computeActions(state: LoopState, now = new Date(), t: Timers = D
       const expires = addHours(o.created_at, t.parkedDays * 24);
       out.push({
         ...base, rule_key: `loop:park:${o.id}`, kind: "decide", opportunity_id: o.id,
-        title: `${o.pack_status === "failed" ? "Pack failed" : "Not screened in"}: ${label}`,
+        title: `${o.pack_status === "failed" ? "Couldn't prepare" : "Check this role"}: ${label}`,
         detail: [
           o.pack_status === "failed"
-            ? `The pack didn't finish${o.pack_error ? ` (${oneLine(o.pack_error, 100)})` : ""}. Build it again or drop the role.`
-            : "This wasn't picked up automatically (no company name, or an old alert). Prepare your application if it's worth a look, or drop it.",
+            ? `Your application couldn't be prepared${o.pack_error ? ` (${oneLine(o.pack_error, 100)})` : ""}. Try again, or drop the role.`
+            : "kindahired couldn't tell if this role fits you (no company name, or an old alert). Prepare your application if it's worth a look, or drop it.",
           `If nothing is decided, it's skipped on ${fmtDay(expires)}.`,
         ].join("\n"),
         due_at: o.created_at, urgent: false,
@@ -466,7 +466,7 @@ function ladder(o: OppRow, state: LoopState, now: Date, t: Timers): DesiredActio
   let move: string;
   if (step >= 2) {
     title = `Send a last note: ${label}`;
-    move = `No answer after two follow-ups. Send a short closing note${to}: thank them, say you'd be glad to hear about future roles, and close the role. A warm close keeps the door open.`;
+    move = `No answer after two follow-ups. Send a short closing note${to}: thank them, say you'd be glad to hear about future roles, and close the role. A kind last note keeps the door open.`;
   } else if (closedPosting) {
     title = `Posting taken down: ${label}`;
     move = `The posting is gone, so the role is likely filled. Ask${to} whether it's still open${n ? "" : " and where things stand"}; if it's filled, thank them and close the role.`;
@@ -591,7 +591,7 @@ export function reconcileActions(now = new Date()) {
 
   for (const a of all<{ id: number; rule_key: string }>("SELECT id, rule_key FROM actions WHERE status = 'open' AND rule_key LIKE 'loop:%'")) {
     if (!keys.has(a.rule_key)) {
-      run("UPDATE actions SET status = 'done', done_at = $now, detail = coalesce(detail, '') || '\n(Resolved automatically)' WHERE id = $id", { id: a.id, now: nowIso() });
+      run("UPDATE actions SET status = 'done', done_at = $now, detail = coalesce(detail, '') || '\n(kindahired saw this happen)' WHERE id = $id", { id: a.id, now: nowIso() });
       resolved++;
     }
   }

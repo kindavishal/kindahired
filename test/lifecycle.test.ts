@@ -70,8 +70,8 @@ test("offers, failed packs and unscreened roles all get a next step", () => {
   reconcileActions();
   const titles = dueActions(new Date(Date.now() + 60_000)).map((a) => a.title);
   assert.ok(titles.includes("Respond to the offer: DevRel at Acme"));
-  assert.ok(titles.includes("Pack failed: Community Lead at Beta"));
-  assert.ok(titles.includes("Not screened in: Community Manager at Unknown"));
+  assert.ok(titles.includes("Couldn't prepare: Community Lead at Beta"));
+  assert.ok(titles.includes("Check this role: Community Manager at Unknown"));
   assert.ok(!titles.some((t) => t.includes("Gamma")));
   assert.deepEqual(stalledRoles(), []);
   void [offer, failed, parked, building];

@@ -255,7 +255,7 @@ export function digestText(now = new Date()): { text: string; top: ActionRow[] }
     section("Replies you owe", replies),
     section("Apply", apply),
     section("Follow up", follow),
-    section("Send outreach", send_),
+    section("Notes to send", send_),
     section("Decide", decide),
     stalled.length ? `<b>No next step (${stalled.length})</b>\n${stalled.slice(0, 5).map((r) => `${html(r.role)} at ${html(r.company)}`).join("\n")}\nYou dropped their reminders but the roles are still open. Bring a reminder back or close the role on the dashboard.` : null,
     savedCount ? `<b>Saved on LinkedIn, not applied (${savedCount})</b>\n${savedNotApplied.map((s) => `${html(s.role)} at ${html(s.company)}`).join("\n")}` : null,
@@ -370,7 +370,7 @@ export function closingNote(o: Opportunity): { text: string; where: string; thre
 // ---------- X ----------
 
 export async function sendXStatus() {
-  if (!xConfigured()) return send("X isn't connected yet. See the README, X setup.", undefined, { silent: true });
+  if (!xConfigured()) return send(process.env.JH_HUB === "1" ? "X isn't connected yet." : "X isn't connected yet. See the README, X setup.", undefined, { silent: true });
   const st = xStatus();
   const threads = st.threads.map((t) => `· ${html(t.label ?? "thread")} until ${fmtDate(t.watch_until)}`);
   const buttons: Button[][] = st.threads.slice(0, 8).map((t) => [{ text: `Stop ${t.label ?? "thread"}`.slice(0, 40), data: `x:stop:${t.conversation_id}` }]);
@@ -558,7 +558,7 @@ export async function handleIncoming(msg: Incoming, hooks: Hooks) {
     } else if (scope === "p" && verb === "stop") {
       setStayInTouch(id, 0);
       if (msg.messageId) await clearButtons(msg.messageId);
-      reply = "No more stay-in-touch reminders for them";
+      reply = "No more check-in reminders for them";
     } else if (scope === "c" && verb === "list") {
       await sendCompanies();
       reply = "Target companies";
