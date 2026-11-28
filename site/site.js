@@ -35,6 +35,17 @@
   }, { rootMargin: "0px 0px -6% 0px" });
   all(".reveal, .tile, .draw-mark").forEach((el) => seen.observe(el));
 
+  // ---------- A framed product shot: its floating message drops in once it's on screen ----------
+  all(".stage").forEach((stage) => {
+    const ping = $(".ping-float", stage);
+    if (!ping) return;
+    new IntersectionObserver(([e], o) => {
+      if (!e.isIntersecting) return;
+      setTimeout(() => ping.classList.add("in"), still ? 0 : 700);
+      o.disconnect();
+    }, { threshold: 0.35 }).observe(stage);
+  });
+
   // ---------- Tabbed step panels: tabs on top, the visual and its sentence beneath ----------
   const STEP_MS = 6500;
   all("[data-tabs]").forEach((panel) => {
@@ -92,6 +103,20 @@
       timer = setTimeout(() => pick((step + 1) % tabs.length), Math.max(200, left));
     });
   });
+
+  // ---------- Contents list: highlight the section you're reading ----------
+  const toc = $(".toc");
+  if (toc) {
+    const links = all("a", toc);
+    const targets = links.map((a) => $(a.getAttribute("href")));
+    const mark = () => {
+      let cur = 0;
+      targets.forEach((t, i) => { if (t && t.getBoundingClientRect().top < 140) cur = i; });
+      links.forEach((a, i) => a.classList.toggle("is-on", i === cur));
+    };
+    addEventListener("scroll", mark, { passive: true });
+    mark();
+  }
 
   // ---------- FAQ: open and close smoothly ----------
   if (!still) all(".faq-c details").forEach((d) => {
