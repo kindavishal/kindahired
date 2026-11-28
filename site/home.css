@@ -499,3 +499,25 @@
   .closing-in .row .btn, .get-card .row .btn { flex: 1 1 100%; }
   .logos { gap: 16px 24px; }
 }
+
+/* Official platform lockups: shown as supplied, never paired with our own text. */
+.logos { align-items: center; gap: 20px 56px; }
+.logos li { display: flex; align-items: center; }
+.logos img { display: block; width: auto; }
+.logos img[alt="Gmail"] { height: 32px; }
+.logos img[alt="LinkedIn"], .logos img[alt="Greenhouse"], .logos img[alt="Indeed"] { height: 26px; }
+.logos img[alt="X"] { height: 24px; }
+.logos img[alt="Wellfound"] { height: 17px; }
+@media (prefers-color-scheme: dark) {
+  /* Lockups are full-colour artwork for light backgrounds: give them a light plate. */
+  .logos { background: #fafafa; border-radius: 20px; padding: 20px 32px; max-width: 1100px; }
+  .src, .pipe-logos li, .tok-src { background: #fafafa; }
+}
+@media (max-width: 900px) { .logos { gap: 20px 36px; } }
+@media (max-width: 720px) {
+  .logos { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px 28px; padding-inline: 16px; }
+  .logos img[alt="Gmail"] { height: 26px; }
+  .logos img[alt="LinkedIn"], .logos img[alt="Greenhouse"], .logos img[alt="Indeed"] { height: 21px; }
+  .logos img[alt="X"] { height: 20px; }
+  .logos img[alt="Wellfound"] { height: 14px; }
+}
