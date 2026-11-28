@@ -345,6 +345,11 @@ form{margin:0}
 .lede{color:var(--ink-2);font-size:var(--t-md);line-height:22px;max-width:68ch;margin-top:6px}
 .back{display:inline-flex;align-items:center;gap:var(--s1);color:var(--ink-3);font-size:var(--t-sm);margin-bottom:var(--s3)}
 .back:hover{color:var(--ink)}
+.role-nav{display:flex;align-items:center;justify-content:space-between;gap:var(--s3);margin-bottom:var(--s3)}
+.role-nav .back{margin-bottom:0}
+.pager{display:flex;align-items:center;gap:var(--s1)}
+.pager-at{font-size:var(--t-sm);color:var(--ink-3);padding:0 var(--s1);white-space:nowrap}
+.pager [aria-disabled]{opacity:.4;pointer-events:none}
 
 /* layout */
 .split{display:grid;gap:var(--s8);grid-template-columns:minmax(0,1fr)}
@@ -981,6 +986,7 @@ document.addEventListener('keydown',e=>{
   if(e.target.closest('input,textarea,select,[contenteditable]')||e.metaKey||e.ctrlKey||e.altKey)return;
   const q=document.querySelector('[data-filter]');
   if(e.key==='/'&&q){e.preventDefault();q.focus();return}
+  if(e.key==='ArrowLeft'||e.key==='ArrowRight'){const a=document.querySelector(e.key==='ArrowLeft'?'[data-nav="prev"]':'[data-nav="next"]');if(a){e.preventDefault();location.href=a.href}return}
   if(!document.querySelector('.tasks'))return;
   const r=rows()[cur];
   if(e.key==='j'){e.preventDefault();focusRow(cur+1)}

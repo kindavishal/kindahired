@@ -4,7 +4,7 @@ import { all, logEvent, nowIso } from "../db/index.ts";
 import { getOpportunity, updateOpportunity, type Opportunity } from "../db/opportunities.ts";
 import { htmlToText } from "./evidence.ts";
 import { getTimers } from "../loops/timers.ts";
-import { LinkedInUnavailable, readLinkedInJob } from "../sources/linkedin.ts";
+import { LINKEDIN_CLOSED, LinkedInUnavailable, readLinkedInJob } from "../sources/linkedin.ts";
 
 /**
  * Postings close after the tool first reads them. This re-checks the links of roles still in
@@ -22,7 +22,7 @@ const UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (
 
 /** Words a job page uses once the role is gone. Specific on purpose: no "apply by" or "closing date". */
 export const CLOSED_TEXT = new RegExp([
-  "no longer accepting applications",
+  "(?:no longer|not currently) accepting applications",
   "(?:job|position|posting|role|vacancy|opening|requisition)s? (?:is|has been|was) (?:no longer (?:available|open|active)|closed|filled|expired|removed|taken down)",
   "this (?:job|position|posting|role|vacancy|opening) (?:has )?(?:expired|closed|been filled)",
   "(?:job|posting|position) (?:not found|no longer exists|has expired)",
@@ -34,6 +34,21 @@ export const CLOSED_TEXT = new RegExp([
 
 /** URLs that can't be checked: social posts, forms, chats, and things that aren't links. */
 const UNCHECKABLE = /(^|\.)(x\.com|twitter\.com|whatsapp\.com|wa\.me|t\.me|forms\.gle|docs\.google\.com|typeform\.com)$/i;
+
+/** Path parts of a careers site's front pages: a link made only of these points at no job in particular. */
+const GENERIC_SEGMENT = /^(?:[a-z]{2}(?:[-_][a-z]{2})?|careers?|jobs?|job-?search|search|openings?|open-?positions|positions|vacanc(?:y|ies)|opportunities|join(?:-?us)?|work-?(?:with|at)-?us|life-?at-?[a-z0-9-]+|teams?|all|index\.html?)$/i;
+
+/**
+ * A careers homepage or job search rather than one job's page (careers.toasttab.com/). It loads
+ * fine whether or not the role is still open, so it says nothing about the role.
+ */
+export function isGenericJobsLink(url: string): boolean {
+  let u: URL;
+  try { u = new URL(url); } catch { return false; }
+  // The job can live in the query (?gh_jid=123, ?jobId=...), so only a bare or search-only query counts.
+  if ([...u.searchParams.values()].some((v) => ID_SEGMENT.test(v))) return false;
+  return u.pathname.split("/").filter(Boolean).every((p) => GENERIC_SEGMENT.test(p));
+}
 
 const ID_SEGMENT = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|[A-Za-z0-9]*\d{5,}[A-Za-z0-9]*|[A-Z0-9]{8,})$/;
 
@@ -139,11 +154,12 @@ export async function checkPostingUrl(url: string, deps: CheckDeps = {}): Promis
     if (li) {
       if (!deps.linkedin) return unknown(url, "LinkedIn isn't connected");
       const job = await deps.linkedin(li);
-      if (job.closed) return closed(url, "LinkedIn says it's no longer accepting applications");
+      if (job.closed || LINKEDIN_CLOSED.test(job.text)) return closed(url, `LinkedIn says "${job.text.match(LINKEDIN_CLOSED)?.[0] ?? "no longer accepting applications"}"`);
       if (/this job is no longer available|job (?:post )?(?:has been )?(?:removed|closed)/i.test(job.text)) return closed(url, "LinkedIn says the job is no longer available");
       return job.text.length > 500 ? open(url, "LinkedIn shows the job") : unknown(url, "LinkedIn page didn't load");
     }
     if (/(^|\.)linkedin\.com$/i.test(host) || UNCHECKABLE.test(host)) return unknown(url, "Can't check this kind of link");
+    if (isGenericJobsLink(url)) return unknown(url, "The link is the careers homepage, not this job's page");
     return (await viaAtsApi(f, url)) ?? (await viaPage(f, url));
   } catch (err) {
     if (err instanceof LinkedInUnavailable) throw err;

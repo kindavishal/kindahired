@@ -190,6 +190,9 @@ export async function syncLinkedInJobs(): Promise<{ saved: SavedJob[]; applied: 
 }
 
 /** The job description and whether it's still taking applications. */
+/** LinkedIn's wording on a job that's closed. It has said both "No longer accepting applications" and "Not currently accepting applications". */
+export const LINKEDIN_CLOSED = /(?:no longer|not currently) accepting applications/i;
+
 export async function readLinkedInJob(jobId: string): Promise<{ text: string; closed: boolean }> {
   return withBrowser(async (ctx) => {
     const page = await ctx.newPage();
@@ -205,7 +208,7 @@ export async function readLinkedInJob(jobId: string): Promise<{ text: string; cl
       while ((node = walker.nextNode())) { const t = node.textContent.trim(); if (t) parts.push(t); }
       return parts.join("\\n");
     })()`).catch(() => ""));
-    return { text: text.slice(0, 15000), closed: /no longer accepting applications/i.test(text) };
+    return { text: text.slice(0, 15000), closed: LINKEDIN_CLOSED.test(text) };
   });
 }
 

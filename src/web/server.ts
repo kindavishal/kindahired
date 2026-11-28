@@ -492,13 +492,19 @@ const FILTERS: { key: string; label: string; where: string }[] = [
 ];
 const TABS = ["active", ...ACTIVE, "saved", "closed", "all"];
 
+/** The roles in one list, in the order the Roles page shows them. `from` is "source:<name>" or a filter key. */
+function listRows<T = Opportunity>(from: string, cols = "*"): T[] {
+  if (from.startsWith("source:")) return all<T>(`SELECT ${cols} FROM opportunities WHERE source = $s ORDER BY updated_at DESC, id DESC`, { s: from.slice(7) });
+  const filter = FILTERS.find((f) => f.key === from) ?? FILTERS[0];
+  return all<T>(`SELECT ${cols} FROM opportunities WHERE ${filter.where} ORDER BY updated_at DESC, id DESC`);
+}
+
 function list(q: URLSearchParams) {
   const source = q.get("source");
   const key = q.get("saved") ? "saved" : q.get("status") ?? "active";
   const filter = FILTERS.find((f) => f.key === key) ?? FILTERS[0];
-  const rows = source
-    ? all<Opportunity>("SELECT * FROM opportunities WHERE source = $s ORDER BY updated_at DESC", { s: source })
-    : all<Opportunity>(`SELECT * FROM opportunities WHERE ${filter.where} ORDER BY updated_at DESC`);
+  const from = source ? `source:${source}` : filter.key;
+  const rows = listRows(from);
   const counts = Object.fromEntries(FILTERS.map((f) => [f.key, get<{ n: number }>(`SELECT count(*) n FROM opportunities WHERE ${f.where}`)!.n]));
   const heading = source ? `From ${sourceLabel(source)}` : "Roles";
 
@@ -512,7 +518,7 @@ function list(q: URLSearchParams) {
     const closes = closesLabel(o.closes_on);
     const packing = o.pack_status === "queued" || o.pack_status === "building";
     return `<tr data-row data-text="${esc(`${o.role} ${o.company} ${sourceLabel(o.source)}`.toLowerCase())}">
-<td class="c-role"><a class="cell-title" href="/o/${o.id}">${esc(o.role)}</a><span class="cell-sub">${esc(o.company)}</span></td>
+<td class="c-role"><a class="cell-title" href="/o/${o.id}?in=${encodeURIComponent(from)}">${esc(o.role)}</a><span class="cell-sub">${esc(o.company)}</span></td>
 <td data-label="Status"><div class="btn-row" style="gap:6px">${statusBadge(o.status)}${packing ? badge("Pack building", "accent") : ""}</div></td>
 <td data-label="Fit">${fitBadge(o.fit_verdict)}</td>
 <td data-label="Closes" class="c-meta ${closes?.tone ? `tone-${closes.tone}` : ""}">${closes ? esc(closes.text) : ""}</td>
@@ -583,6 +589,30 @@ const OUTREACH: Record<string, { label: string; tone: string }> = {
   conversation: { label: "In conversation", tone: "ok" },
   skipped: { label: "Skipped", tone: "muted" },
 };
+
+/**
+ * Back to the list the role was opened from, and the roles either side of it there, so I can
+ * walk the list without going back to it. Opened from elsewhere (Home, a task), it's the
+ * Active list, or All when the role isn't active.
+ */
+function roleNav(o: Opportunity, inParam: string | null): string {
+  const known = (k: string | null): k is string => !!k && (k.startsWith("source:") || FILTERS.some((f) => f.key === k));
+  const pick = known(inParam) ? inParam : (ACTIVE as readonly string[]).includes(o.status) ? "active" : "all";
+  let from = pick;
+  let ids = listRows<{ id: number }>(from, "id").map((r) => r.id);
+  // The role left that list (I marked it applied, or it was dropped): walk All instead.
+  if (!ids.includes(o.id)) { from = "all"; ids = listRows<{ id: number }>(from, "id").map((r) => r.id); }
+  const at = ids.indexOf(o.id);
+  const backHref = from.startsWith("source:") ? `/list?source=${encodeURIComponent(from.slice(7))}` : `/list?status=${from}`;
+  const backLabel = from.startsWith("source:") ? `From ${sourceLabel(from.slice(7))}` : from === "active" ? "Roles" : `${FILTERS.find((f) => f.key === from)!.label} roles`;
+  const back = `<a class="back" href="${esc(backHref)}">${icon("back")}${esc(backLabel)}</a>`;
+  if (at < 0 || ids.length < 2) return `<div class="role-nav">${back}</div>`;
+  const href = (id: number) => `/o/${id}?in=${encodeURIComponent(from)}`;
+  const step = (id: number | undefined, label: string, rel: "prev" | "next") => id
+    ? `<a class="btn quiet sm" href="${href(id)}" rel="${rel}" data-nav="${rel}" title="${label} role (${rel === "prev" ? "←" : "→"})">${rel === "prev" ? icon("back") : ""}${label}${rel === "next" ? icon("chevron") : ""}</a>`
+    : `<span class="btn quiet sm" aria-disabled="true">${rel === "prev" ? icon("back") : ""}${label}${rel === "next" ? icon("chevron") : ""}</span>`;
+  return `<div class="role-nav">${back}<nav class="pager" aria-label="Move between roles">${step(ids[at - 1], "Previous", "prev")}<span class="pager-at num">${at + 1} of ${ids.length}</span>${step(ids[at + 1], "Next", "next")}</nav></div>`;
+}
 
 function detail(id: number, q: URLSearchParams) {
   const o = getOpportunity(id);
@@ -676,7 +706,7 @@ ${r.reply ? `<div class="callout" style="margin-top:14px"><b>Their reply:</b> ${
   ].filter(Boolean).join("");
 
   return page(`${o.role} · ${o.company}`, `
-<a class="back" href="/list">${icon("back")}Roles</a>
+${roleNav(o, q.get("in"))}
 <header class="role-head"><h1>${esc(o.role)}</h1><p class="company">${esc(o.company)}</p>
 <div class="badges">${statusBadge(o.status)}${fitBadge(o.fit_verdict)}${closes?.tone ? badge(closes.text, closes.tone) : ""}</div></header>
 <div class="toolbar">${toolbar}</div>${!packing && (isOpen || o.pack_status === "ready") ? claudeHint("Packs are built") : ""}
