@@ -1,6 +1,6 @@
-import { spawn } from "node:child_process";
 import { mkdirSync } from "node:fs";
 import path from "node:path";
+import { spawnCli, stopTree } from "./cli-spawn.ts";
 import { PlanUnavailableError } from "./errors.ts";
 
 /** What `claude -p --output-format json` prints as its last line. */
@@ -38,11 +38,16 @@ export function spawnClaude(args: string[], prompt: string, timeoutMs: number): 
     const env = { ...process.env };
     delete env.ANTHROPIC_API_KEY;
     delete env.ANTHROPIC_AUTH_TOKEN;
-    const child = spawn(process.env.JH_CLAUDE_BIN ?? "claude", args, { cwd, env, stdio: ["pipe", "pipe", "pipe"] });
+    let child: ReturnType<typeof spawnCli>;
+    try {
+      child = spawnCli(process.env.JH_CLAUDE_BIN ?? "claude", args, { cwd, env, stdio: ["pipe", "pipe", "pipe"] });
+    } catch (e) {
+      return reject(new PlanUnavailableError(`Couldn't start Claude Code: ${(e as Error).message}`));
+    }
     let out = "", err = "";
-    const timer = setTimeout(() => { child.kill("SIGTERM"); reject(new Error(`Claude Code timed out after ${timeoutMs / 60000} min`)); }, timeoutMs);
-    child.stdout.on("data", (d) => (out += d));
-    child.stderr.on("data", (d) => (err += d));
+    const timer = setTimeout(() => { stopTree(child); reject(new Error(`Claude Code timed out after ${timeoutMs / 60000} min`)); }, timeoutMs);
+    child.stdout!.on("data", (d) => (out += d));
+    child.stderr!.on("data", (d) => (err += d));
     child.on("error", (e) => { clearTimeout(timer); reject(new PlanUnavailableError(`Couldn't start Claude Code: ${e.message}`)); });
     child.on("close", (code) => {
       clearTimeout(timer);
@@ -64,6 +69,6 @@ export function spawnClaude(args: string[], prompt: string, timeoutMs: number): 
       }
       resolve(parsed);
     });
-    child.stdin.end(prompt);
+    child.stdin!.end(prompt);
   });
 }

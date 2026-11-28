@@ -1,6 +1,6 @@
 # Desktop app
 
-A menu bar (tray) app for macOS and Linux. It runs the worker from `src/worker/client.ts`: it takes
+A menu bar (tray) app for macOS, Windows and Linux. It runs the worker from `src/worker/client.ts`: it takes
 Claude Code steps from the person's hub, runs them on this computer with their own `claude`, signed
 in to their own Claude plan, and sends the answers back. It also opens the hub's dashboard in a
 window and keeps itself up to date. The plan is in [docs/desktop-app-plan.md](../../docs/desktop-app-plan.md)
@@ -20,12 +20,14 @@ It has its own `package.json`; nothing here is added to the repo's root dependen
   The dashboard's requests carry `kindahired-app/<version>` in the user agent, so the hub can tell
   the app from a browser.
 - **Where things are kept:** the token is encrypted with Electron `safeStorage` (the macOS Keychain,
-  or GNOME Keyring / KWallet on Linux) in `worker-token.bin`; preferences are in `settings.json`. Both live in the app's data folder (`~/Library/Application Support/kindahired`,
-  `~/.config/kindahired`). The worker runs Claude Code in `<data folder>/agent`, an empty folder:
+  Windows DPAPI, or GNOME Keyring / KWallet on Linux) in `worker-token.bin`; preferences are in `settings.json`. Both live in the app's data folder (`~/Library/Application Support/kindahired`,
+  `%APPDATA%\kindahired`, `~/.config/kindahired`). The worker runs Claude Code in `<data folder>/agent`, an empty folder:
   the app sets `JH_DATA_DIR` to its data folder, and the worker never loads the repo's `config.ts`
   or `.env` (`scripts/bundle.mjs` fails the build if it would).
 - **Claude Code check:** looks for `claude` on `PATH`, then in `~/.claude/local`, `~/.local/bin`,
-  `/opt/homebrew/bin` and `/usr/local/bin`; runs `claude -p "Reply with ok" --output-format json`
+  `/opt/homebrew/bin` and `/usr/local/bin` (on Windows: `claude.exe`, then npm's `claude.cmd`, on
+  `PATH`, then in `~\.local\bin`, `~\.claude\local` and `%APPDATA%\npm`; a `.cmd` is read for the
+  program it starts, which is run directly, with no console window); runs `claude -p "Reply with ok" --output-format json`
   once at start (and from **Check again**), without any `ANTHROPIC_API_KEY`; and sets
   `JH_CLAUDE_BIN` for the worker. If it's missing or signed out, the window and tray say so and
   link to https://claude.com/claude-code. The app never reads or stores Claude's credentials.
@@ -33,10 +35,10 @@ It has its own `package.json`; nothing here is added to the repo's root dependen
   dashboard, Pause worker, Settings…, Check for updates, Quit. Closing every window leaves it
   running. The dashboard window keeps its own persistent session, so the Cloudflare Access login is
   remembered; links to other sites open in the browser.
-- **Open at login** (on by default, after setup): a login item on macOS, an
+- **Open at login** (on by default, after setup): a login item on macOS and Windows, an
   `~/.config/autostart/kindahired.desktop` entry on Linux. While a Claude step runs, the app holds
   a `prevent-app-suspension` power blocker, and only then.
-- **Updates:** electron-updater with the GitHub provider, on macOS and the AppImage. The `.deb`
+- **Updates:** electron-updater with the GitHub provider, on macOS, Windows and the AppImage. The `.deb`
   can't replace itself, so it shows a "new version" notice with a download link instead.
 
 ## Names in one place
@@ -62,7 +64,7 @@ Updates and the login item only run in the installed app.
 
 ```sh
 npm run dist:dir    # an unpacked app in release/ for this computer, quickest
-npm run dist        # macOS: universal .dmg and .zip; Linux: AppImage and .deb
+npm run dist        # macOS: universal .dmg and .zip; Windows: NSIS .exe (x64 + arm64); Linux: AppImage and .deb
 ```
 
 Without signing secrets the macOS app is signed ad hoc: it runs on the computer that built it, but
@@ -109,11 +111,19 @@ in your shell, with `APPLE_API_KEY` set to the `.p8` file's path.
    sign in with your Claude account.
 2. From the Releases page, download:
    - **macOS:** `kindahired-<version>.dmg`. Open it and drag the app to Applications.
+   - **Windows:** `kindahired-Setup-<version>.exe`. It installs for your user only, with no
+     administrator prompt, and updates itself. It isn't signed yet, so the first time Windows may
+     say it protected your PC: choose **More info**, then **Run anyway**.
    - **Linux:** the `.AppImage` (make it executable: `chmod +x kindahired-*.AppImage`, then run it;
      it updates itself), or the `.deb` (`sudo apt install ./kindahired-*.deb`; it tells you when a
      new version is out).
 3. Open the app and sign in with your email code. The tick icon in the menu bar or tray shows the
    status.
+
+On Windows, install the Windows version of Claude Code (its installer puts `claude.exe` in
+`~\.local\bin`; an npm install's `claude.cmd` in `%APPDATA%\npm` works too). Claude Code may also
+ask for Git for Windows. A `claude` installed inside WSL can't be used by the app. Clicking the tray
+icon opens the app; right-click for the menu.
 
 On Linux the tray needs a desktop with tray support (GNOME needs the AppIndicator extension), and
 the token is best kept with GNOME Keyring or KWallet installed.

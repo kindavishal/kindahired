@@ -17,7 +17,8 @@ Status: being built. Version 4, 2026-11-26. The build contracts are in [hub-buil
   users), so there's no CASA.
 - **Quick steps:** Gemini free tier by default, or Haiku 5.5 when the person has API credit.
 - **Desktop app:** macOS, signed and notarized with the existing Apple account, with auto-update.
-  Linux as AppImage and `.deb`. No Windows.
+  Linux as AppImage and `.deb`. Windows as an unsigned NSIS installer (x64 and arm64 in one file)
+  until there is a signing certificate.
 - **LinkedIn:** later. It needs the person's own browser, so it will move to the worker after the
   first beta.
 

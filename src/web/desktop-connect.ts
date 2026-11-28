@@ -11,7 +11,7 @@ const hubMode = () => process.env.JH_HUB === "1";
 const RELEASES_REPO = "kindavishal/kindahired";
 const RELEASES = `https://github.com/${RELEASES_REPO}/releases/latest`;
 
-type Downloads = { version: string; mac?: string; appImage?: string; deb?: string };
+type Downloads = { version: string; mac?: string; windows?: string; appImage?: string; deb?: string };
 let cached: { at: number; value: Downloads | null } | null = null;
 
 /** The latest release's files, so the buttons download them directly. Cached for 10 minutes; null when GitHub can't be reached. */
@@ -26,7 +26,7 @@ async function latestDownloads(): Promise<Downloads | null> {
     if (r.ok) {
       const rel = (await r.json()) as { tag_name?: string; assets?: { name: string; browser_download_url: string }[] };
       const find = (re: RegExp) => rel.assets?.find((a) => re.test(a.name))?.browser_download_url;
-      value = { version: (rel.tag_name ?? "").replace(/^desktop-v/, ""), mac: find(/\.dmg$/), appImage: find(/\.AppImage$/), deb: find(/\.deb$/) };
+      value = { version: (rel.tag_name ?? "").replace(/^desktop-v/, ""), mac: find(/\.dmg$/), windows: find(/Setup.*\.exe$/), appImage: find(/\.AppImage$/), deb: find(/\.deb$/) };
     }
   } catch {
     value = null;
@@ -36,15 +36,17 @@ async function latestDownloads(): Promise<Downloads | null> {
 }
 
 function downloadButtons(d: Downloads | null): string {
-  if (!d || !(d.mac || d.appImage || d.deb)) {
-    return `<div class="btn-row">${linkButton(RELEASES, `${icon("download")}Download for macOS or Linux`, "primary", true)}</div>`;
+  if (!d || !(d.mac || d.windows || d.appImage || d.deb)) {
+    return `<div class="btn-row">${linkButton(RELEASES, `${icon("download")}Download for macOS, Windows or Linux`, "primary", true)}</div>`;
   }
   const btns = [
     d.mac && linkButton(d.mac, `${icon("download")}macOS (.dmg)`, "primary"),
+    d.windows && linkButton(d.windows, `${icon("download")}Windows (.exe)`),
     d.appImage && linkButton(d.appImage, `${icon("download")}Linux (.AppImage)`),
     d.deb && linkButton(d.deb, `${icon("download")}Linux (.deb)`),
   ].filter(Boolean);
-  return `<div class="btn-row">${btns.join("")}</div>`;
+  const winNote = d.windows ? `<p class="muted small">On Windows, the first time you open it Windows may say it protected your PC: choose More info, then Run anyway.</p>` : "";
+  return `<div class="btn-row">${btns.join("")}</div>${winNote}`;
 }
 
 /** The person's own "Get the app" page: downloads, Claude Code, sign in. */
@@ -57,7 +59,7 @@ function appPage(downloads: Downloads | null): string {
 <p class="lede">Packs and research are made by the app on your computer, with your own Claude plan.</p></div>${status}
 <ol class="steps">
 <li><p>Download the app and install it.</p>${downloadButtons(downloads)}</li>
-<li><p>Install <a href="https://claude.com/claude-code" target="_blank" rel="noopener">Claude Code</a> and sign in to your Claude account.</p></li>
+<li><p>Install <a href="https://claude.com/claude-code" target="_blank" rel="noopener">Claude Code</a> and sign in to your Claude account.</p><p class="muted small">On Windows, install the Windows version of Claude Code (it may ask for Git for Windows too). A copy inside WSL won't work with the app.</p></li>
 <li><p>Open the app and sign in with your email.</p></li>
 </ol></div>`, { tab: "setup" });
 }

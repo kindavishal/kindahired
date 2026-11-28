@@ -25,7 +25,7 @@ test("person ids come from the email and never clash", () => {
 
 test("the invite says what to do, with this email", () => {
   const m = inviteText("asha@example.com", "https://kindahired.example");
-  assert.match(m.text, /Download the app for Mac or Linux: https:\/\/kindahired\.example/);
+  assert.match(m.text, /Download the app for Mac, Windows or Linux: https:\/\/kindahired\.example/);
   assert.match(m.text, /sign in with asha@example\.com\. We'll email you a code/);
 });
 

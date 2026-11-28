@@ -6,7 +6,8 @@ import os from "node:os";
 import path from "node:path";
 import { once } from "node:events";
 import { test } from "node:test";
-import { checkClaude, claudeCandidates, findClaude, interpretCheck, widenedPath } from "../src/claude.ts";
+import { checkClaude, claudeCandidates, findClaude, interpretCheck, missingMessage, widenedPath } from "../src/claude.ts";
+import { launchFor } from "../../../src/llm/cli-spawn.ts";
 import { addDone, autostartDesktopEntry, compareVersions, deepLinkTarget, DEFAULT_SETTINGS, doneToday, loadSettings, normalizeHubUrl, saveSettings, settingsFile } from "../src/settings.ts";
 
 const tmp = () => mkdtempSync(path.join(os.tmpdir(), "kh-desktop-"));
@@ -61,7 +62,7 @@ test("the Linux autostart entry quotes the path", () => {
 
 test("claude is looked for on PATH first, then the usual install places", () => {
   const home = "/home/sam";
-  const list = claudeCandidates({ home, pathEnv: ["/usr/bin", "relative/bin", "/usr/local/bin"].join(path.delimiter), platform: "linux" });
+  const list = claudeCandidates({ home, pathEnv: ["/usr/bin", "relative/bin", "/usr/local/bin"].join(":"), platform: "linux" });
   assert.deepEqual(list, [
     "/usr/bin/claude",
     "/usr/local/bin/claude",
@@ -74,7 +75,38 @@ test("claude is looked for on PATH first, then the usual install places", () => 
   assert.equal(findClaude({ home, pathEnv: "", platform: "linux", isExecutable: () => false }), null);
 });
 
-test("the real file check finds an executable claude and skips one that isn't", () => {
+test("claude on Windows: claude.exe before npm's claude.cmd, then the installer and npm folders", () => {
+  const home = "C:\\Users\\sam";
+  const list = claudeCandidates({ home, pathEnv: "C:\\Tools;relative;c:\\tools", platform: "win32", env: { APPDATA: "C:\\Users\\sam\\AppData\\Roaming" } });
+  assert.deepEqual(list, [
+    "C:\\Tools\\claude.exe",
+    "C:\\Tools\\claude.cmd",
+    "C:\\Users\\sam\\.local\\bin\\claude.exe",
+    "C:\\Users\\sam\\.local\\bin\\claude.cmd",
+    "C:\\Users\\sam\\.claude\\local\\claude.exe",
+    "C:\\Users\\sam\\.claude\\local\\claude.cmd",
+    "C:\\Users\\sam\\AppData\\Roaming\\npm\\claude.exe",
+    "C:\\Users\\sam\\AppData\\Roaming\\npm\\claude.cmd",
+  ]);
+  assert.match(missingMessage("win32"), /WSL/);
+  assert.doesNotMatch(missingMessage("darwin"), /WSL/);
+});
+
+test("an npm claude.cmd on Windows runs the program it points to, not cmd.exe", () => {
+  const shimJs = '@ECHO off\r\nIF EXIST "%dp0%\\node.exe" (\r\n  SET "_prog=%dp0%\\node.exe"\r\n)\r\nendLocal & "%_prog%"  "%dp0%\\node_modules\\@anthropic-ai\\claude-code\\cli.js" %*\r\n';
+  const bin = "C:\\Users\\sam\\AppData\\Roaming\\npm\\claude.cmd";
+  const js = "C:\\Users\\sam\\AppData\\Roaming\\npm\\node_modules\\@anthropic-ai\\claude-code\\cli.js";
+  assert.deepEqual(launchFor(bin, ["-p", '{"a":"b c"}'], { platform: "win32", readFile: () => shimJs, exists: () => false }), { command: "node", args: [js, "-p", '{"a":"b c"}'] });
+  assert.deepEqual(launchFor(bin, ["-p"], { platform: "win32", readFile: () => shimJs, exists: () => true }), { command: "C:\\Users\\sam\\AppData\\Roaming\\npm\\node.exe", args: [js, "-p"] });
+  const shimExe = '@ECHO off\r\n"%~dp0\\node_modules\\@anthropic-ai\\claude-code\\bin\\claude.exe"   %*\r\n';
+  assert.deepEqual(launchFor(bin, ["-p"], { platform: "win32", readFile: () => shimExe }), { command: "C:\\Users\\sam\\AppData\\Roaming\\npm\\node_modules\\@anthropic-ai\\claude-code\\bin\\claude.exe", args: ["-p"] });
+  assert.throws(() => launchFor(bin, [], { platform: "win32", readFile: () => "@echo off\r\nsomething %*" }), /Windows installer/);
+  // A .exe, and anything off Windows, runs as it is.
+  assert.deepEqual(launchFor("C:\\x\\claude.exe", ["-p"], { platform: "win32" }), { command: "C:\\x\\claude.exe", args: ["-p"] });
+  assert.deepEqual(launchFor("/usr/bin/claude", ["-p"], { platform: "linux" }), { command: "/usr/bin/claude", args: ["-p"] });
+});
+
+test("the real file check finds an executable claude and skips one that isn't", { skip: process.platform === "win32" }, () => {
   const home = tmp();
   const bin = path.join(home, ".local", "bin");
   mkdirSync(bin, { recursive: true });
@@ -87,7 +119,7 @@ test("the real file check finds an executable claude and skips one that isn't", 
 });
 
 test("PATH is widened with claude's folder and the install places, without repeats", () => {
-  const p = widenedPath(["/usr/bin", "/opt/homebrew/bin"].join(path.delimiter), "/Users/sam", "/Users/sam/.local/bin/claude").split(path.delimiter);
+  const p = widenedPath(["/usr/bin", "/opt/homebrew/bin"].join(":"), "/Users/sam", "/Users/sam/.local/bin/claude", "darwin").split(":");
   assert.deepEqual(p, ["/usr/bin", "/opt/homebrew/bin", "/Users/sam/.local/bin", "/Users/sam/.claude/local", "/usr/local/bin"]);
 });
 
