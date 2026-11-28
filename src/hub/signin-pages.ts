@@ -13,7 +13,7 @@ function shell(title: string, body: string): string {
 <style>
 :root{--bg:#fafafa;--surface:#fff;--surface-2:#f5f5f5;--ink:#0a0a0a;--ink-2:#525252;--ink-3:#6b6b6b;--line:#e5e5e5;--line-strong:#d4d4d4;--accent:#171717;--accent-hover:#2a2a2a;--accent-ink:#fafafa;--danger:#c10007;--danger-soft:#fef2f2;--info-soft:#eff6ff;--tick:#15803d;--ring:0 0 0 3px rgb(161 161 161 / .5);color-scheme:light}
 @media (prefers-color-scheme:dark){:root{--bg:#0a0a0a;--surface:#171717;--surface-2:#262626;--ink:#fafafa;--ink-2:#d4d4d4;--ink-3:#a3a3a3;--line:#2e2e2e;--line-strong:#404040;--accent:#fafafa;--accent-hover:#e5e5e5;--accent-ink:#171717;--danger:#fca5a5;--danger-soft:#2a1215;--info-soft:#172554;--tick:#4ade80;--ring:0 0 0 3px rgb(115 115 115 / .6);color-scheme:dark}}
-*{box-sizing:border-box}html,body{margin:0}body{min-height:100vh}
+*{scrollbar-width:none}::-webkit-scrollbar{display:none;width:0;height:0}*{box-sizing:border-box}html,body{margin:0}body{min-height:100vh}
 body{background:var(--bg);color:var(--ink);font:400 14px/20px ui-sans-serif,-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",system-ui,sans-serif;-webkit-font-smoothing:antialiased;display:flex;align-items:center;justify-content:center;padding:48px 16px}
 main{width:100%;max-width:400px;display:flex;flex-direction:column;gap:24px}
 .brand{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:600}

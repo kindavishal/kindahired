@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { beforeEach, test } from "node:test";
 import { useMemoryDb } from "../src/db/index.ts";
 import { getOpportunity, upsertOpportunity } from "../src/db/opportunities.ts";
-import { checkPostings, checkPostingUrl, postingLinks } from "../src/pipeline/liveness.ts";
+import { checkPostings, checkPostingUrl, isGenericJobsLink, postingLinks } from "../src/pipeline/liveness.ts";
 
 beforeEach(() => useMemoryDb());
 
@@ -92,4 +92,24 @@ test("the sweep skips closed roles not applied to, and only notes ones already a
 
   // Checked today: nothing is due again until tomorrow, and closed roles aren't re-read.
   assert.equal((await checkPostings({ deps: { fetch: f, linkedin: null } })).checked, 0);
+});
+
+test("LinkedIn's 'Not currently accepting applications' counts as closed", async () => {
+  const text = "Toast\nProgram Manager, Inclusion & Impact (APAC)\nReposted 4 days ago\nNot currently accepting applications\n" + "About the job ".repeat(60);
+  const r = await checkPostingUrl("https://www.linkedin.com/jobs/view/4486120630/", { linkedin: async () => ({ text, closed: false }) });
+  assert.equal(r.state, "closed");
+});
+
+test("a careers homepage says nothing about the job, so the LinkedIn read decides", async () => {
+  assert.equal(isGenericJobsLink("https://careers.toasttab.com/"), true);
+  assert.equal(isGenericJobsLink("https://example.com/en-us/careers/jobs"), true);
+  assert.equal(isGenericJobsLink("https://careers.toasttab.com/jobs/program-manager-inclusion-impact-apac"), false);
+  assert.equal(isGenericJobsLink("https://careers.toasttab.com/jobs?gh_jid=7012345"), false);
+  assert.equal(isGenericJobsLink("https://careers.example.com/jobs/8386495"), false);
+  const text = "Program Manager\nNot currently accepting applications\n" + "About the job ".repeat(60);
+  // No fetch routes: the homepage must not even be fetched.
+  const o = upsertOpportunity("Toast", "Program Manager", { status: "ready", apply_url: "https://careers.toasttab.com/", source_url: "https://www.linkedin.com/jobs/view/4486120630/", linkedin_job_id: "4486120630" });
+  const sum = await checkPostings({ ids: [o.id], deps: { fetch: fakeFetch({}), linkedin: async () => ({ text, closed: false }) } });
+  assert.equal(sum.closed.length, 1);
+  assert.equal(getOpportunity(o.id)!.status, "skipped");
 });

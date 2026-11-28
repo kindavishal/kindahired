@@ -20,13 +20,14 @@ const MAX_ATTEMPTS = 2;
 const graceMs = () => Number(process.env.JH_WORKER_GRACE_MS ?? 15_000);
 
 export class WorkerOfflineError extends PlanUnavailableError {
-  constructor(message = "Your computer is offline, so Claude steps are waiting.") {
+  constructor(message = "Your computer is offline, so kindahired can't prepare anything until it's back.") {
     super(message);
     this.name = "WorkerOfflineError";
   }
 }
 
-export interface ClaimedJob { id: number; args: string[]; prompt: string; timeoutMs: number }
+/** `title` says what the job is doing, for the desktop app's menu ("Writing your resume for Toast"). */
+export interface ClaimedJob { id: number; args: string[]; prompt: string; timeoutMs: number; title?: string }
 export type Completion = { result: ClaudeResult } | { error: string; planUnavailable?: boolean };
 
 const SCHEMA = `
@@ -35,6 +36,7 @@ CREATE TABLE IF NOT EXISTS worker_jobs (
   args TEXT NOT NULL,              -- JSON array of claude arguments
   prompt TEXT NOT NULL,
   timeout_ms INTEGER NOT NULL,
+  title TEXT,                      -- what it's doing, in the person's words
   attempts INTEGER NOT NULL DEFAULT 0,
   status TEXT NOT NULL DEFAULT 'queued',   -- queued | claimed | done | failed
   result TEXT,                     -- JSON ClaudeResult
@@ -57,6 +59,8 @@ function open(): { d: DatabaseSync; s: State } {
   let s = states.get(d);
   if (!s) {
     d.exec(SCHEMA);
+    // Older databases made the table before it had a title.
+    if (!(d.prepare("SELECT 1 FROM pragma_table_info('worker_jobs') WHERE name = 'title'").get())) d.exec("ALTER TABLE worker_jobs ADD COLUMN title TEXT");
     // Nobody is waiting for jobs left over from before a restart.
     d.prepare("UPDATE worker_jobs SET status = 'failed', error = 'The engine restarted before this finished', finished_at = ? WHERE status IN ('queued', 'claimed')").run(nowIso());
     d.prepare("DELETE FROM worker_jobs WHERE finished_at < ?").run(new Date(Date.now() - 24 * 3600_000).toISOString());
@@ -76,11 +80,11 @@ export function workerOnline(now = Date.now()): boolean {
 }
 
 /** Queues one Claude Code call for the desktop worker and waits for its answer. */
-export async function enqueueClaude(args: string[], prompt: string, timeoutMs: number): Promise<ClaudeResult> {
+export async function enqueueClaude(args: string[], prompt: string, timeoutMs: number, title?: string): Promise<ClaudeResult> {
   if (!workerOnline()) throw new WorkerOfflineError();
   const { d, s } = open();
-  const row = d.prepare("INSERT INTO worker_jobs (args, prompt, timeout_ms) VALUES (?, ?, ?) RETURNING id")
-    .get(JSON.stringify(args), prompt, timeoutMs) as { id: number };
+  const row = d.prepare("INSERT INTO worker_jobs (args, prompt, timeout_ms, title) VALUES (?, ?, ?, ?) RETURNING id")
+    .get(JSON.stringify(args), prompt, timeoutMs, title ?? null) as { id: number };
   const id = Number(row.id);
   const answer = new Promise<ClaudeResult>((resolve, reject) => s.waiters.set(id, { resolve, reject }));
   // A job still in the queue when the computer drops off fails now instead of waiting for it.
@@ -113,14 +117,14 @@ function takeNext(): ClaimedJob | null {
   const { d, s } = open();
   const row = d.prepare(`UPDATE worker_jobs SET status = 'claimed', claimed_at = ?, attempts = attempts + 1
     WHERE id = (SELECT id FROM worker_jobs WHERE status = 'queued' ORDER BY id LIMIT 1)
-    RETURNING id, args, prompt, timeout_ms`).get(nowIso()) as { id: number; args: string; prompt: string; timeout_ms: number } | undefined;
+    RETURNING id, args, prompt, timeout_ms, title`).get(nowIso()) as { id: number; args: string; prompt: string; timeout_ms: number; title: string | null } | undefined;
   if (!row) return null;
   const id = Number(row.id), timeoutMs = Number(row.timeout_ms);
   clearTimeout(s.timers.get(id));
   const timer = setTimeout(() => reclaim(d, s, id, timeoutMs), timeoutMs + graceMs());
   timer.unref();
   s.timers.set(id, timer);
-  return { id, args: JSON.parse(row.args), prompt: row.prompt, timeoutMs };
+  return { id, args: JSON.parse(row.args), prompt: row.prompt, timeoutMs, ...(row.title ? { title: row.title } : {}) };
 }
 
 /** A claim that didn't finish in time goes back in the queue once, then fails. */

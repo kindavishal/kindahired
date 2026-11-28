@@ -86,7 +86,7 @@ export function cardText(o: Opportunity): string {
     latestUpdate(o),
     `<b>${VERDICT[o.fit_verdict ?? ""] ?? "Not read yet"}</b>${o.gate_result === "ask" ? " · needs your call" : ""}`,
     facts && html(facts),
-    o.hard_gate && o.hard_gate !== "None" && `Gate: ${html(short(o.hard_gate, 160))}`,
+    o.hard_gate && o.hard_gate !== "None" && `Could rule you out: ${html(short(o.hard_gate, 160))}`,
     hiringLine(o),
     warmLine(o),
     "",
@@ -104,7 +104,7 @@ function cardButtons(o: Opportunity): Button[][] {
     return [...(a ? actionButtons(a) : []), ...open];
   }
   if (o.status === "skipped") return [[{ text: "Build anyway", data: `o:build:${o.id}` }], ...open];
-  return [[{ text: "Build pack", data: `o:build:${o.id}` }, { text: "Skip", data: `o:drop:${o.id}` }], ...open];
+  return [[{ text: "Prepare my application", data: `o:build:${o.id}` }, { text: "Skip", data: `o:drop:${o.id}` }], ...open];
 }
 
 export async function sendCard(opportunityId: number, opts: { silent?: boolean } = {}) {
@@ -198,7 +198,7 @@ export async function sendPack(opportunityId: number) {
   if (appId && app.questions.length) kvSet(`fill:${appId}`, String(o.id));
   const people = peopleText(o);
   if (people) await send(people.text, people.buttons);
-  if (o.card_message_id) await editMessage(o.card_message_id, `${cardText(o)}\n\n<i>Pack sent below.</i>`);
+  if (o.card_message_id) await editMessage(o.card_message_id, `${cardText(o)}\n\n<i>Your application is below.</i>`);
   logEvent("telegram.pack", o.id);
 }
 
@@ -250,12 +250,12 @@ export function digestText(now = new Date()): { text: string; top: ActionRow[] }
 
   const text = [
     `<b>Today</b> · ${now.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "short", timeZone: TIMEZONE })}`,
-    newSince ? `${newSince} new pack${newSince > 1 ? "s" : ""} ready since yesterday.` : null,
+    newSince ? `${newSince} new application${newSince > 1 ? "s" : ""} ready to send since yesterday.` : null,
     section("Interviews in the next few days", interviews),
     section("Replies you owe", replies),
     section("Apply", apply),
     section("Follow up", follow),
-    section("Send outreach", send_),
+    section("Notes to send", send_),
     section("Decide", decide),
     stalled.length ? `<b>No next step (${stalled.length})</b>\n${stalled.slice(0, 5).map((r) => `${html(r.role)} at ${html(r.company)}`).join("\n")}\nYou dropped their reminders but the roles are still open. Bring a reminder back or close the role on the dashboard.` : null,
     savedCount ? `<b>Saved on LinkedIn, not applied (${savedCount})</b>\n${savedNotApplied.map((s) => `${html(s.role)} at ${html(s.company)}`).join("\n")}` : null,
@@ -370,7 +370,7 @@ export function closingNote(o: Opportunity): { text: string; where: string; thre
 // ---------- X ----------
 
 export async function sendXStatus() {
-  if (!xConfigured()) return send("X isn't connected yet. See the README, X setup.", undefined, { silent: true });
+  if (!xConfigured()) return send(process.env.JH_HUB === "1" ? "X isn't connected yet." : "X isn't connected yet. See the README, X setup.", undefined, { silent: true });
   const st = xStatus();
   const threads = st.threads.map((t) => `· ${html(t.label ?? "thread")} until ${fmtDate(t.watch_until)}`);
   const buttons: Button[][] = st.threads.slice(0, 8).map((t) => [{ text: `Stop ${t.label ?? "thread"}`.slice(0, 40), data: `x:stop:${t.conversation_id}` }]);
@@ -380,7 +380,7 @@ export async function sendXStatus() {
     `<b>Searches</b> (${st.queries.length}): your target roles plus hiring words`,
     `<b>Accounts watched</b> (${st.accounts.length}): ${st.accounts.length ? st.accounts.map((a) => "@" + html(a)).join(", ") : "none yet. Add one with /xfollow @handle"}`,
     `<b>Threads watched</b> (${st.threads.length})${threads.length ? "\n" + threads.join("\n") : ""}`,
-    xUserConnected() ? "Bookmarks: synced" : "Bookmarks: not connected (run auth:x)",
+    xUserConnected() ? "Bookmarks: synced" : "Bookmarks: not connected",
   ].join("\n\n"), buttons, { silent: true });
 }
 
@@ -392,7 +392,7 @@ export async function sendXStatus() {
 export const NOT_A_POSTING = "That link doesn't look like a job posting. If it's a post that needs a login, paste its text along with the link.";
 
 const ago = (iso: string | null) => {
-  if (!iso) return "not scanned yet";
+  if (!iso) return "not checked yet";
   const h = (Date.now() - new Date(iso).getTime()) / 3600_000;
   return h < 1 ? `${Math.max(1, Math.round(h * 60))} min ago` : h < 48 ? `${Math.round(h)} h ago` : `${Math.round(h / 24)} days ago`;
 };
@@ -401,7 +401,7 @@ export function sourceLine(src: Source): string {
   const last = src.last_result ? describeResult(JSON.parse(src.last_result) as ScanResult) : null;
   return [
     `<b>${html(src.label)}</b>${src.status === "paused" ? " · paused" : ""}`,
-    `every ${src.interval_hours} h · last scan ${ago(src.last_scanned_at)}${last ? `: ${last}` : ""}`,
+    `every ${src.interval_hours} h · last checked ${ago(src.last_scanned_at)}${last ? `: ${last}` : ""}`,
     src.last_error && `⚠ ${html(src.last_error)}`,
   ].filter(Boolean).join("\n");
 }
@@ -413,9 +413,9 @@ export async function sendSources() {
     return;
   }
   await send(
-    [`<b>Watched pages (${sources.length})</b>`, ...sources.map(sourceLine), "Add another with <code>/watch https://…</code>"].join("\n\n"),
+    [`<b>Job pages to check (${sources.length})</b>`, ...sources.map(sourceLine), "Add another with <code>/watch https://…</code>"].join("\n\n"),
     sources.map((src) => [
-      { text: `Scan ${src.label}`.slice(0, 40), data: `s:scan:${src.id}` },
+      { text: `Check ${src.label}`.slice(0, 40), data: `s:scan:${src.id}` },
       src.status === "paused" ? { text: "Resume", data: `s:resume:${src.id}` } : { text: "Pause", data: `s:pause:${src.id}` },
       { text: "Remove", data: `s:remove:${src.id}` },
     ]),
@@ -488,20 +488,20 @@ export async function handleIncoming(msg: Incoming, hooks: Hooks) {
       if (!o) reply = "Not found";
       else if (verb === "card") { await sendCard(id); reply = "Summary"; }
       else if (verb === "build") {
-        if (o.pack_status === "ready" && o.resume_path) { await sendPack(id); reply = "Here's the pack"; }
+        if (o.pack_status === "ready" && o.resume_path) { await sendPack(id); reply = "Here's your application"; }
         else {
           // Only a skip is undone; any other status is left for automation to move forward
           // (locking it here is what kept a later "applied" email from registering).
           updateOpportunity(id, { pack_status: "approved" });
           if (o.status === "skipped" || o.status === "dropped") updateOpportunity(id, { status: "found" }, { byUser: true });
           const wait = waitingFor();
-          const note = wait === "install" ? "The pack is built by the kindahired app on your computer, with your own Claude plan. Install it and the pack starts on its own."
-            : wait === "open" ? "The pack starts when the kindahired app is open on your computer."
-            : "Building the pack: resume, application and people. Usually 2 to 4 minutes.";
+          const note = wait === "install" ? "Your application is prepared by the kindahired app on your computer, with your own Claude plan. Install it and it starts on its own."
+            : wait === "open" ? "It starts when the kindahired app is open on your computer."
+            : "Preparing your application: resume, cover note and people to contact. Usually 2 to 4 minutes.";
           const download = wait === "install" && process.env.JH_PUBLIC_URL ? [[{ text: "Download the app", url: new URL("app", process.env.JH_PUBLIC_URL).toString() } as Button]] : undefined;
           if (msg.messageId) await editMessage(msg.messageId, `${cardText(getOpportunity(id)!)}\n\n<i>${note}</i>`, download);
           hooks.kick();
-          reply = wait === "running" ? "Building the pack" : "Pack queued";
+          reply = wait === "running" ? "Preparing your application" : "Starts soon";
         }
       } else if (verb === "closenote") {
         const note = closingNote(o);
@@ -535,11 +535,11 @@ export async function handleIncoming(msg: Incoming, hooks: Hooks) {
       }
     } else if (scope === "s") {
       const src = getSource(id);
-      if (verb === "list") { await sendSources(); reply = "Watched pages"; }
+      if (verb === "list") { await sendSources(); reply = "Job pages to check"; }
       else if (!src) reply = "Not watching that page any more";
       else if (verb === "scan") {
         void hooks.scanNow(id, { report: true, force: true }).catch(() => {});
-        reply = `Scanning ${src.label}`;
+        reply = `Checking ${src.label}`;
       } else if (verb === "pause") { setSourceStatus(id, "paused"); reply = `Paused ${src.label}`; }
       else if (verb === "resume") { setSourceStatus(id, "active"); reply = `Watching ${src.label} again`; }
       else if (verb === "remove") {
@@ -548,8 +548,8 @@ export async function handleIncoming(msg: Incoming, hooks: Hooks) {
       }
       if (msg.messageId && src && ["pause", "resume", "remove"].includes(verb)) {
         const left = listSources();
-        if (left.length) await editMessage(msg.messageId, [`<b>Watched pages (${left.length})</b>`, ...left.map(sourceLine)].join("\n\n"), left.map((x) => [
-          { text: `Scan ${x.label}`.slice(0, 40), data: `s:scan:${x.id}` },
+        if (left.length) await editMessage(msg.messageId, [`<b>Job pages to check (${left.length})</b>`, ...left.map(sourceLine)].join("\n\n"), left.map((x) => [
+          { text: `Check ${x.label}`.slice(0, 40), data: `s:scan:${x.id}` },
           x.status === "paused" ? { text: "Resume", data: `s:resume:${x.id}` } : { text: "Pause", data: `s:pause:${x.id}` },
           { text: "Remove", data: `s:remove:${x.id}` },
         ]));
@@ -558,7 +558,7 @@ export async function handleIncoming(msg: Incoming, hooks: Hooks) {
     } else if (scope === "p" && verb === "stop") {
       setStayInTouch(id, 0);
       if (msg.messageId) await clearButtons(msg.messageId);
-      reply = "No more stay-in-touch reminders for them";
+      reply = "No more check-in reminders for them";
     } else if (scope === "c" && verb === "list") {
       await sendCompanies();
       reply = "Target companies";

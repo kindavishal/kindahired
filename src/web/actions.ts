@@ -85,11 +85,11 @@ export function directActions(actions: ActionRow[]): Map<number, Direct> {
     const p = key.split(":");
     const opp = a.opportunity_id ? t.opps.get(a.opportunity_id) : undefined;
     const role = a.opportunity_id ? `/o/${a.opportunity_id}` : null;
-    const pack: Direct | null = role ? { label: "Open the pack", href: role, external: false } : null;
+    const pack: Direct | null = role ? { label: "Open your application", href: role, external: false } : null;
     let d: Direct | null = null;
 
     if (a.kind === "apply" || a.kind === "deadline") {
-      d = opp?.apply_url ? { label: "Apply", href: opp.apply_url, external: true, note: "Your resume and cover note are in the pack. This clears when the confirmation email arrives." } : pack;
+      d = opp?.apply_url ? { label: "Apply", href: opp.apply_url, external: true, note: "Your resume and cover note are on the role page. This clears when the confirmation email arrives." } : pack;
     } else if (a.kind === "decide") {
       d = role ? { label: key.startsWith("loop:offer:") ? "Read the offer" : "Review the role", href: role, external: false } : null;
     } else if (a.kind === "interview") {

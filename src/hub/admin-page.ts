@@ -58,7 +58,7 @@ export function adminPage(o: { requests: AccessRequest[]; people: PersonRow[]; f
 <meta name="color-scheme" content="light dark"><title>Admin · kindahired</title><style>
 :root{--bg:#fafafa;--surface:#fff;--ink:#0a0a0a;--ink-3:#6b6b6b;--line:#e5e5e5;--accent:#171717;--on-accent:#fafafa;--ok:#15803d;--bad:#c10007;--info:#eff6ff}
 @media (prefers-color-scheme:dark){:root{--bg:#0a0a0a;--surface:#171717;--ink:#fafafa;--ink-3:#a3a3a3;--line:#2e2e2e;--accent:#fafafa;--on-accent:#0a0a0a;--ok:#86efac;--bad:#fca5a5;--info:#172554}}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/20px ui-sans-serif,-apple-system,system-ui,sans-serif}
+*{scrollbar-width:none}::-webkit-scrollbar{display:none;width:0;height:0}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/20px ui-sans-serif,-apple-system,system-ui,sans-serif}
 main{max-width:1000px;margin:0 auto;padding:32px 24px 48px;display:flex;flex-direction:column;gap:28px}
 h1{font-size:24px;line-height:30px;margin:0}h2{font-size:17px;margin:0 0 10px}a{color:inherit;text-underline-offset:3px}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
@@ -76,7 +76,7 @@ ${o.flash ? `<p class="flash" role="status">${esc(o.flash)}</p>` : ""}
     ? `<table><thead><tr><th>Who</th><th>When</th><th></th></tr></thead><tbody>${pending.map(reqRow).join("")}</tbody></table>`
     : `<p class="empty">No requests waiting.</p>`}</div></section>
 <section><h2>People · ${o.people.length}</h2><div class="panel">${o.people.length
-    ? `<table><thead><tr><th>Who</th><th>App</th><th>Claude steps waiting</th><th>Telegram</th></tr></thead><tbody>${o.people.map(personRow).join("")}</tbody></table>`
+    ? `<table><thead><tr><th>Who</th><th>App</th><th>Jobs waiting</th><th>Telegram</th></tr></thead><tbody>${o.people.map(personRow).join("")}</tbody></table>`
     : `<p class="empty">Nobody yet.</p>`}</div></section>
 ${decided.length ? `<section><h2>Decided</h2><div class="panel"><table><thead><tr><th>Who</th><th>When</th><th></th></tr></thead><tbody>${decided.map(reqRow).join("")}</tbody></table></div></section>` : ""}
 </main></body></html>`;

@@ -11,6 +11,8 @@ import { isAccountError } from "../src/jobs.ts";
 import { refusedArgs, startWorker, type Spawner } from "../src/worker/client.ts";
 import { claimJob, completeJob, enqueueClaude, workerOnline, workerStatus, WorkerOfflineError } from "../src/worker/queue.ts";
 import { startServer } from "../src/web/server.ts";
+import { describeStep } from "../src/worker/describe.ts";
+import { upsertOpportunity } from "../src/db/opportunities.ts";
 
 const TOKEN = "test-worker-token";
 let server: Server;
@@ -80,6 +82,20 @@ test("a Claude step on the hub goes through the desktop worker and back", async 
   const s = workerStatus();
   assert.equal(s.queued + s.claimed, 0);
   assert.ok(s.lastSeen);
+});
+
+test("the desktop app is told what each job is doing, in plain words", async () => {
+  process.env.JH_CLAUDE_VIA = "worker";
+  kvSet("worker.lastSeen", new Date().toISOString());
+  const o = upsertOpportunity("Toast (APAC)", "Program Manager", { status: "ready" });
+  assert.equal(describeStep(`resume:${o.id}`), "Writing your resume for Toast");
+  assert.equal(describeStep("resume:999999"), "Writing a resume");
+  assert.equal(describeStep("something.new"), "Preparing something for you");
+  const answer = claudeStructured(`fit:${o.id}`, z.object({ ok: z.boolean() }), { system: "Be brief.", prompt: "Fit?" });
+  const job = await claimJob(1000);
+  assert.equal(job?.title, "Checking how well you fit Toast");
+  completeJob(job!.id, { result: { is_error: false, result: "", structured_output: { ok: true } } as ClaudeResult });
+  assert.deepEqual(await answer, { ok: true });
 });
 
 test("a plan problem on the computer comes back as PlanUnavailableError", async () => {

@@ -10,7 +10,7 @@ import { BOARD_LABEL, parseBoard } from "../pipeline/companies.ts";
 import { STATUS, esc } from "./ui.ts";
 
 export type Hit = {
-  group: "Link" | "Do" | "Roles" | "Companies" | "People" | "Tasks" | "Watched pages" | "Go to";
+  group: "Link" | "Do" | "Roles" | "Companies" | "People" | "Tasks" | "Job pages to check" | "Go to";
   label: string;
   sub?: string;
   icon: string;
@@ -34,7 +34,7 @@ const PAGES: { label: string; href: string; icon: string; words: string }[] = [
   { label: "Progress", href: "/progress", icon: "activity", words: "progress pipeline stages weekly" },
   { label: "People", href: "/people", icon: "users", words: "people contacts network" },
   { label: "Companies", href: "/companies", icon: "building", words: "companies targets boards" },
-  { label: "Watched pages", href: "/sources", icon: "eye", words: "watched pages sources boards careers" },
+  { label: "Job pages to check", href: "/sources", icon: "eye", words: "job pages to check watched pages sources boards careers" },
   { label: "Reminder timings", href: "/timers", icon: "timer", words: "timers reminders settings timings" },
 ];
 
@@ -70,7 +70,7 @@ function linkHits(q: string): Hit[] {
 
   const kind = linkKind(url);
   const board = parseBoard(url);
-  const pack: Hit = { group: "Link", label: "Make a pack for this posting", sub: "Fit read, resume, cover note and people to contact, sent to Telegram", icon: "plus-circle", post: { action: "/add", fields: { url } } };
+  const pack: Hit = { group: "Link", label: "Prepare an application for this posting", sub: "Fit read, resume, cover note and people to contact, sent to Telegram", icon: "plus-circle", post: { action: "/add", fields: { url } } };
   const watch: Hit = { group: "Link", label: "Watch this page for new roles", sub: "Checked every 6 hours; roles that fit reach Telegram", icon: "eye", post: { action: "/sources", fields: { url, interval: "6" } } };
   const company: Hit | null = board
     ? { group: "Link", label: `Add ${board.slug} as a target company`, sub: `Watch their ${BOARD_LABEL[board.type]} board`, icon: "building", post: { action: "/companies", fields: { names: board.slug, link: url } } }
@@ -113,7 +113,7 @@ export function searchAll(raw: string): Hit[] {
   }
   for (const s of all<{ id: number; label: string; url: string }>(
     "SELECT id, label, url FROM sources WHERE label LIKE $l ESCAPE '\\' OR url LIKE $l ESCAPE '\\' LIMIT 3", { l })) {
-    hits.push({ group: "Watched pages", label: s.label, sub: s.url, icon: "eye", href: "/sources" });
+    hits.push({ group: "Job pages to check", label: s.label, sub: s.url, icon: "eye", href: "/sources" });
   }
   const words = q.toLowerCase().split(/\s+/);
   for (const p of PAGES.filter((x) => words.every((w) => `${x.label} ${x.words}`.toLowerCase().includes(w))).slice(0, 4)) {
@@ -138,7 +138,7 @@ export function searchPageBody(q: string, hits: Hit[], icon: (n: string) => stri
       : `<li><a class="cmd-item" href="${esc(h.href ?? "/")}">${inner}</a></li>`;
   };
   return `<div class="vstack page-stack-sm search-page">
-<div><h1>Search</h1><p class="lede">Find roles, companies, people and tasks, or paste a link to a posting, a job board or a careers page.</p></div>
+<h1>Search</h1>
 <form method="get" action="/search" class="search-page-form"><label class="sr" for="sp-q">Search or paste a link</label><input id="sp-q" type="search" name="q" value="${esc(q)}" placeholder="Search or paste a link" autofocus class="full"><button class="btn primary">Search</button></form>
 ${hits.length ? groups.map((g) => `<section class="panel"><p class="cmd-group">${esc(g)}</p><ul class="cmd-results">${hits.filter((h) => h.group === g).map(item).join("")}</ul></section>`).join("")
     : `<div class="panel"><div class="empty"><p class="empty-title">Nothing matches “${esc(q)}”.</p><p>Try part of a name or company, or paste a link.</p></div></div>`}

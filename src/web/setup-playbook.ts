@@ -19,13 +19,13 @@ export function playbookDone(): boolean {
 }
 
 function playbookPage(text: string, o: { errors?: string[]; flash?: string | null } = {}): string {
-  return page("Playbook · kindahired", `<div class="stack setup">${backToSetup}
-<div><h1>Your playbook</h1><p class="lede">The playbook tells kindahired how you judge a role and how you write: what you want, what you won't take, your strongest stories, and the tone of your notes. Every fit read, resume and note follows it.</p>
+  return page("How you work · kindahired", `<div class="stack setup">${backToSetup}
+<div><h1>How you work</h1><p class="lede">This tells kindahired how you judge a role and how you write: what you want, what you won't take, your strongest stories, and the tone of your notes. Every fit read, resume and note follows it.</p>
 <p class="hint">Plain text or Markdown. Write it the way you would brief a friend helping with your search.</p></div>
 ${errorBox(o.errors ?? [])}
 <form method="post" action="/setup/playbook" class="stack">
-<div class="panel"><div class="form-row"><label for="pb-text">Playbook</label><textarea class="field tall" id="pb-text" name="playbook" spellcheck="true">${esc(text)}</textarea></div></div>
-<div class="btn-row"><button class="btn primary">Save playbook</button></div></form>
+<div class="panel"><div class="form-row"><label for="pb-text">How you work</label><textarea class="field tall" id="pb-text" name="playbook" spellcheck="true">${esc(text)}</textarea></div></div>
+<div class="btn-row"><button class="btn primary">Save</button></div></form>
 </div>`, { tab: "setup", flash: o.flash });
 }
 
@@ -49,7 +49,7 @@ export async function setupPlaybookRoute(req: http.IncomingMessage, res: http.Se
   // Browsers send textarea line breaks as CRLF; the file keeps plain LF.
   writeFileSync(tmp, text.replace(/\r\n/g, "\n"));
   renameSync(tmp, PATHS.playbook);
-  res.writeHead(303, { location: "/setup/playbook?flash=" + encodeURIComponent("Playbook saved."), "cache-control": "no-store" });
+  res.writeHead(303, { location: "/setup/playbook?flash=" + encodeURIComponent("Saved."), "cache-control": "no-store" });
   res.end();
   return true;
 }

@@ -34,7 +34,7 @@ export function withBrowser<T>(fn: (ctx: BrowserContext) => Promise<T>, opts: { 
 async function openBrowser<T>(fn: (ctx: BrowserContext) => Promise<T>, opts: { headless?: boolean } = {}): Promise<T> {
   if (existsSync(LOCK)) {
     const pid = Number(readFileSync(LOCK, "utf8"));
-    if (pid && pid !== process.pid && pidAlive(pid)) throw new LinkedInUnavailable("The LinkedIn browser is in use by another process.");
+    if (pid && pid !== process.pid && pidAlive(pid)) throw new LinkedInUnavailable("LinkedIn is busy with another check. It tries again soon.");
   }
   writeFileSync(LOCK, String(process.pid));
   // The same full browser for the visible login window and the background runs, so both read the
@@ -190,6 +190,9 @@ export async function syncLinkedInJobs(): Promise<{ saved: SavedJob[]; applied: 
 }
 
 /** The job description and whether it's still taking applications. */
+/** LinkedIn's wording on a job that's closed. It has said both "No longer accepting applications" and "Not currently accepting applications". */
+export const LINKEDIN_CLOSED = /(?:no longer|not currently) accepting applications/i;
+
 export async function readLinkedInJob(jobId: string): Promise<{ text: string; closed: boolean }> {
   return withBrowser(async (ctx) => {
     const page = await ctx.newPage();
@@ -205,7 +208,7 @@ export async function readLinkedInJob(jobId: string): Promise<{ text: string; cl
       while ((node = walker.nextNode())) { const t = node.textContent.trim(); if (t) parts.push(t); }
       return parts.join("\\n");
     })()`).catch(() => ""));
-    return { text: text.slice(0, 15000), closed: /no longer accepting applications/i.test(text) };
+    return { text: text.slice(0, 15000), closed: LINKEDIN_CLOSED.test(text) };
   });
 }
 
@@ -316,7 +319,7 @@ function roleKeywords(role: string): string[] {
  */
 export async function findPeopleOnLinkedIn(company: string, role: string): Promise<PersonCandidate[]> {
   if (!existsSync(PATHS.browserProfile)) throw new LinkedInUnavailable("LinkedIn isn't set up. Run: npm run jh -- linkedin:login");
-  if (budgetLeft() <= 0) throw new LinkedInUnavailable("Daily LinkedIn visit cap reached.");
+  if (budgetLeft() <= 0) throw new LinkedInUnavailable("It reached today's LinkedIn visit limit, which keeps your account safe. It carries on tomorrow.");
   const companyKey = company.replace(/\(.*?\)/g, "").trim().toLowerCase().split(/\s+/)[0];
 
   return withBrowser(async (ctx) => {

@@ -260,7 +260,7 @@ test("cross-origin and origin-less POSTs are refused on every setup route", asyn
 
 test("setup checklist and the one Home callout", async () => {
   const html = await (await get("/setup")).text();
-  for (const t of ["Profile", "Playbook", "AI keys", "Google", "Telegram", "Install the app"]) assert.match(html, new RegExp(`>${t}<`));
+  for (const t of ["Profile", "How you work", "AI key", "Google", "Telegram", "Install the app"]) assert.match(html, new RegExp(`>${t}<`));
   const home = await (await get("/")).text();
   assert.match(home, /Finish setup \(\d of 6\)/);
   assert.ok(!home.includes("Connect Telegram"));
@@ -303,13 +303,13 @@ test("Claude actions: Download the app, then '… in the app' in a browser, the 
     // No app yet: the browser offers the download, with one line saying why.
     let html = await view();
     assert.match(html, /href="\/app"[^>]*>.*Download the app/);
-    assert.match(html, /Packs are built by the kindahired app on your computer/);
+    assert.match(html, /Applications are prepared by the kindahired app on your computer/);
     assert.ok(!html.includes(`action="/o/${o.id}/build"`));
 
     // The app has connected: the browser sends them to it.
     kvSet("worker.lastSeen", new Date().toISOString());
     html = await view();
-    assert.match(html, new RegExp(`href="kindahired://open/o/${o.id}"[^>]*>Build pack in the app`));
+    assert.match(html, new RegExp(`href="kindahired://open/o/${o.id}"[^>]*>Prepare my application in the app`));
     assert.ok(!html.includes("Download the app"));
 
     // Inside the app, the action is the real button.

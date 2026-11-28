@@ -31,8 +31,10 @@ It has its own `package.json`; nothing here is added to the repo's root dependen
   once at start (and from **Check again**), without any `ANTHROPIC_API_KEY`; and sets
   `JH_CLAUDE_BIN` for the worker. If it's missing or signed out, the window and tray say so and
   link to https://claude.com/claude-code. The app never reads or stores Claude's credentials.
-- **Tray:** status (online, working, offline, token refused, paused), Claude steps done today, Open
-  dashboard, Pause worker, Settings…, Check for updates, Quit. Closing every window leaves it
+- **Tray:** one status line in plain words: "Ready to prepare your applications", what it's doing
+  now ("Writing your resume for Toast…", from the job's `title`, which the hub writes with
+  `src/worker/describe.ts`), "Can't connect", "Paused". Then Open kindahired, Pause preparing
+  applications, Settings…, Check for updates, Quit. Closing every window leaves it
   running. The dashboard window keeps its own persistent session, so the Cloudflare Access login is
   remembered; links to other sites open in the browser.
 - **Open at login** (on by default, after setup): a login item on macOS and Windows, an

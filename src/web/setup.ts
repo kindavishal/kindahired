@@ -16,11 +16,11 @@ import { badge, esc, icon, linkButton, page } from "./ui.ts";
 type Step = { key: string; title: string; why: string; href: string; done: () => boolean };
 const STEPS: Step[] = [
   { key: "profile", title: "Profile", why: "Your name, links and the roles you want.", href: "/setup/profile", done: profileDone },
-  { key: "playbook", title: "Playbook", why: "How you judge a role and how you write.", href: "/setup/playbook", done: playbookDone },
-  { key: "keys", title: "AI keys", why: "A Gemini or Anthropic key for the quick steps.", href: "/setup/keys", done: keysDone },
+  { key: "playbook", title: "How you work", why: "What you want in a role and how you like to write.", href: "/setup/playbook", done: playbookDone },
+  { key: "keys", title: "AI key", why: "Lets kindahired read new job posts quickly.", href: "/setup/keys", done: keysDone },
   { key: "google", title: "Google", why: "Job alerts and replies from Gmail, interviews from Calendar.", href: "/google", done: googleConnected },
-  { key: "telegram", title: "Telegram", why: "New roles, packs and reminders on your phone.", href: "/telegram/connect", done: telegramLinked },
-  { key: "desktop", title: "Install the app", why: "Packs and research are made by the app on your computer, with your own Claude plan.", href: "/app", done: () => Boolean(workerStatus().lastSeen) },
+  { key: "telegram", title: "Telegram", why: "New roles, prepared applications and reminders on your phone.", href: "/telegram/connect", done: telegramLinked },
+  { key: "desktop", title: "Install the app", why: "Your applications and research are prepared by the app on your computer, with your own Claude plan.", href: "/app", done: () => Boolean(workerStatus().lastSeen) },
 ];
 
 /** Each step and whether it is done. */

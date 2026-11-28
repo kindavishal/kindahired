@@ -6,18 +6,18 @@ import { kvGet, kvSet } from "../db/index.ts";
  */
 export const TIMER_SPECS = {
   replyOwedHours: { label: "Reply to a message within", unit: "hours", default: 12, min: 1, max: 168, group: "Replies" },
-  packStaleHours: { label: "A ready pack goes stale after", unit: "hours", default: 48, min: 6, max: 720, group: "Before applying" },
+  packStaleHours: { label: "Remind me to apply once a prepared application has waited", unit: "hours", default: 48, min: 6, max: 720, group: "Before applying" },
   deadlineWarnDays: { label: "Warn before a closing date", unit: "days", default: 5, min: 1, max: 30, group: "Before applying" },
   parkedDays: { label: "Skip a role no one decided on after", unit: "days", default: 14, min: 3, max: 90, group: "Before applying" },
   firstTouchHours: { label: "After applying, reach a person within", unit: "hours", default: 24, min: 1, max: 168, group: "After applying" },
   followUp1Days: { label: "First follow-up when an application is quiet for", unit: "days", default: 7, min: 1, max: 60, group: "After applying" },
   interviewFollowUpDays: { label: "First follow-up after an interview goes quiet for", unit: "days", default: 5, min: 1, max: 60, group: "After applying" },
   followUp2Days: { label: "Second follow-up, on another channel, after", unit: "days", default: 7, min: 1, max: 60, group: "After applying" },
-  closeAfterDays: { label: "Close warmly after the second follow-up by", unit: "days", default: 7, min: 1, max: 60, group: "After applying" },
-  outreachFollowUpDays: { label: "Follow up on a note or DM with no reply after", unit: "days", default: 6, min: 1, max: 60, group: "Outreach" },
-  warmCloseHours: { label: "When a role ends, close warmly with each person within", unit: "hours", default: 24, min: 1, max: 336, group: "After a role ends" },
-  keepInTouchCloseDays: { label: "Stay in touch with people you've met every", unit: "days", default: 60, min: 7, max: 365, group: "After a role ends" },
-  keepInTouchWarmDays: { label: "Stay in touch with people who've replied every", unit: "days", default: 120, min: 7, max: 365, group: "After a role ends" },
+  closeAfterDays: { label: "Send a last note after the second follow-up by", unit: "days", default: 7, min: 1, max: 60, group: "After applying" },
+  outreachFollowUpDays: { label: "Follow up on a note or DM with no reply after", unit: "days", default: 6, min: 1, max: 60, group: "Reaching out" },
+  warmCloseHours: { label: "When a role ends, send each person a thank-you within", unit: "hours", default: 24, min: 1, max: 336, group: "After a role ends" },
+  keepInTouchCloseDays: { label: "Check in with people you've talked with often, every", unit: "days", default: 60, min: 7, max: 365, group: "After a role ends" },
+  keepInTouchWarmDays: { label: "Check in with people you've talked with once, every", unit: "days", default: 120, min: 7, max: 365, group: "After a role ends" },
   postingRecheckHours: { label: "Re-check that postings are still open every", unit: "hours", default: 24, min: 6, max: 168, group: "Postings" },
 } as const;
 

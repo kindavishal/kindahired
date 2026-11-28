@@ -21,7 +21,7 @@ export function tarArgs(dir = DATA_DIR): string[] {
 
 function exportPage(): string {
   return page("Your data · kindahired", `<div class="stack setup">${backToSetup}
-<div><h1>Download my data</h1><p class="lede">One .tar.gz file with everything kindahired keeps for you: roles, people, tasks, resumes and packs, your profile and playbook, and your settings file with your keys. Keep it somewhere private.</p>
+<div><h1>Download my data</h1><p class="lede">One .tar.gz file with everything kindahired keeps for you: roles, people, tasks, resumes and prepared applications, your profile and how you work, and your settings file with your keys. Keep it somewhere private.</p>
 <p class="hint">Your LinkedIn browser session isn't included.</p></div>
 <p>${postButton("/setup/export", "Download my data", { variant: "primary" })}</p>
 <p class="muted">To delete your account and all your data, email hired@kindavishal.dev.</p>

@@ -210,7 +210,7 @@ export async function linkChat(): Promise<string> {
       const id = String(msg.message.chat.id);
       kvSet("telegram.chatId", id);
       kvSet("telegram.offset", String(updates[updates.length - 1].update_id + 1));
-      await call("sendMessage", { chat_id: id, text: "Linked. Job alerts and your daily digest will arrive here." });
+      await call("sendMessage", { chat_id: id, text: "Linked. Job alerts and your morning summary will arrive here." });
       return id;
     }
   }

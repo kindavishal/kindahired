@@ -8,6 +8,7 @@ import { llm } from "../llm/client.ts";
 import { renderResumePdf } from "../resume/render.ts";
 import { ResumeSchema, stripPlaceholders, validateResume, type Resume, type ResumeIssue } from "../resume/schema.ts";
 import { evidenceBlock } from "./evidence.ts";
+import { isGenericJobsLink } from "./liveness.ts";
 import { getBrief } from "./hiring-brief.ts";
 import { findLinkedInProfile, linkedInSearchUrl } from "./profiles.ts";
 import { readPage } from "../sources/web.ts";
@@ -87,7 +88,7 @@ async function resolvePosting(o: Opportunity, context: string): Promise<Posting>
       const linkedinUrl = `https://www.linkedin.com/jobs/view/${linkedinId}/`;
       // LinkedIn doesn't show the company's own apply link without clicking Apply, so the
       // LinkedIn page is the link unless the text names a better one.
-      if (!posting.exact_apply_url || /linkedin\.com/i.test(posting.exact_apply_url)) posting.exact_apply_url = linkedinUrl;
+      if (!posting.exact_apply_url || /linkedin\.com/i.test(posting.exact_apply_url) || isGenericJobsLink(posting.exact_apply_url)) posting.exact_apply_url = linkedinUrl;
       posting.posting_url ??= linkedinUrl;
       if (job.closed) posting.still_open = false;
       if (posting.jd_summary.length > 200) return posting;
@@ -217,7 +218,8 @@ export async function buildSummary(opportunityId: number, opts: { context?: stri
   try {
     const posting = await resolvePosting(o, opts.context ?? o.jd_text ?? "");
     updateOpportunity(o.id, {
-      apply_url: posting.exact_apply_url ?? o.apply_url,
+      // A careers homepage isn't this job's link: it can't be applied through or checked later.
+      apply_url: [posting.exact_apply_url, o.apply_url, posting.posting_url].find((l) => l && !isGenericJobsLink(l)) ?? posting.exact_apply_url ?? o.apply_url,
       source_url: o.source_url ?? posting.posting_url,
       who_can_apply: posting.who_can_apply,
       visa: posting.visa_or_sponsorship,

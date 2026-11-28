@@ -40,14 +40,14 @@ export async function warnAccountOnce(err: unknown) {
   if (last && Date.now() - new Date(last).getTime() < 12 * 3600_000) return;
   kvSet(key, new Date().toISOString());
   if (offline) {
-    await send("Paused: your computer is offline, so Claude steps are waiting. Nothing is lost; they resume when it's back online.", undefined, { silent: true }).catch(() => {});
+    await send("Paused: your computer is offline, so nothing can be prepared right now. Nothing is lost; it picks up again when your computer is back online with kindahired open.", undefined, { silent: true }).catch(() => {});
     return;
   }
   const text = String(err);
   const reason = err instanceof PlanUnavailableError
     ? (/limit/i.test(text) ? "your Claude plan hit its usage limit for now" : `Claude Code isn't available (${text.slice(0, 120)})`)
     : /credit balance/i.test(text) ? "the Anthropic account is out of credit" : "the Anthropic API key was rejected";
-  await send(`Paused: ${reason}. Nothing is lost; queued work resumes once it's fixed.`, undefined, { silent: true }).catch(() => {});
+  await send(`Paused: ${reason}. Nothing is lost. Everything picks up again once it's fixed.`, undefined, { silent: true }).catch(() => {});
 }
 
 /**
@@ -228,7 +228,7 @@ export async function linkedinTick() {
     if (err instanceof LinkedInUnavailable) {
       const warned = kvGet("linkedin.warnedAt");
       if (!warned || Date.now() - new Date(warned).getTime() > 24 * 3600_000) {
-        await send(`LinkedIn sync paused: ${err.message}`, undefined, { silent: true }).catch(() => {});
+        await send(`Stopped reading LinkedIn for now: ${process.env.JH_HUB === "1" ? err.message.replace(/\s*Run:.*$/, "") : err.message}`, undefined, { silent: true }).catch(() => {});
         kvSet("linkedin.warnedAt", new Date().toISOString());
       }
       return null;
@@ -257,7 +257,7 @@ export async function calendarTick() {
   if (!calendarReady()) {
     const warned = kvGet("calendar.warnedAt");
     if (telegramReady() && (!warned || Date.now() - new Date(warned).getTime() > 7 * 86400_000)) {
-      await send("Interviews on your calendar aren't tracked yet. Run <code>npm run jh -- auth:google</code> once to allow read-only Calendar access.", undefined, { silent: true }).catch(() => {});
+      await send(process.env.JH_HUB === "1" ? "Interviews on your calendar aren't coming in yet. Connect Google again from Setup on your dashboard and allow Calendar." : "Interviews on your calendar aren't coming in yet. Run <code>npm run jh -- auth:google</code> once to allow read-only Calendar access.", undefined, { silent: true }).catch(() => {});
       kvSet("calendar.warnedAt", new Date().toISOString());
     }
     return null;
@@ -499,7 +499,7 @@ export async function watchPage(url: string, opts: { label?: string; intervalHou
   const { source, isNew } = added;
   if (!isNew) return { text: `Already watching ${source.label}, every ${source.interval_hours} hours.`, id: source.id };
   void scanNow(source.id, { report: true }).catch(() => {});
-  return { text: `Watching ${source.label}. It's checked every ${source.interval_hours} hours; the first scan is running now.`, id: source.id };
+  return { text: `Watching ${source.label}. It's checked every ${source.interval_hours} hours; the first check is running now.`, id: source.id };
 }
 
 /** X: bookmarks, watched threads and accounts, then searches. Tells me once a month if the budget runs out. */
@@ -518,7 +518,7 @@ export async function xTick() {
     // The daily pace pauses quietly; only the month's cap (or an empty balance) is worth a message.
     if (!kvGet(key) && spentThisMonth() >= monthlyBudget() - 0.05) {
       kvSet(key, "1");
-      if (telegramReady()) await send(`X paused for the rest of the month: ${html(r.stopped)}. Raise X_MONTHLY_BUDGET_USD in .env to keep going.`, undefined, { silent: true }).catch(() => {});
+      if (telegramReady()) await send(`X paused for the rest of the month: ${html(r.stopped)}. ${process.env.JH_HUB === "1" ? "Raise the X monthly budget in Setup" : "Raise X_MONTHLY_BUDGET_USD in .env"} to keep going.`, undefined, { silent: true }).catch(() => {});
     }
   }
   if (r.newOpportunityIds.length) kick();

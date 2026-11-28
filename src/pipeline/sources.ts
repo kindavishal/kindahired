@@ -211,8 +211,8 @@ export function dueSources(now = new Date()): Source[] {
 }
 
 export function describeResult(r: ScanResult): string {
-  if (r.unchanged) return "nothing new since the last scan";
+  if (r.unchanged) return "nothing new since the last check";
   if (!r.postings) return "no postings found";
   return `${r.postings} posting${r.postings === 1 ? "" : "s"}, ${r.newPostings} new, ${r.matches} match${r.matches === 1 ? "" : "es"}`
-    + (r.deferred ? ` (${r.deferred} more next scan)` : "");
+    + (r.deferred ? ` (${r.deferred} more next check)` : "");
 }

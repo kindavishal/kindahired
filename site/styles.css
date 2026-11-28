@@ -240,15 +240,61 @@ details p { margin-top: 10px; color: var(--ink-2); }
 #dl-other:empty { display: none; }
 #dl-other a { text-underline-offset: 3px; }
 
+/* Hero: one role, everything about it */
+.thread { box-shadow: var(--shadow-lg); overflow: hidden; }
+.thread-head { padding: 40px 24px 20px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-start; justify-content: space-between; }
+.thread-items { list-style: none; margin: 0; padding: 8px 0; }
+.thread-items li { display: flex; gap: 12px; align-items: flex-start; padding: 10px 24px; font-size: 13px; line-height: 20px; }
+.thread-items .what { flex-grow: 1; min-width: 0; color: var(--ink-2); }
+.thread-items .what strong { color: var(--ink); font-weight: 500; }
+.thread-items .when { font-size: 12px; color: var(--ink-3); white-space: nowrap; }
+.src { width: 28px; height: 28px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; flex: none; margin-top: -4px; }
+.src-mail { background: #fef2f2; color: #b91c1c; } .src-in { background: #eff6ff; color: #1d4ed8; } .src-x { background: var(--surface-2); color: var(--ink); }
+@media (prefers-color-scheme: dark) { .src-mail { background: #2a1215; color: #fca5a5; } .src-in { background: #172554; color: #93c5fd; } }
+.next { padding: 18px 24px 20px; background: var(--surface-2); border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 10px; }
+.next-label { font-size: 12px; font-weight: 600; color: var(--ok); }
+.next p { font-size: 14px; line-height: 21px; }
+
+/* Sound familiar? */
+.struggles { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; margin-top: 40px; }
+.struggle { padding: 24px; display: flex; flex-direction: column; gap: 10px; }
+.struggle h3 { margin: 0; font-size: 18px; line-height: 24px; font-weight: 600; }
+.struggle p { font-size: 15px; line-height: 24px; color: var(--ink-2); }
+
+/* Why I built this */
+.story { display: flex; flex-wrap: wrap; gap: 24px 64px; }
+.story .h2 { flex: 1 1 280px; }
+.story-text { flex: 2 1 520px; max-width: 680px; display: flex; flex-direction: column; gap: 18px; font-size: 18px; line-height: 30px; }
+.story-text .sign { font-weight: 600; }
+.story-text .sign::before { content: "\2014\00a0"; }
+
+/* What changes */
+.changes { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 40px; margin-top: 48px; }
+
+/* Who it's for */
+.fit-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.fit-list li { display: flex; gap: 12px; align-items: flex-start; font-size: 16px; line-height: 24px; }
+.fit-list svg { stroke: var(--ok); margin-top: 3px; }
+.fit-list.tight li { font-size: 14px; line-height: 20px; }
+.fit-list.tight svg { margin-top: 1px; }
+.already { padding: 0; border-top: 1px solid var(--line); padding-top: 14px; }
+.already summary { font-size: 14px; font-weight: 500; }
+.btn-dark-outline { background: transparent; color: #fafafa; border-color: #525252; }
+.btn-dark-outline:hover { background: #262626; }
+
 @media (max-width: 720px) {
   .nav-links { display: none; }
-  .nav { justify-content: space-between; }
+  .nav { justify-content: space-between; gap: 8px; }
+  .nav .btn { white-space: nowrap; padding: 0 10px; }
+  .nav .logo { margin-right: auto; }
   .section { padding-block: 80px; }
   .hero { padding-block: 56px 64px; gap: 48px; }
   .hero h1 { font-size: 40px; line-height: 44px; }
   .h2 { font-size: 30px; line-height: 36px; }
   .closing h2 { font-size: 32px; line-height: 38px; }
   .ping { margin-right: 0; }
+  .story-text { font-size: 16px; line-height: 27px; }
+  .thread-items li, .thread-head, .next { padding-inline: 16px; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
