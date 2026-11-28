@@ -14,7 +14,9 @@ function showClaude(c) {
     case "missing":
       status.className = "status bad";
       status.textContent = "Not installed on this computer.";
-      detail.textContent = "Install Claude Code, run claude once in a terminal to sign in, then check again.";
+      detail.textContent = /Windows/.test(navigator.userAgent)
+        ? "Install the Windows version of Claude Code, run claude once in a terminal to sign in, then check again. A copy inside WSL won't work with the app."
+        : "Install Claude Code, run claude once in a terminal to sign in, then check again.";
       break;
     case "signed-out":
       status.className = "status bad";

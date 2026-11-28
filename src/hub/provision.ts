@@ -71,7 +71,7 @@ export async function provision(req: Pick<AccessRequest, "email" | "person">, de
 export function inviteText(email: string, site: string): { subject: string; text: string; html: string } {
   const subject = "You're in: kindahired early access";
   const steps = [
-    `Download the app for Mac or Linux: ${site}`,
+    `Download the app for Mac, Windows or Linux: ${site}`,
     "Install Claude Code and sign in to your Claude account: https://claude.com/claude-code",
     `Open kindahired and sign in with ${email}. We'll email you a code.`,
   ];

@@ -5,7 +5,9 @@
   const repo = "kindavishal/kindahired";
 
   // ---------- Download ----------
-  const isLinux = /linux/i.test(navigator.userAgentData?.platform || navigator.platform || navigator.userAgent) && !/android/i.test(navigator.userAgent);
+  const platform = navigator.userAgentData?.platform || navigator.platform || navigator.userAgent;
+  const isWindows = /^win/i.test(platform) || /windows/i.test(navigator.userAgent);
+  const isLinux = !isWindows && /linux/i.test(platform) && !/android/i.test(navigator.userAgent);
   const main = document.getElementById("dl-main");
   const other = document.getElementById("dl-other");
   const link = (href, text) => {
@@ -14,21 +16,32 @@
     a.textContent = text;
     return a;
   };
+  const list = (links) => links.flatMap((a, i) => (i === 0 ? [a] : i === links.length - 1 ? [" or ", a] : [", ", a]));
   fetch(`https://api.github.com/repos/${repo}/releases/latest`, { headers: { accept: "application/vnd.github+json" } })
     .then((r) => (r.ok ? r.json() : null))
     .then((rel) => {
       const asset = (re) => rel?.assets?.find((a) => re.test(a.name))?.browser_download_url;
-      const dmg = asset(/\.dmg$/), appImage = asset(/\.AppImage$/), deb = asset(/\.deb$/);
-      if (isLinux && appImage) {
+      const dmg = asset(/\.dmg$/), appImage = asset(/\.AppImage$/), deb = asset(/\.deb$/), exe = asset(/Setup.*\.exe$/);
+      const mac = dmg && link(dmg, "Mac"), win = exe && link(exe, "Windows");
+      const linux = [appImage && link(appImage, "Linux (.AppImage)"), deb && link(deb, "Linux (.deb)")].filter(Boolean);
+      let rest;
+      if (isWindows && exe) {
+        main.href = exe;
+        main.textContent = "Download for Windows";
+        rest = [mac, ...linux];
+      } else if (isLinux && appImage) {
         main.href = appImage;
         main.textContent = "Download for Linux";
-        other.replaceChildren("Also as a ", ...(deb ? [link(deb, ".deb"), " or for "] : ["version for "]), ...(dmg ? [link(dmg, "Mac")] : []), ".");
+        rest = [deb && link(deb, "the .deb"), mac, win];
       } else if (dmg) {
         main.href = dmg;
         main.textContent = "Download for Mac";
-        const linux = [appImage && link(appImage, ".AppImage"), deb && link(deb, ".deb")].filter(Boolean);
-        if (linux.length) other.replaceChildren("Also for Linux: ", ...linux.flatMap((a, i) => (i ? [" or ", a] : [a])), ".");
-      }
+        rest = [win, ...linux];
+      } else return;
+      rest = rest.filter(Boolean);
+      const parts = rest.length ? ["Also for ", ...list(rest), "."] : [];
+      if (main.href === exe) parts.push(...(parts.length ? [" "] : []), "Windows may warn the first time you open it: choose More info, then Run anyway.");
+      other.replaceChildren(...parts);
     })
     .catch(() => { /* the button keeps pointing at the releases page */ });
 

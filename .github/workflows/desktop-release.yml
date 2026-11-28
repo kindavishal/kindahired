@@ -1,6 +1,8 @@
 # Builds the desktop app (apps/desktop) and publishes it to GitHub Releases when a tag like
 # desktop-v0.2.0 is pushed. The version comes from the tag.
 #
+# The Windows installer is unsigned for now (see the win section of electron-builder.config.cjs).
+#
 # Secrets (all optional; without them the macOS build is unsigned and not notarized):
 #   CSC_LINK           base64 of the Developer ID Application certificate (.p12)
 #   CSC_KEY_PASSWORD   that .p12's password
@@ -58,10 +60,14 @@ jobs:
             platform: --mac
           - os: ubuntu-latest
             platform: --linux
+          - os: windows-latest
+            platform: --win
     runs-on: ${{ matrix.os }}
     defaults:
       run:
         working-directory: apps/desktop
+        # bash on every runner, Windows included, so the steps below read the same everywhere.
+        shell: bash
     steps:
       - uses: actions/checkout@v4
 
@@ -102,6 +108,8 @@ jobs:
         run: |
           # Empty secrets would still be set; unset them so the build skips signing cleanly.
           [ -n "$CSC_LINK" ] || unset CSC_LINK CSC_KEY_PASSWORD
+          # CSC_LINK is the Apple certificate; Windows would try to sign with it.
+          [ "$RUNNER_OS" != "Windows" ] || unset CSC_LINK CSC_KEY_PASSWORD
           npm run build
           npx electron-builder --config electron-builder.config.cjs ${{ matrix.platform }} --publish never
 
@@ -111,7 +119,7 @@ jobs:
           MIRROR_TOKEN: ${{ secrets.RELEASES_TOKEN }}
         run: |
           shopt -s nullglob
-          files=(release/*.dmg release/*.zip release/*.blockmap release/*.AppImage release/*.deb release/latest*.yml)
+          files=(release/*.dmg release/*.zip release/*.blockmap release/*.AppImage release/*.deb release/*.exe release/latest*.yml)
           if [ ${#files[@]} -eq 0 ]; then echo "Nothing was built." >&2; exit 1; fi
           GH_TOKEN="$OWN_TOKEN" gh release upload "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --clobber "${files[@]}"
           if [ -n "$MIRROR_TOKEN" ]; then

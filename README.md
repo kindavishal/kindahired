@@ -2,7 +2,7 @@
 
 A job-search assistant. You get the roles worth your time, a ready-to-send pack for each one, and a nudge whenever a conversation needs your reply.
 
-**Get it:** download the app for macOS or Linux from [the latest release](https://github.com/kindavishal/kindahired/releases/latest), then sign in. kindahired is in early access; request a spot at [kindahired.kindavishal.dev](https://kindahired.kindavishal.dev).
+**Get it:** download the app for macOS, Windows or Linux from [the latest release](https://github.com/kindavishal/kindahired/releases/latest), then sign in. kindahired is in early access; request a spot at [kindahired.kindavishal.dev](https://kindahired.kindavishal.dev).
 
 - **Every relevant posting becomes a ready-to-act pack.** Sources: job-alert emails, LinkedIn saved jobs, or a link you send it. Each pack has an honest fit read, the exact apply link, a tailored resume PDF, a cover note, form answers, and 2–3 people to contact with drafted messages.
 - **No conversation goes quiet without a decision.** Every reply you owe, follow-up due, unsent note and closing date becomes an action with a due time. Actions resolve on their own when things change.

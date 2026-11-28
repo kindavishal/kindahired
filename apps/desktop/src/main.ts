@@ -418,7 +418,7 @@ function applyLoginItem() {
   if (!app.isPackaged || app.commandLine.hasSwitch("user-data-dir")) return;
   // Not before the app is set up: there's nothing for it to do at login until then.
   const openAtLogin = settings.openAtLogin && signedIn();
-  if (process.platform === "darwin") {
+  if (process.platform === "darwin" || process.platform === "win32") {
     app.setLoginItemSettings({ openAtLogin });
     return;
   }
@@ -572,6 +572,9 @@ app.on("second-instance", (_e, argv) => {
 });
 app.on("activate", () => { if (BrowserWindow.getAllWindows().length === 0) openDashboard(); });
 
+// Windows groups the taskbar and Start menu entries by this id; it must match the installer's.
+if (process.platform === "win32") app.setAppUserModelId(config.appId);
+
 app.whenReady().then(async () => {
   app.dock?.hide();
   // Only the installed app registers for links: a development run would register bare Electron.
@@ -580,6 +583,8 @@ app.whenReady().then(async () => {
   const hub = session.fromPartition(HUB_PARTITION);
   hub.setUserAgent(`${hub.getUserAgent()} kindahired-app/${app.getVersion()}`);
   tray = new Tray(trayImage(false));
+  // On Windows a left click on a tray icon opens the app; the menu is on the right click.
+  if (process.platform === "win32") tray.on("click", () => openDashboard());
   lastLive = false;
   refreshTray();
   applyLoginItem();

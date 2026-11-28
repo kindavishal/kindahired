@@ -49,5 +49,21 @@ module.exports = {
     maintainer: app.linuxMaintainer,
     synopsis: "Runs your own Claude Code for your job-search hub.",
   },
+  // Unsigned for now: Windows shows a SmartScreen prompt on first install (More info, then Run
+  // anyway). Updates install without it. To sign later, add a certificate (CSC_LINK for a .pfx, or
+  // win.azureSignOptions for Azure Trusted Signing).
+  win: {
+    target: [{ target: "nsis", arch: ["x64", "arm64"] }],
+    icon: "build/icon.png",
+  },
+  nsis: {
+    // A per-user install: no administrator prompt, and auto-update can replace it.
+    oneClick: true,
+    perMachine: false,
+    // x64 and arm64 go in one installer, which picks the right one, so there's one file to download
+    // and one latest.yml for updates.
+    artifactName: "${productName}-Setup-${version}.${ext}",
+    shortcutName: app.productName,
+  },
   deb: { depends: ["libnotify4", "libxtst6", "libnss3", "libsecret-1-0"] },
 };
