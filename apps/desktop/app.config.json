@@ -8,8 +8,8 @@
   },
   "linuxMaintainer": "kindavishal <kindavishal@users.noreply.github.com>",
   "windowsStore": {
-    "identityName": "",
-    "publisher": "",
-    "publisherDisplayName": ""
+    "identityName": "kindavishal.kindahired",
+    "publisher": "CN=2F13FE20-C36A-46BC-A3CB-9A703B198909",
+    "publisherDisplayName": "kindavishal"
   }
 }
