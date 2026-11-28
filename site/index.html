@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>kindahired: your next job is already in your network</title>
 <meta name="description" content="Your next job is probably already in your inbox, your LinkedIn messages, your X DMs and your calendar. kindahired brings it together, does the research, and helps you act on it fast. Free.">
-<meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">
 <meta property="og:title" content="kindahired">
 <meta property="og:description" content="Your next job is already in your network. kindahired helps you act on it, fast.">
@@ -15,10 +15,12 @@
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cal+Sans&family=Geist:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="home.css">
+<script>document.documentElement.classList.add("js")</script>
 </head>
-<body>
+<body class="home">
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="mark" viewBox="0 0 24 24"><path d="M20.5 9.5A9 9 0 1 1 15 3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M7.5 12.5l3.5 3.5L19.5 6" fill="none" style="stroke: var(--mark-tick)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
@@ -27,8 +29,16 @@
   <symbol id="i-x" viewBox="0 0 24 24"><path d="M4 4l16 16M20 4 4 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
   <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M16 3v4M8 3v4M3 10h18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
   <symbol id="i-board" viewBox="0 0 24 24"><path d="M3 21h18M5 21V8l7-5 7 5v13M10 21v-6h4v6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="M21 3 3 10.5l7 2.5 2.5 7L21 3Z M10 13l4.5-4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11 12 4l8 7v9h-5v-6H9v6H4v-9Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+  <symbol id="i-roles" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+  <symbol id="i-people" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16 4.5a3.5 3.5 0 0 1 0 7M21 20c0-2.6-1.6-4.8-4-5.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-dash" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 9h18M9 9v11" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
   <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="i-chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-chev-r" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
 </svg>
 
 <header class="site-header">
@@ -40,118 +50,317 @@
       <a href="how-it-works.html">How it works</a>
       <a href="#faq">FAQ</a>
     </div>
-    <a class="btn btn-outline" href="https://app-kindahired.kindavishal.dev/">Sign in</a>
+    <a class="btn btn-ghost" href="https://app-kindahired.kindavishal.dev/">Sign in</a>
     <a class="btn btn-primary" href="#get">Get early access</a>
   </nav>
 </header>
 
 <main id="top">
-  <section class="wrap hero">
-    <div class="hero-copy">
-      <h1>Your next job is already in your network.</h1>
-      <p class="lede">It's in your inbox, your LinkedIn messages, your X DMs and your calendar. kindahired pulls it all together, finds the leads you'd lose track of, and helps you get in front of the hiring team fast. You still make every move.</p>
-      <div class="row">
-        <a class="btn btn-primary btn-lg" href="#get">Get early access</a>
-        <a class="btn btn-outline btn-lg" href="#run-it">Run it yourself<svg width="16" height="16" aria-hidden="true"><use href="#i-arrow"/></svg></a>
-      </div>
-      <ul class="proof">
-        <li><svg width="14" height="14" aria-hidden="true"><use href="#check"/></svg>Free</li>
-        <li><svg width="14" height="14" aria-hidden="true"><use href="#check"/></svg>Open source</li>
-        <li><svg width="14" height="14" aria-hidden="true"><use href="#check"/></svg>Runs on the AI you already use</li>
-      </ul>
-    </div>
+  <!-- Hero -->
+  <section class="wrap hero-c">
+    <a class="announce rise" href="#get" style="--d:0"><span class="announce-tag">Free</span><span>Early access is open</span><svg width="14" height="14" aria-hidden="true"><use href="#i-chev-r"/></svg></a>
 
-    <figure class="hero-visual" aria-label="An example: one role, with everything about it from email, LinkedIn and X in one place" style="margin:0">
-      <div class="ping">
-        <span class="ping-icon" aria-hidden="true"><svg width="20" height="20"><use href="#mark"/></svg></span>
-        <span class="ping-body"><span class="ping-top"><strong>kindahired</strong><span class="faint">7:02 am</span></span><span>Mira at Northwind is hiring for the role you saved. You two talked in October. Message her today.</span></span>
-      </div>
-      <div class="card thread">
-        <div class="thread-head">
-          <div class="co">
-            <span class="co-tile" aria-hidden="true">N</span>
-            <span class="co-name"><span class="title">Developer Community Lead</span><span class="small muted">Northwind Labs · posted 2 days ago</span></span>
-          </div>
-          <span class="pill-ok"><svg width="12" height="12" stroke="currentColor" aria-hidden="true"><use href="#check"/></svg>Strong fit</span>
-        </div>
-        <ul class="thread-items">
-          <li><span class="src src-in" aria-label="LinkedIn"><svg width="16" height="16"><use href="#i-in"/></svg></span><span class="what">You saved the role</span><span class="when">2 days ago</span></li>
-          <li><span class="src src-x" aria-label="X"><svg width="16" height="16"><use href="#i-x"/></svg></span><span class="what"><strong>Mira Okafor</strong>, Head of DevRel, posted that her team is hiring</span><span class="when">Last week</span></li>
-          <li><span class="src src-mail" aria-label="Email"><svg width="16" height="16"><use href="#i-mail"/></svg></span><span class="what">You and Mira talked about community events, then it went quiet</span><span class="when">October</span></li>
-          <li><span class="src src-in" aria-label="LinkedIn"><svg width="16" height="16"><use href="#i-in"/></svg></span><span class="what"><strong>Jonas Tan</strong>, a friend from your last job, works there now</span><span class="when">Since June</span></li>
-        </ul>
-        <div class="next">
-          <span class="next-label">Your next move</span>
-          <p>Message Mira today, before you apply. A note that mentions your October chat is ready. Then ask Jonas for a referral.</p>
-          <div class="row" style="gap:8px"><button class="btn btn-primary btn-sm" type="button">Copy note to Mira</button><button class="btn btn-outline btn-sm" type="button">Open resume and cover note</button></div>
-        </div>
-      </div>
-    </figure>
+    <h1 class="display" aria-label="Your next job is already in your network.">
+      <span class="line" aria-hidden="true">
+        <span class="w rise" style="--d:1">Your</span> <span class="w rise" style="--d:2">next</span> <span class="w rise" style="--d:3">job</span>
+        <span class="tok tok-src rise" style="--d:4" data-cycle>
+          <span class="tok-face is-on src-mail"><svg><use href="#i-mail"/></svg></span>
+          <span class="tok-face src-in"><svg><use href="#i-in"/></svg></span>
+          <span class="tok-face src-x"><svg><use href="#i-x"/></svg></span>
+          <span class="tok-face src-cal"><svg><use href="#i-cal"/></svg></span>
+        </span>
+        <span class="w rise" style="--d:5">is</span>
+      </span>
+      <span class="line" aria-hidden="true">
+        <span class="w rise" style="--d:6">already</span> <span class="w rise" style="--d:7">in</span> <span class="w rise" style="--d:8">your</span>
+        <span class="tok tok-person rise" style="--d:9">
+          <span class="tok-av">MO</span>
+          <span class="tok-lines">
+            <span class="tok-name">Mira · Head of DevRel</span>
+            <span class="tok-status" data-status><span class="st is-on">Talked in October</span><span class="st st-ok"><svg width="10" height="10" stroke="currentColor"><use href="#check"/></svg>Hiring now</span></span>
+          </span>
+        </span>
+        <span class="w rise" style="--d:10">network.</span>
+      </span>
+    </h1>
+
+    <p class="hero-lede rise" style="--d:11">It's in your inbox, your LinkedIn messages, your X DMs and your calendar. kindahired pulls it all together, finds the leads you'd lose track of, and helps you get in front of the hiring team fast. You still make every move.</p>
+
+    <div class="hero-cta rise" style="--d:12">
+      <a class="btn btn-primary btn-xl" href="#get">Get early access</a>
+      <a class="btn btn-outline btn-xl" href="#run-it">Run it yourself<svg width="16" height="16" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+    </div>
+    <p class="hero-fine rise" style="--d:13">Free. Open source. Runs on the AI you already use. <a href="how-it-works.html">See how it works</a></p>
   </section>
 
-  <section class="band" aria-label="Where it looks">
-    <ul class="wrap sources">
-      <li>Brings together</li>
-      <li><svg width="16" height="16" aria-hidden="true"><use href="#i-mail"/></svg>Gmail</li>
-      <li><svg width="16" height="16" aria-hidden="true"><use href="#i-in"/></svg>LinkedIn</li>
-      <li><svg width="16" height="16" aria-hidden="true"><use href="#i-x"/></svg>X</li>
-      <li><svg width="16" height="16" aria-hidden="true"><use href="#i-cal"/></svg>Google Calendar</li>
-      <li><svg width="16" height="16" aria-hidden="true"><use href="#i-board"/></svg>Company job boards</li>
+  <!-- Product stage -->
+  <section class="wrap stage-wrap" aria-label="What kindahired looks like">
+    <div class="stage reveal">
+      <div class="window" id="demo">
+        <div class="win-bar">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="win-url"><svg width="12" height="12" aria-hidden="true"><use href="#i-lock"/></svg>kindahired · Home</span>
+          <span class="win-spacer"></span>
+        </div>
+        <div class="win-body">
+          <aside class="app-side" aria-hidden="true">
+            <span class="app-logo"><svg width="18" height="18"><use href="#mark"/></svg>kindahired</span>
+            <span class="app-nav is-on"><svg width="16" height="16"><use href="#i-home"/></svg>Home<b>3</b></span>
+            <span class="app-nav"><svg width="16" height="16"><use href="#i-roles"/></svg>Roles<b>12</b></span>
+            <span class="app-nav"><svg width="16" height="16"><use href="#i-people"/></svg>People<b>48</b></span>
+            <span class="app-nav"><svg width="16" height="16"><use href="#i-board"/></svg>Companies<b>9</b></span>
+          </aside>
+
+          <div class="app-queue">
+            <p class="app-greet">Good morning. Three things today.</p>
+            <div class="queue" role="tablist" aria-label="Today's next moves">
+              <button class="q is-on" role="tab" aria-selected="true" data-role="0" type="button">
+                <span class="co-tile co-n" aria-hidden="true">N</span>
+                <span class="q-text"><strong>Message Mira today</strong><span>Northwind Labs · Developer Community Lead</span></span>
+              </button>
+              <button class="q" role="tab" aria-selected="false" data-role="1" type="button">
+                <span class="co-tile co-l" aria-hidden="true">L</span>
+                <span class="q-text"><strong>Reply to Priya</strong><span>Lumen Health · Product Marketing Manager</span></span>
+              </button>
+              <button class="q" role="tab" aria-selected="false" data-role="2" type="button">
+                <span class="co-tile co-p" aria-hidden="true">P</span>
+                <span class="q-text"><strong>Ask Ana for a referral</strong><span>Parcel · Community Manager</span></span>
+              </button>
+            </div>
+          </div>
+
+          <div class="app-detail" role="tabpanel" aria-live="polite">
+            <div class="thread-head">
+              <div class="co">
+                <span class="co-tile co-n" data-f="tile" aria-hidden="true">N</span>
+                <span class="co-name"><span class="title" data-f="title">Developer Community Lead</span><span class="small muted" data-f="meta">Northwind Labs · posted 2 days ago</span></span>
+              </div>
+              <span class="pill-ok" data-f="fit"><svg width="12" height="12" stroke="currentColor" aria-hidden="true"><use href="#check"/></svg><span>Strong fit</span></span>
+            </div>
+            <ul class="thread-items" data-f="items">
+              <li><span class="src src-in" aria-label="LinkedIn"><svg width="16" height="16"><use href="#i-in"/></svg></span><span class="what">You saved the role</span><span class="when">2 days ago</span></li>
+              <li><span class="src src-x" aria-label="X"><svg width="16" height="16"><use href="#i-x"/></svg></span><span class="what"><strong>Mira Okafor</strong>, Head of DevRel, posted that her team is hiring</span><span class="when">Last week</span></li>
+              <li><span class="src src-mail" aria-label="Email"><svg width="16" height="16"><use href="#i-mail"/></svg></span><span class="what">You and Mira talked about community events, then it went quiet</span><span class="when">October</span></li>
+              <li><span class="src src-in" aria-label="LinkedIn"><svg width="16" height="16"><use href="#i-in"/></svg></span><span class="what"><strong>Jonas Tan</strong>, a friend from your last job, works there now</span><span class="when">Since June</span></li>
+            </ul>
+            <div class="next">
+              <span class="next-label">Your next move</span>
+              <p data-f="next">Message Mira today, before you apply. A note that mentions your October chat is ready. Then ask Jonas for a referral.</p>
+              <div class="row" style="gap:8px"><button class="btn btn-primary btn-sm" type="button" data-f="b1" data-copy>Copy note to Mira</button><button class="btn btn-outline btn-sm" type="button" data-f="b2">Open resume and cover note</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ping ping-float" aria-label="A Telegram message from kindahired">
+        <span class="ping-icon" aria-hidden="true"><svg width="20" height="20"><use href="#mark"/></svg></span>
+        <span class="ping-body"><span class="ping-top"><strong>kindahired</strong><span class="faint">7:02 am</span></span><span data-f="ping">Mira at Northwind is hiring for the role you saved. You two talked in October. Message her today.</span></span>
+      </div>
+    </div>
+    <p class="stage-hint reveal">Click a next move to see what kindahired found for it.</p>
+  </section>
+
+  <!-- Sources strip -->
+  <section class="sources-wrap" aria-label="Where it looks">
+    <p class="sources-label reveal">Brings together the places your job search already happens</p>
+    <ul class="wrap sources reveal">
+      <li><svg width="18" height="18" aria-hidden="true"><use href="#i-mail"/></svg>Gmail</li>
+      <li><svg width="18" height="18" aria-hidden="true"><use href="#i-in"/></svg>LinkedIn</li>
+      <li><svg width="18" height="18" aria-hidden="true"><use href="#i-x"/></svg>X</li>
+      <li><svg width="18" height="18" aria-hidden="true"><use href="#i-cal"/></svg>Google Calendar</li>
+      <li><svg width="18" height="18" aria-hidden="true"><use href="#i-board"/></svg>Company job boards</li>
     </ul>
   </section>
 
-  <section id="familiar" class="wrap section">
-    <h2 class="h2">Sound familiar?</h2>
-    <div class="struggles">
-      <article class="card struggle"><h3>Everything is in a different place.</h3><p>The recruiter wrote to you on email. The hiring manager is someone you chatted with on LinkedIn. The referral came up in an X DM. It's all connected, but nothing shows you that.</p></article>
-      <article class="card struggle"><h3>By the time you act, it's late.</h3><p>Reading up on the company, fixing your resume and working out who to message takes days. By then, hundreds of applications are ahead of yours.</p></article>
-      <article class="card struggle"><h3>Good leads go quiet.</h3><p>You had a great call. Then the holidays came, or a busy week. Nobody followed up, and the role went to someone else.</p></article>
-      <article class="card struggle"><h3>You knew someone there.</h3><p>You remember a friend works at the company after you've already applied cold, with no one to put your name forward.</p></article>
+  <!-- Problem to solution -->
+  <section id="familiar" class="wrap section flow">
+    <div class="flow-left">
+      <h2 class="h2 reveal">Your leads were in four places. Now they're in one.</h2>
+      <ol class="steps reveal" id="steps">
+        <li class="step-c is-on" data-step="0">
+          <button type="button" aria-expanded="true"><span class="bar" aria-hidden="true"><i></i></span><strong>Stop hunting across your inbox and DMs</strong></button>
+          <p>The recruiter wrote on email, the hiring manager is on LinkedIn, the referral came up in an X DM. kindahired links all of it to the role.</p>
+        </li>
+        <li class="step-c" data-step="1">
+          <button type="button" aria-expanded="false"><span class="bar" aria-hidden="true"><i></i></span><strong>Start with the research done</strong></button>
+          <p>Who's likely hiring, how well you fit, and a resume and cover note made only from your own experience.</p>
+        </li>
+        <li class="step-c" data-step="2">
+          <button type="button" aria-expanded="false"><span class="bar" aria-hidden="true"><i></i></span><strong>Follow up before it goes quiet</strong></button>
+          <p>A follow-up that's due or a reply you owe reaches you in Telegram, on the day it matters.</p>
+        </li>
+        <li class="step-c" data-step="3">
+          <button type="button" aria-expanded="false"><span class="bar" aria-hidden="true"><i></i></span><strong>Ask the friend who works there</strong></button>
+          <p>Before you apply cold, you see who you know at the company, with a note to them ready.</p>
+        </li>
+      </ol>
+      <blockquote class="flow-quote reveal"><p>"A recruiter I'd had a great call with went quiet over the holidays, and so did I. By January the role was gone."</p><cite>Vishal, who built kindahired</cite></blockquote>
+    </div>
+
+    <div class="flow-right">
+      <div class="scene-box reveal" aria-hidden="true">
+        <!-- 0: scattered messages come together -->
+        <div class="scene is-on" data-scene="0">
+          <div class="scatter">
+            <div class="msg m1"><span class="src src-mail"><svg width="14" height="14"><use href="#i-mail"/></svg></span><span><b>Sam, recruiter</b>Quick chat about the community role?</span></div>
+            <div class="msg m2"><span class="src src-in"><svg width="14" height="14"><use href="#i-in"/></svg></span><span><b>Mira Okafor</b>Loved your talk on meetups.</span></div>
+            <div class="msg m3"><span class="src src-x"><svg width="14" height="14"><use href="#i-x"/></svg></span><span><b>Jonas Tan</b>We're hiring btw, want an intro?</span></div>
+            <div class="msg m4"><span class="src src-cal"><svg width="14" height="14"><use href="#i-cal"/></svg></span><span><b>Intro call</b>Thu, 4:00 pm</span></div>
+          </div>
+          <div class="joined"><span class="co-tile co-n">N</span><span><b>Northwind Labs</b>4 messages, 3 people, 1 call</span><svg width="16" height="16" stroke="currentColor" class="ok"><use href="#check"/></svg></div>
+        </div>
+        <!-- 1: research done -->
+        <div class="scene" data-scene="1">
+          <div class="mini-card fitcard">
+            <div class="fit-top"><span class="co-tile co-n">N</span><span><b>Developer Community Lead</b><span class="muted">How well you fit</span></span></div>
+            <div class="meter"><span>Skills</span><i style="--w:88%"></i><em>Strong</em></div>
+            <div class="meter"><span>Experience</span><i style="--w:76%"></i><em>Good</em></div>
+            <div class="meter"><span>Location</span><i style="--w:100%"></i><em>Remote</em></div>
+            <ul class="readies">
+              <li><svg width="14" height="14" stroke="currentColor"><use href="#check"/></svg>Resume, from your own experience</li>
+              <li><svg width="14" height="14" stroke="currentColor"><use href="#check"/></svg>Cover note</li>
+              <li><svg width="14" height="14" stroke="currentColor"><use href="#check"/></svg>Who to message first</li>
+            </ul>
+          </div>
+        </div>
+        <!-- 2: Telegram -->
+        <div class="scene" data-scene="2">
+          <div class="chat">
+            <div class="chat-head"><span class="ping-icon"><svg width="18" height="18"><use href="#mark"/></svg></span><span><b>kindahired</b><span class="muted">bot</span></span></div>
+            <div class="bubble b1">Morning. Two things today.</div>
+            <div class="bubble b2">Reply to Priya at Lumen Health. She asked for times 3 days ago.</div>
+            <div class="bubble b3">Follow up with Sam. You talked 9 days ago, and nothing since.</div>
+            <div class="chat-btns b4"><span>Open the email</span><span>Remind me tomorrow</span></div>
+          </div>
+        </div>
+        <!-- 3: who you know -->
+        <div class="scene" data-scene="3">
+          <div class="net">
+            <svg class="net-lines" viewBox="0 0 400 240" preserveAspectRatio="none"><path d="M70 120 C 140 120, 140 60, 200 60"/><path d="M230 60 C 290 60, 290 120, 330 120"/></svg>
+            <div class="node n-you"><span class="av av-you">You</span></div>
+            <div class="node n-jonas"><span class="av av-g">JT</span><small>Jonas Tan<br><span class="muted">Your old team</span></small></div>
+            <div class="node n-mira"><span class="av av-p">MO</span><small>Mira Okafor<br><span class="muted">Head of DevRel</span></small></div>
+            <div class="net-note"><b>Jonas works at Northwind.</b> Ask him for a referral before you apply. A note is ready.</div>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
-  <section id="story" class="band">
-    <div class="wrap section story">
-      <h2 class="h2">Why I built this</h2>
+  <!-- Story -->
+  <section id="story" class="story-band">
+    <div class="wrap section story-c">
+      <div class="story-side reveal">
+        <span class="label">Why I built this</span>
+        <h2 class="h2">I didn't need another job board.</h2>
+        <div class="sig"><span class="av av-you">V</span><span><b>Vishal</b><span class="muted">Built kindahired while looking for a new role</span></span></div>
+      </div>
       <div class="story-text">
-        <p>I've been looking for my next role for months. The hardest part wasn't finding jobs. It was keeping track of everything around them.</p>
-        <p>A recruiter would write to me on email. The hiring manager was someone I'd chatted with on LinkedIn. A friend had mentioned the team in an X DM. All of it was connected, but it lived in different places, and I couldn't see the whole picture.</p>
-        <p>So I was slow. By the time I'd read up on a company, fixed my resume and worked out who to message, the role had hundreds of applications ahead of mine. A recruiter I'd had a great call with went quiet over the holidays, and so did I. By January the role was gone. More than once, I remembered I knew someone at a company only after I'd applied cold.</p>
-        <p>I didn't need another job board. I needed my network, my inbox and the AI tools I already use every day to work together, so I could act on time. That's kindahired.</p>
-        <p class="sign">Vishal</p>
+        <p class="reveal">I've been looking for my next role for months. The hardest part wasn't finding jobs. It was keeping track of everything around them.</p>
+        <p class="reveal">A recruiter would write to me on email. The hiring manager was someone I'd chatted with on LinkedIn. A friend had mentioned the team in an X DM. All of it was connected, but it lived in different places, and I couldn't see the whole picture.</p>
+        <p class="reveal">So I was slow. By the time I'd read up on a company, fixed my resume and worked out who to message, the role had hundreds of applications ahead of mine. A recruiter I'd had a great call with went quiet over the holidays, and so did I. By January the role was gone. More than once, I remembered I knew someone at a company only after I'd applied cold.</p>
+        <p class="reveal">I didn't need another job board. I needed my network, my inbox and the AI tools I already use every day to work together, so I could act on time. That's kindahired.</p>
       </div>
     </div>
   </section>
 
+  <!-- What changes: bento -->
   <section id="changes" class="wrap section">
-    <h2 class="h2">What changes when it all comes together</h2>
-    <div class="changes">
-      <div class="pillar"><h3>Everything about a role, in one place</h3><p>Emails, LinkedIn messages, X posts and calls on your calendar are linked to the company and the people behind it. You see the whole story at a glance.</p></div>
-      <div class="pillar"><h3>The research is done before you sit down</h3><p>Who's likely hiring, how well you fit, and a resume and cover note made only from your own experience. You start with context, not a blank page.</p></div>
-      <div class="pillar"><h3>The next move, on the day it matters</h3><p>A follow-up that's due, a reply you owe, a friend at the company you're about to apply to. You hear about it in Telegram, while there's still time.</p></div>
-      <div class="pillar"><h3>You still make every move</h3><p>It never applies or sends a message for you. It gets you ready fast, so your name reaches the hiring team early. You press send.</p></div>
+    <span class="label reveal">What changes</span>
+    <h2 class="h2 h2-wide reveal">What changes when it all<br>comes together.</h2>
+    <div class="bento">
+      <article class="tile t-wide reveal">
+        <div class="tile-demo" aria-hidden="true">
+          <div class="timeline">
+            <div class="tl"><span class="src src-in"><svg width="14" height="14"><use href="#i-in"/></svg></span><span>You saved the role</span><em>Mon</em></div>
+            <div class="tl"><span class="src src-x"><svg width="14" height="14"><use href="#i-x"/></svg></span><span>Mira posted her team is hiring</span><em>Tue</em></div>
+            <div class="tl"><span class="src src-mail"><svg width="14" height="14"><use href="#i-mail"/></svg></span><span>Sam, the recruiter, wrote to you</span><em>Wed</em></div>
+            <div class="tl"><span class="src src-cal"><svg width="14" height="14"><use href="#i-cal"/></svg></span><span>Intro call with Sam</span><em>Thu</em></div>
+          </div>
+        </div>
+        <h3>Everything about a role, in one place</h3>
+        <p>Emails, LinkedIn messages, X posts and calls on your calendar are linked to the company and the people behind it.</p>
+      </article>
+      <article class="tile reveal" style="--d:1">
+        <div class="tile-demo" aria-hidden="true">
+          <div class="ring-wrap">
+            <svg class="ring" viewBox="0 0 120 120"><circle cx="60" cy="60" r="48" class="ring-track"/><circle cx="60" cy="60" r="48" class="ring-val"/></svg>
+            <span class="ring-num"><b>Strong</b><small>fit</small></span>
+          </div>
+          <span class="ready-chip"><svg width="12" height="12" stroke="currentColor"><use href="#check"/></svg>Resume and cover note ready</span>
+        </div>
+        <h3>The research is done before you sit down</h3>
+        <p>You start with context, not a blank page.</p>
+      </article>
+      <article class="tile reveal">
+        <div class="tile-demo" aria-hidden="true">
+          <div class="tg">
+            <div class="tg-msg"><span class="ping-icon"><svg width="16" height="16"><use href="#mark"/></svg></span><span><b>kindahired</b>Jonas works at Parcel. Ask him before you apply.</span></div>
+            <span class="tg-time">Today, 7:02 am</span>
+          </div>
+        </div>
+        <h3>The next move, on the day it matters</h3>
+        <p>A follow-up that's due, a reply you owe, a friend at the company. You hear about it in Telegram.</p>
+      </article>
+      <article class="tile t-wide reveal" style="--d:1">
+        <div class="tile-demo" aria-hidden="true">
+          <div class="you-send">
+            <div class="draft"><span class="muted small">Note to Mira, ready</span><p>Hi Mira, we talked about community events in October. I saw your team is hiring for a Developer Community Lead…</p></div>
+            <div class="switches">
+              <span class="sw"><i></i>Applies for you</span>
+              <span class="sw"><i></i>Sends for you</span>
+              <span class="send-btn"><svg width="14" height="14"><use href="#i-send"/></svg>You press send</span>
+            </div>
+          </div>
+        </div>
+        <h3>You still make every move</h3>
+        <p>It never applies or sends a message for you. It gets you ready fast, so your name reaches the hiring team early.</p>
+      </article>
     </div>
   </section>
 
-  <section id="who" class="band">
-    <div class="wrap section split">
-      <div class="split-copy">
-        <h2 class="h2">You already have the tools</h2>
-        <p class="lede">You're on LinkedIn and X. You probably use AI for work every day. But none of it is working on your own job search. kindahired puts your network and your AI on the one thing that matters right now: landing your next role.</p>
-      </div>
-      <ul class="split-side fit-list">
-        <li><svg width="18" height="18" aria-hidden="true"><use href="#check"/></svg><span>You have a presence on LinkedIn or X, and people you could reach out to.</span></li>
-        <li><svg width="18" height="18" aria-hidden="true"><use href="#check"/></svg><span>You already use AI tools like Claude for your work.</span></li>
-        <li><svg width="18" height="18" aria-hidden="true"><use href="#check"/></svg><span>You're juggling more leads, chats and follow-ups than you can keep in your head.</span></li>
-        <li><svg width="18" height="18" aria-hidden="true"><use href="#check"/></svg><span>You'd rather reach a person on the team than be one more application in the pile.</span></li>
+  <!-- Tools: connection diagram -->
+  <section id="who" class="wrap section tools">
+    <div class="tools-copy">
+      <span class="label reveal">Works with what you have</span>
+      <h2 class="h2 reveal">You already have the tools.</h2>
+      <p class="lede reveal">You're on LinkedIn and X. You probably use AI for work every day. But none of it is working on your own job search. kindahired puts your network and your AI on the one thing that matters right now: landing your next role.</p>
+      <div class="row reveal"><a class="btn btn-primary" href="#get">Get early access</a><a class="btn btn-outline" href="how-it-works.html">How it works<svg width="14" height="14" aria-hidden="true"><use href="#i-chev-r"/></svg></a></div>
+    </div>
+    <div class="graph reveal" aria-label="Gmail, LinkedIn, X, Google Calendar and job boards go in. Claude does the research. You get the next move in Telegram and on your dashboard.">
+      <svg class="graph-lines" viewBox="0 0 600 360" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M110 40 C 220 40, 220 180, 300 180"/><path d="M110 110 C 220 110, 220 180, 300 180"/><path d="M110 180 L 300 180"/><path d="M110 250 C 220 250, 220 180, 300 180"/><path d="M110 320 C 220 320, 220 180, 300 180"/>
+        <path class="out" d="M300 180 C 380 180, 380 70, 490 70"/><path class="out" d="M300 180 L 490 180"/><path class="out" d="M300 180 C 380 180, 380 290, 490 290"/>
+      </svg>
+      <ul class="g-in" aria-hidden="true">
+        <li><span class="g-node src-mail"><svg width="18" height="18"><use href="#i-mail"/></svg></span>Gmail</li>
+        <li><span class="g-node src-in"><svg width="18" height="18"><use href="#i-in"/></svg></span>LinkedIn</li>
+        <li><span class="g-node src-x"><svg width="18" height="18"><use href="#i-x"/></svg></span>X</li>
+        <li><span class="g-node src-cal"><svg width="18" height="18"><use href="#i-cal"/></svg></span>Calendar</li>
+        <li><span class="g-node"><svg width="18" height="18"><use href="#i-board"/></svg></span>Job boards</li>
+      </ul>
+      <span class="g-hub" aria-hidden="true"><svg width="34" height="34"><use href="#mark"/></svg></span>
+      <ul class="g-out" aria-hidden="true">
+        <li><span class="g-node"><svg width="18" height="18"><use href="#i-spark"/></svg></span><span><b>Claude</b>does the research</span></li>
+        <li><span class="g-node"><svg width="18" height="18"><use href="#i-send"/></svg></span><span><b>Telegram</b>tells you the next move</span></li>
+        <li><span class="g-node"><svg width="18" height="18"><use href="#i-dash"/></svg></span><span><b>Your dashboard</b>shows it all in one place</span></li>
       </ul>
     </div>
+    <ul class="fit-row">
+      <li class="reveal"><svg width="18" height="18" aria-hidden="true"><use href="#check"/></svg><span>You have a presence on LinkedIn or X, and people you could reach out to.</span></li>
+      <li class="reveal" style="--d:1"><svg width="18" height="18" aria-hidden="true"><use href="#check"/></svg><span>You already use AI tools like Claude for your work.</span></li>
+      <li class="reveal" style="--d:2"><svg width="18" height="18" aria-hidden="true"><use href="#check"/></svg><span>You're juggling more leads, chats and follow-ups than you can keep in your head.</span></li>
+      <li class="reveal" style="--d:3"><svg width="18" height="18" aria-hidden="true"><use href="#check"/></svg><span>You'd rather reach a person on the team than be one more application in the pile.</span></li>
+    </ul>
   </section>
 
-  <section id="get" class="wrap section" style="padding-bottom:0">
-    <h2 class="h2">It's free. Pick how you want to run it.</h2>
+  <!-- Get it -->
+  <section id="get" class="wrap section get-c">
+    <span class="label reveal">Get started</span>
+    <h2 class="h2 reveal">It's free. Pick how you want to run it.</h2>
     <div class="get-grid">
-      <form class="card get-card" id="ask" novalidate>
+      <form class="card get-card reveal" id="ask" novalidate>
+        <span class="get-kicker">Easiest</span>
         <h3>Early access</h3>
         <p class="muted">We run the hard part for you. You install one app, sign in, and you're set. Ask for a spot and you'll get an email when you're in.</p>
         <label class="field"><span>Email</span><input type="email" name="email" required autocomplete="email" placeholder="you@example.com"></label>
@@ -168,9 +377,11 @@
           <p class="muted small" id="dl-other" style="margin-top:8px"></p>
         </details>
       </form>
-      <div class="card get-card" id="run-it">
+      <div class="card get-card reveal" id="run-it" style="--d:1">
+        <span class="get-kicker">For tinkerers</span>
         <h3>Run it yourself</h3>
         <p class="muted">The code is public. Fork it and run it on your own computer, with your own accounts. Setup takes about 20 minutes, and everything stays with you.</p>
+        <div class="term" aria-hidden="true"><span class="faint">$</span> git clone github.com/kindavishal/kindahired<span class="caret"></span></div>
         <ul class="fit-list tight">
           <li><svg width="18" height="18" aria-hidden="true"><use href="#check"/></svg><span>Your own copy, nothing shared with us</span></li>
           <li><svg width="18" height="18" aria-hidden="true"><use href="#check"/></svg><span>Change anything you like</span></li>
@@ -184,35 +395,45 @@
     </div>
   </section>
 
-  <section id="faq" class="wrap section faq">
-    <h2 class="h2">Questions</h2>
-    <div class="card faq-list">
-      <details open><summary>Does it apply or send messages for me?<svg width="18" height="18" aria-hidden="true"><use href="#i-chev"/></svg></summary><p>No. It gets everything ready: who to message, what to say, your resume and cover note. You decide, and you press send.</p></details>
-      <details><summary>Is it really free?<svg width="18" height="18" aria-hidden="true"><use href="#i-chev"/></svg></summary><p>Yes, both ways. The AI work runs on your own Claude plan, so there's nothing for us to charge you for.</p></details>
-      <details><summary>What do I need?<svg width="18" height="18" aria-hidden="true"><use href="#i-chev"/></svg></summary><p>A Claude plan, a Gmail account, and Telegram on your phone. LinkedIn and X make it better, because that's where most of your network is.</p></details>
-      <details><summary>What happens to my data?<svg width="18" height="18" aria-hidden="true"><use href="#i-chev"/></svg></summary><p>It reads your Gmail and calendar without being able to send anything, and it skips messages that aren't about work. Nothing is sold, and there are no ads. <a href="how-it-works.html#privacy">See exactly where your data goes</a>.</p></details>
-      <details><summary>Why "kindahired"?<svg width="18" height="18" aria-hidden="true"><use href="#i-chev"/></svg></summary><p>Because it won't promise you the job. It gets you ready, keeps you on time, and leaves the last step to you.</p></details>
+  <!-- FAQ -->
+  <section id="faq" class="wrap section faq-c">
+    <div class="faq-side reveal">
+      <h2 class="h2">Questions</h2>
+      <p class="muted">Want the longer version? <a href="how-it-works.html">See how it works</a>, or <a href="how-it-works.html#privacy">where your data goes</a>.</p>
+    </div>
+    <div class="faq-list reveal">
+      <details open><summary>Does it apply or send messages for me?<svg width="18" height="18" aria-hidden="true"><use href="#i-chev"/></svg></summary><div class="ans"><p>No. It gets everything ready: who to message, what to say, your resume and cover note. You decide, and you press send.</p></div></details>
+      <details><summary>Is it really free?<svg width="18" height="18" aria-hidden="true"><use href="#i-chev"/></svg></summary><div class="ans"><p>Yes, both ways. The AI work runs on your own Claude plan, so there's nothing for us to charge you for.</p></div></details>
+      <details><summary>What do I need?<svg width="18" height="18" aria-hidden="true"><use href="#i-chev"/></svg></summary><div class="ans"><p>A Claude plan, a Gmail account, and Telegram on your phone. LinkedIn and X make it better, because that's where most of your network is.</p></div></details>
+      <details><summary>What happens to my data?<svg width="18" height="18" aria-hidden="true"><use href="#i-chev"/></svg></summary><div class="ans"><p>It reads your Gmail and calendar without being able to send anything, and it skips messages that aren't about work. Nothing is sold, and there are no ads. <a href="how-it-works.html#privacy">See exactly where your data goes</a>.</p></div></details>
+      <details><summary>Why "kindahired"?<svg width="18" height="18" aria-hidden="true"><use href="#i-chev"/></svg></summary><div class="ans"><p>Because it won't promise you the job. It gets you ready, keeps you on time, and leaves the last step to you.</p></div></details>
     </div>
   </section>
 
-  <section class="closing">
+  <!-- Closing -->
+  <section class="closing-c">
     <div class="wrap">
-      <svg width="48" height="48" aria-hidden="true"><use href="#mark"/></svg>
-      <h2>Your next job might be one message away.</h2>
-      <p>Don't let it sit in your inbox.</p>
-      <div class="row" style="justify-content:center">
-        <a class="btn btn-light btn-lg" href="#get">Get early access</a>
-        <a class="btn btn-dark-outline btn-lg" href="#run-it">Run it yourself</a>
+      <svg class="draw-mark" width="56" height="56" viewBox="0 0 24 24" aria-hidden="true"><path class="r" d="M20.5 9.5A9 9 0 1 1 15 3.5"/><path class="t" d="M7.5 12.5l3.5 3.5L19.5 6"/></svg>
+      <h2 class="display-sm reveal">Your next job might be one message away.</h2>
+      <p class="reveal">Don't let it sit in your inbox.</p>
+      <div class="row reveal" style="justify-content:center">
+        <a class="btn btn-light btn-xl" href="#get">Get early access</a>
+        <a class="btn btn-dark-outline btn-xl" href="#run-it">Run it yourself</a>
       </div>
     </div>
+    <footer class="wrap footer-c">
+      <div class="f-brand">
+        <a class="logo" href="#top"><svg class="mark" width="22" height="22" aria-hidden="true"><use href="#mark"/></svg><span><span class="kinda">kinda</span><span class="hired">hired</span></span></a>
+        <p>Your next job is already in your network.</p>
+      </div>
+      <nav aria-label="Product"><b>Product</b><a href="how-it-works.html">How it works</a><a href="#get">Early access</a><a href="#run-it">Run it yourself</a></nav>
+      <nav aria-label="Open source"><b>Open source</b><a href="https://github.com/kindavishal/kindahired">GitHub</a><a href="https://github.com/kindavishal/kindahired#run-your-own-copy">Setup guide</a></nav>
+      <nav aria-label="Legal"><b>Trust</b><a href="how-it-works.html#privacy">Where your data goes</a><a href="privacy.html">Privacy policy</a></nav>
+      <p class="f-copy">© 2026 kindahired</p>
+    </footer>
   </section>
 </main>
-
-<footer class="wrap footer">
-  <a class="logo" href="#top" style="font-size:15px"><svg class="mark" width="20" height="20" aria-hidden="true" style="color:var(--ink)"><use href="#mark"/></svg><span><span class="kinda">kinda</span><span class="hired" style="color:var(--ink)">hired</span></span></a>
-  <nav aria-label="Footer"><a href="how-it-works.html">How it works</a><a href="privacy.html">Privacy policy</a><a href="https://github.com/kindavishal/kindahired">GitHub</a></nav>
-  <span>© 2026 kindahired</span>
-</footer>
 <script src="get.js" defer></script>
+<script src="home.js" defer></script>
 </body>
 </html>
